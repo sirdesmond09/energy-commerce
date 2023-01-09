@@ -280,7 +280,7 @@ class Staging(Common):
         ('HTTP_X_FORWARDED_PROTO', 'https')
     )
     
-    DEBUG = True
+    DEBUG = False
     DATABASES = values.DatabaseURLValue(
         os.getenv("DATABASE_URL")
     )
