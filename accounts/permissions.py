@@ -4,7 +4,7 @@ from rest_framework import exceptions
 from django.contrib.auth import get_user_model
 from accounts.models import StoreBankDetail, StoreProfile
 
-from main.models import CalculatorItem, FrequentlyAskedQuestion, Order, OrderItem, PaymentDetail, Product, ProductCategory, Rating
+from main.models import CalculatorItem, FrequentlyAskedQuestion, Order, OrderItem, PaymentDetail, Product, Rating
 
 
 
@@ -89,11 +89,6 @@ class ProductTablePermissions(CustomBasePermissions):
     
     def __init__(self):
         self.model = Product
-
-class ProductCategoryPermissions(CustomBasePermissions):
-    
-    def __init__(self):
-        self.model = ProductCategory
         
         
 class PaymentTablePermissions(CustomBasePermissions):
