@@ -33,7 +33,7 @@ class Common(Configuration):
         'django.contrib.contenttypes',
         'django.contrib.sessions',
         'django.contrib.messages',
-        # 'whitenoise.runserver_nostatic',
+        'whitenoise.runserver_nostatic',
         'django.contrib.staticfiles',
 
         'django_extensions',
@@ -51,7 +51,7 @@ class Common(Configuration):
 
     MIDDLEWARE = [
         'django.middleware.security.SecurityMiddleware',
-        # 'whitenoise.middleware.WhiteNoiseMiddleware',
+        'whitenoise.middleware.WhiteNoiseMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'corsheaders.middleware.CorsMiddleware',
         'django.middleware.common.CommonMiddleware',
@@ -120,7 +120,7 @@ class Common(Configuration):
     # https://docs.djangoproject.com/en/4.1/howto/static-files/
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-    # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
     # Default primary key field type
     # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
