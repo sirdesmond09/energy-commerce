@@ -238,9 +238,9 @@ class Staging(Common):
     )
     
     DEBUG = True
-    # DATABASES = values.DatabaseURLValue(
-    #     os.getenv("DATABASE_URL")
-    # )
+    DATABASES = values.DatabaseURLValue(
+        os.getenv("DATABASE_URL")
+    )
     
 
     ALLOWED_HOSTS = ["*"]
