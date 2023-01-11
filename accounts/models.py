@@ -132,6 +132,12 @@ class StoreProfile(models.Model):
     def cac_doc_url(self):
         return self.cac_doc.url
     
+    @property
+    def bank_data(self):
+        detail = model_to_dict(self.bank_detail, exclude=[ "is_deleted", "store" ])
+        detail["id"] = self.bank_detail.id
+            
+        return detail    
     
     def delete(self):
         self.is_deleted = True

@@ -126,6 +126,7 @@ class NewOtpSerializer(serializers.Serializer):
 class StoreProfileSerializer(serializers.ModelSerializer):
     logo_url = serializers.ReadOnlyField()
     cac_doc_url = serializers.ReadOnlyField()
+    bank_data = serializers.ReadOnlyField()
     
     class Meta:
         fields = '__all__'

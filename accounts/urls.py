@@ -34,5 +34,7 @@ urlpatterns = [
     path('auth/otp/new/', views.reset_otp),
     path("auth/users/vendor", views.AddVendorView.as_view(), name="vendor-signup"),
     path("vendors/", views.VendorListView.as_view(), name="vendors-list"),
+    path("stores/", views.StoreListView.as_view(), name="stores"),
+    path("stores/<uuid:id>/", views.StoreDetailView.as_view(), name="store_detail")
     
 ]

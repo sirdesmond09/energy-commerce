@@ -1,4 +1,4 @@
-from .serializers import AddVendorSerializer, LoginSerializer, LogoutSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer
+from .serializers import AddVendorSerializer, LoginSerializer, LogoutSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, StoreProfileSerializer, BankDetailSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -16,8 +16,8 @@ from django.contrib.auth.signals import user_logged_in, user_logged_out
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, CreateAPIView
 from rest_framework.decorators import action
 from djoser.views import UserViewSet
-from rest_framework.mixins import CreateModelMixin
 from rest_framework.views import APIView
+from .models import StoreBankDetail, StoreProfile
 
 
  
@@ -223,5 +223,25 @@ class VendorListView(ListAPIView):
     
     queryset = User.objects.filter(is_deleted=False, role="vendor").order_by('-date_joined')
     serializer_class =  CustomUserSerializer
-    # authentication_classes([JWTAuthentication])
-    # permission_classes([IsAdminUser])
+    authentication_classes([JWTAuthentication])
+    permission_classes([IsAdminUser])
+    
+  
+class StoreListView(ListAPIView):
+    
+    
+    queryset = StoreProfile.objects.filter(is_deleted=False).order_by('-date_joined')
+    serializer_class =  StoreProfileSerializer
+    authentication_classes([JWTAuthentication])
+    permission_classes([IsAdminUser])  
+    
+
+class StoreDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = StoreProfile.objects.filter(is_deleted=False).order_by('-date_joined')
+    serializer_class =  StoreProfileSerializer
+    lookup_field = "id"
+    authentication_classes([JWTAuthentication])
+    permission_classes([IsAdminUser])
+    
+    
+    
