@@ -47,6 +47,9 @@ class Common(Configuration):
         'coreapi',
         'corsheaders',
         'rest_framework_simplejwt.token_blacklist',
+        'cloudinary_storage',
+        'cloudinary',
+
     ]
 
     MIDDLEWARE = [
@@ -121,6 +124,8 @@ class Common(Configuration):
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    
+    
 
     # Default primary key field type
     # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -197,6 +202,16 @@ class Common(Configuration):
     
     SITE_NAME = "Imperium"
     DOMAIN = "#"
+    
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.getenv('CLOUD_NAME'),
+        'API_KEY': os.getenv('API_KEY'),
+        'API_SECRET': os.getenv('API_SECRET'),
+    }
+    
+    MEDIA_URL = '/media/'
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 
 
 class Development(Common):
@@ -224,6 +239,7 @@ class Staging(Common):
     """
     The in-staging settings.
     """
+    
     # Security
     SESSION_COOKIE_SECURE = values.BooleanValue(True)
     SECURE_BROWSER_XSS_FILTER = values.BooleanValue(True)

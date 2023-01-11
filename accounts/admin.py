@@ -1,12 +1,13 @@
 from rest_framework_simplejwt.token_blacklist import models, admin
 
+
 class CustomOutstandingTokenAdmin(admin.OutstandingTokenAdmin):
     
     def has_delete_permission(self, *args, **kwargs):
         return True # or whatever logic you want
 
 from django.contrib import admin
-from accounts.models import User, ActivationOtp
+from accounts.models import User, ActivationOtp, StoreBankDetail, StoreProfile
 
 
 # Register your models here.
@@ -19,3 +20,4 @@ class UserAdmin(admin.ModelAdmin):
 admin.site.register(ActivationOtp)
 admin.site.unregister(models.OutstandingToken)
 admin.site.register(models.OutstandingToken, CustomOutstandingTokenAdmin)
+admin.site.register([StoreProfile, StoreBankDetail])

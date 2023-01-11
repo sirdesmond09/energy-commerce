@@ -6,8 +6,9 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
-from .models import ActivationOtp
+from .models import ActivationOtp, StoreBankDetail, StoreProfile
 from .signals import generate_otp, site_name,url
+from rest_framework.exceptions import ValidationError
 
 from config import settings
  
@@ -120,3 +121,63 @@ class NewOtpSerializer(serializers.Serializer):
 
 
         
+class StoreProfileSerializer(serializers.ModelSerializer):
+    logo_url = serializers.ReadOnlyField()
+    cac_doc_url = serializers.ReadOnlyField()
+    
+    class Meta:
+        fields = '__all__'
+        model = StoreProfile
+        extra_kwargs = {
+            'logo': {'write_only': True},
+            'cac_doc': {'write_only': True}
+        }
+
+
+class BankDetailSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        fields = '__all__'
+        model = StoreBankDetail
+        
+        
+        
+class AddVendorSerializer(serializers.Serializer):
+    vendor_data = CustomUserSerializer()
+    store_profile = StoreProfileSerializer()
+    bank_detail = BankDetailSerializer()
+    
+    
+    def create(self, validated_data):
+        
+        store_profile = validated_data.pop('store_profile')
+        bank_detail = validated_data.pop('bank_detail')
+        vendor_data = validated_data.pop('vendor_data')
+        
+        if "role" in vendor_data.keys():
+            vendor_data.pop("role") 
+            
+        vendor = User.objects.create(**vendor_data, role="vendor")
+        print(vendor)
+        
+        try:
+        
+            if "vendor" in store_profile.keys():
+                store_profile.pop("vendor")
+                
+            store = StoreProfile.objects.create(**store_profile, vendor=vendor)
+        except Exception as e:
+            print("error")
+            vendor.delete_permanently()
+            raise ValidationError(str(e))
+        
+        try:
+            if "store" in bank_detail.keys():
+                bank_detail.pop("store")
+                
+            StoreBankDetail.objects.create(**bank_detail, store=store)
+        except Exception as e:
+            print("another errror")
+            store.delete_permanently()
+            raise ValidationError(str(e))
+        return 

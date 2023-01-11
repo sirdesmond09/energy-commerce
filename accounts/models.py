@@ -6,6 +6,8 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.core.validators import MinLengthValidator, FileExtensionValidator
+
 
 
 from .managers import UserManager
@@ -18,6 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('user', 'User'),
+        ('vendor', 'Vendor'),
     )    
     
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+2341234567890'. Up to 15 digits allowed.")
@@ -53,6 +56,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.save()
         
         
+    def delete_permanently(self):
+        super().delete()
+        
+        
+    
+        
         
 class ActivationOtp(models.Model):
     user  =models.ForeignKey('accounts.User', on_delete=models.CASCADE)
@@ -63,3 +72,80 @@ class ActivationOtp(models.Model):
     def is_valid(self):
         return bool(self.expiry_date > timezone.now())
 
+
+
+
+class StoreProfile(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
+    vendor = models.OneToOneField('accounts.User', on_delete=models.CASCADE, related_name="store_owner", null=True)
+    store_name = models.CharField(max_length=250, unique=True)
+    logo = models.ImageField(blank=True, upload_to='store_logos', 
+                             validators=[
+                                 FileExtensionValidator(allowed_extensions=['png', "jpg", "jpeg"])])
+    store_desc= models.TextField()
+    num_of_employee = models.PositiveIntegerField()
+    state = models.CharField(max_length=100)
+    line_1 = models.TextField()
+    line_2 = models.TextField(blank=True, null=True)
+    zip_code = models.CharField(max_length=50)
+    cac_num  = models.CharField(max_length=50)
+    cac_doc = models.FileField(upload_to='cac_documents', validators=[
+        FileExtensionValidator(allowed_extensions=['pdf','doc', "jpg", "jpeg"])])
+    is_deleted    = models.BooleanField( default=False)
+    date_joined   = models.DateTimeField(auto_now_add=True)
+    
+    
+    
+    def __str__(self):
+        return f"{self.store_name} for {self.vendor}"
+    
+    
+    @property
+    def logo_url(self):
+        return self.logo.url
+    
+    @property
+    def cac_doc_url(self):
+        return self.cac_doc.url
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+        
+        
+class StoreBankDetail(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
+    account_name = models.CharField(max_length=300)
+    account_num = models.CharField(max_length=12,
+                                   validators=[ MinLengthValidator(10, 'the field must contain at least 10 characters')
+                                               ])
+    phone = models.CharField(max_length=15, 
+                             validators=[ MinLengthValidator(10, 'the field must contain at least 12 characters')
+                                         ])
+    bank_branch = models.CharField(max_length=300)
+    store = models.OneToOneField("accounts.StoreProfile", on_delete=models.CASCADE, related_name="bank_detail", null=True)
+    is_deleted    = models.BooleanField(_('deleted'), default=False)
+    date_joined   = models.DateTimeField(_('date joined'), auto_now_add=True)
+    
+    
+    
+    def __str__(self):
+        return f"Account Details for {self.store}"
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+        
+    
+    
+    
