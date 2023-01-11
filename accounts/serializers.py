@@ -25,10 +25,12 @@ class UserRegistrationSerializer(BaseUserRegistrationSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=300, required=False)
+    store_profile = serializers.ReadOnlyField()
+    bank_detail = serializers.ReadOnlyField()
     
     class Meta():
         model = User
-        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role"]
+        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile"]
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -104,7 +106,7 @@ class NewOtpSerializer(serializers.Serializer):
     Expires in 5 minutes!
 
     Thank you,
-    SmartParcel                
+    Imperium                
     """
         msg_html = render_to_string('email/new_otp.html', {
                         'first_name': str(user.first_name).title(),

@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.core.validators import MinLengthValidator, FileExtensionValidator
-
+from django.forms import model_to_dict
 
 
 from .managers import UserManager
@@ -59,7 +59,31 @@ class User(AbstractBaseUser, PermissionsMixin):
     def delete_permanently(self):
         super().delete()
         
+    
+    @property
+    def store_profile(self):
+        if self.role == "vendor":
+            profile = model_to_dict(self.store, exclude=["logo", "cac_doc", "is_deleted", "vendor" ])
+            profile["id"] = self.store.id
+            profile['logo_url'] = self.store.logo.url
+            profile['cac_doc_url'] = self.store.cac_doc.url
+            
+            return profile    
+        else:
+            return None    
+    
+    
+    @property
+    def bank_detail(self):
+        if self.role == "vendor":
+            detail = model_to_dict(self.store.bank_detail, exclude=[ "is_deleted", "store" ])
+            detail["id"] = self.store.id
+            
+            return detail    
+        else:
+            return None   
         
+    
     
         
         
@@ -77,7 +101,7 @@ class ActivationOtp(models.Model):
 
 class StoreProfile(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
-    vendor = models.OneToOneField('accounts.User', on_delete=models.CASCADE, related_name="store_owner", null=True)
+    vendor = models.OneToOneField('accounts.User', on_delete=models.CASCADE, related_name="store", null=True)
     store_name = models.CharField(max_length=250, unique=True)
     logo = models.ImageField(blank=True, upload_to='store_logos', 
                              validators=[

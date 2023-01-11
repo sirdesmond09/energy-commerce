@@ -218,3 +218,10 @@ class AddVendorView(APIView):
 
 
 
+class VendorListView(ListAPIView):
+    
+    
+    queryset = User.objects.filter(is_deleted=False, role="vendor").order_by('-date_joined')
+    serializer_class =  CustomUserSerializer
+    # authentication_classes([JWTAuthentication])
+    # permission_classes([IsAdminUser])

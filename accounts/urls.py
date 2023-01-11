@@ -32,6 +32,7 @@ urlpatterns = [
     path("auth/logout/", views.logout_view, name="logout_view"),
     path('auth/otp/verify/', views.otp_verification),
     path('auth/otp/new/', views.reset_otp),
-    path("auth/users/vendor", views.AddVendorView.as_view(), name="vendor-signup")
+    path("auth/users/vendor", views.AddVendorView.as_view(), name="vendor-signup"),
+    path("vendors/", views.VendorListView.as_view(), name="vendors-list"),
     
 ]
