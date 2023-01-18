@@ -2,12 +2,14 @@ asgiref==3.3.4
 certifi==2022.12.7
 cffi==1.15.1
 charset-normalizer==2.1.1
+cloudinary==1.30.0
 coreapi==2.3.3
 coreschema==0.0.4
 cryptography==38.0.4
 defusedxml==0.7.1
 dj-database-url==0.5.0
 Django==3.2.2
+django-cloudinary-storage==0.3.0
 django-configurations==2.2
 django-cors-headers==3.13.0
 django-debug-toolbar==3.2.1
@@ -25,6 +27,7 @@ Jinja2==3.1.2
 MarkupSafe==2.1.1
 oauthlib==3.2.2
 packaging==22.0
+Pillow==9.4.0
 psycopg2-binary==2.9.5
 pycparser==2.21
 PyJWT==2.6.0
