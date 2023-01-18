@@ -45,9 +45,30 @@ class ProductList(ListAPIView):
     
     
     def list(self, request, *args, **kwargs):
-        #TODO: implement filtering
+        
+        category = request.GET.get('category', None)
+        vendor = request.GET.get('vendor', None)
+        min_price = request.GET.get("min_price", None)
+        max_price = request.GET.get("max_price", None)
+        location = request.GET.get("location", None)
+        
+        
         
         queryset = self.filter_queryset(self.get_queryset())
+        
+        
+        if category:
+            queryset = queryset.filter(category__id=category)
+            
+        if vendor:
+            queryset = queryset.filter(vendor__id=category)
+            
+        if min_price and max_price:
+            queryset = queryset.filter(price__gte=min_price).filter(price__lte=max_price)
+            
+        if location:
+            queryset = queryset.filter(locations__id__in=[location])
+            
 
         page = self.paginate_queryset(queryset)
         if page is not None:

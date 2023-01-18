@@ -47,6 +47,7 @@ class Product(models.Model):
                 allowed_extensions=['png', "jpg", "jpeg"])
         ])
     vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
+    category = models.ForeignKey("main.ProductCategory", on_delete=models.CASCADE)
     box_details = models.TextField()
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
