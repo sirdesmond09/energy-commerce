@@ -1,5 +1,5 @@
-from .serializers import AddProductSerializer, GallerySerializer, ProductSerializer, CategorySerializer
-from .models import ProductCategory, Product, ProductGallery
+from .serializers import AddProductSerializer, GallerySerializer, LocationSerializer, ProductSerializer, CategorySerializer
+from .models import Location, ProductCategory, Product, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
@@ -88,7 +88,7 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
 
 
 
-
+@swagger_auto_schema(method="delete", request_body=GallerySerializer())
 @api_view(["POST", "DELETE"])
 def update_galley(request, product_id, img_id=None):
     
@@ -131,4 +131,21 @@ def update_galley(request, product_id, img_id=None):
         
         
         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+
+class LocationView(ListCreateAPIView):
+    serializer_class = LocationSerializer
+    queryset = Location.objects.all().order_by('-date_added')
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminUser]
+    
+
+
+class LocationDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = LocationSerializer
+    queryset = Location.objects.all().order_by('-date_added')
+    lookup_field = "id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminUser]
     
