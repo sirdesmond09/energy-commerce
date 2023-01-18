@@ -137,8 +137,8 @@ def update_galley(request, product_id, img_id=None):
 class LocationView(ListCreateAPIView):
     serializer_class = LocationSerializer
     queryset = Location.objects.all().order_by('-date_added')
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAdminUser]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAdminUser]
     
 
 
@@ -148,4 +148,7 @@ class LocationDetailView(RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdminUser]
+    
+    
+    
     
