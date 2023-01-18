@@ -12,6 +12,7 @@ from django.forms import model_to_dict
 
 from .managers import UserManager
 import uuid
+import random
 
 
 
@@ -53,6 +54,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     def delete(self):
         self.is_deleted = True
+        self.email = f"{random.randint}-deleted-{self.email}"
+        self.phone = f"{self.phone}-del-{random.randint}"
         self.save()
         
         

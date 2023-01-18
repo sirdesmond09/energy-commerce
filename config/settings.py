@@ -40,6 +40,7 @@ class Common(Configuration):
         'debug_toolbar',
 
         'accounts.apps.AccountsConfig',
+        'main.apps.MainConfig',
         
         'rest_framework',
         'djoser',
