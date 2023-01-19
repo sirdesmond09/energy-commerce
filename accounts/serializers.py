@@ -24,7 +24,7 @@ class UserRegistrationSerializer(BaseUserRegistrationSerializer):
    
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(max_length=300, required=False)
+    password = serializers.CharField(style={"input_type": "password"}, write_only=True, required=False)
     store_profile = serializers.ReadOnlyField()
     bank_detail = serializers.ReadOnlyField()
     

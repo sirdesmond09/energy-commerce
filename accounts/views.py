@@ -28,6 +28,17 @@ User = get_user_model()
 
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.filter(is_deleted=False)
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.queryset.filter(role="user")
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class AdminListCreateView(ListCreateAPIView):
@@ -42,8 +53,9 @@ class AdminListCreateView(ListCreateAPIView):
     @swagger_auto_schema(method="post", request_body= CustomUserSerializer())
     @action(methods=["post"], detail=True)
     def post(self, request, *args, **kwargs):
+        
+        serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
-                serializer = CustomUserSerializer(data=request.data)
                 
                 serializer.validated_data['password'] = generate_password()
                 serializer.validated_data['is_active'] = True
