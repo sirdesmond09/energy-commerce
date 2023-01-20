@@ -93,4 +93,23 @@ class Location(models.Model):
     
     def __str__(self):
         return self.name
+    
+    
+
+class Address(models.Model):
+    user = models.ForeignKey("accounts.User", null=True, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=255)
+    address_1 = models.CharField(max_length=500)
+    address_2 = models.CharField(max_length=500)
+    delivery_instruction = models.TextField(blank=True, null=True)
+    additional_instruction = models.TextField(blank=True, null=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.address
+    
 
