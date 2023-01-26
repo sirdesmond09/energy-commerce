@@ -14,6 +14,7 @@ urlpatterns = [
     path("product-components/<int:id>/", views.ComponentsDetailView.as_view(), name="product-component-detail"),
     path("addresses/", views.AddressListCreateView.as_view(), name="user-addresses"),
     path("addresses/<uuid:id>/", views.AddressesDetailView.as_view(), name="user-address-detail"),
-    path("orders/new/", views.new_order, name="new-orders")
+    path("orders/new/", views.new_order, name="new-orders"),
+    path("energy-calculator/", views.energy_calculator)
     
 ]

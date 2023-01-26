@@ -113,3 +113,9 @@ class AddOrderSerializer(serializers.Serializer):
         return order
         
         
+        
+
+class EnergyCalculatorSerializer(serializers.Serializer ):
+    item = serializers.CharField(max_length=255)
+    wattage = serializers.IntegerField()
+    hours = serializers.IntegerField()

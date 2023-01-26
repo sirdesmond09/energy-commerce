@@ -1,4 +1,4 @@
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, GallerySerializer, LocationSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
 from .models import Address, Location, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
@@ -252,3 +252,56 @@ def new_order(request):
     
     
     
+    
+
+@swagger_auto_schema(method="post", request_body=EnergyCalculatorSerializer(many=True))
+@api_view(["POST"])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+def energy_calculator(request):
+    
+    if request.method == "POST":
+        battery = request.GET.get('battery_type')
+        serializer = EnergyCalculatorSerializer(data=request.data, many=True)
+        
+        if serializer.is_valid():
+        
+            if battery == "tabular":
+                discharge_depth = 0.50
+            elif battery == "lithium":
+                discharge_depth = 0.92
+            
+            else:
+                raise ValidationError(detail={"message":"select battery type"})
+            
+            energy_loss = 0.3
+            power_factor = 0.8
+        
+            sys_cap_limit = 0.7
+            volt = 24
+            batt_unit = 150
+            
+            total_load = round(sum([data["wattage"] for data in serializer.validated_data])/(1-energy_loss), 2)
+            
+            watt_hr = [data["wattage"] * data["hours"] for data in serializer.validated_data]
+            
+            total_watt_hr = round(sum(watt_hr)/(1-energy_loss), 2)
+            
+            
+            inverter_capacity = round(total_load/(sys_cap_limit*power_factor*1000), 2)
+            
+            battery_cap = round((total_watt_hr/volt)/discharge_depth, 2)
+            
+            batt_total = round(battery_cap/batt_unit, 2)
+            
+            data = {"total_load": total_load,
+                    "total_watt_hr": total_watt_hr,
+                    "suggested_inverter_capacity":inverter_capacity,
+                    "estimated_battery_cap": battery_cap,
+                    "suggested_unit_battery_total":batt_total}
+            
+            return Response(data)
+        
+        else:
+            raise ValidationError(detail=serializer.errors)
+            
