@@ -11,7 +11,9 @@ urlpatterns = [
     path("products/<uuid:product_id>/update-gallery/<uuid:img_id>", views.update_galley, name="gallery-update-delete"),
     path("locations/", views.LocationView.as_view(), name="location"),
     path("locations/<uuid:id>/", views.LocationDetailView.as_view(), name="location-detail"),
+    path("product-components/<int:id>/", views.ComponentsDetailView.as_view(), name="product-component-detail"),
     path("addresses/", views.AddressListCreateView.as_view(), name="user-addresses"),
-    path("addresses/<uuid:id>/", views.AddressesDetailView.as_view(), name="user-address-detail")
+    path("addresses/<uuid:id>/", views.AddressesDetailView.as_view(), name="user-address-detail"),
+    path("orders/new/", views.new_order, name="new-orders")
     
 ]

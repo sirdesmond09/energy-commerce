@@ -48,7 +48,6 @@ class Product(models.Model):
         ])
     vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     category = models.ForeignKey("main.ProductCategory", on_delete=models.CASCADE)
-    box_details = models.TextField()
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
@@ -59,6 +58,10 @@ class Product(models.Model):
     @property
     def gallery(self):
         return self.images.all().values(["image__url", "id"])
+    
+    @property
+    def product_components(self):
+        return self.components.all().values(["item", "capacity", "qty","item_type"])
         
     def delete(self):
         self.is_deleted = True
@@ -67,6 +70,13 @@ class Product(models.Model):
     def delete_permanently(self):
         super().delete()
     
+
+class ProductComponent(models.Model):
+    item = models.CharField(max_length=200)
+    capacity = models.FloatField()
+    qty = models.PositiveIntegerField()
+    item_type = models.CharField(max_length=255)
+    product = models.ForeignKey("main.Product", on_delete=models.CASCADE, null=True, related_name="components")
     
     
 class ProductGallery(models.Model):
@@ -97,6 +107,7 @@ class Location(models.Model):
     
 
 class Address(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     user = models.ForeignKey("accounts.User", null=True, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
@@ -113,3 +124,55 @@ class Address(models.Model):
         return self.address
     
 
+
+
+class Order(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
+    user = models.ForeignKey("accounts.User", null=True, on_delete=models.CASCADE)
+    booking_id = models.CharField(max_length=10, unique=True,null=True)
+    address = models.ForeignKey("main.Address", null=True, on_delete=models.CASCADE)
+    shipping_fee = models.FloatField()
+    installation_fee = models.FloatField()
+    price = models.FloatField()
+    payment_method=models.CharField(max_length=10)
+    date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+    def delete_permanently(self):
+        super().delete()
+        
+        
+        
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name="items")
+    item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING)
+    unit_price = models.FloatField(default=0)
+    qty = models.PositiveIntegerField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+    def delete_permanently(self):
+        super().delete()
+    
+    
+    
+class PaymentDetail(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, null=True, related_name="payment")
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE, related_name="payment")
+    payment_type = models.CharField(max_length=300,
+                                    choices=(("specta", "Specta"),
+                                             ("outright", "Outright"),
+                                              ("lease", "Lease To Own"),
+                                              ("power-as-a-service", "Power as a service")))
+    address = models.CharField(max_length=255)
+    address2 = models.CharField(max_length=255, blank=True)

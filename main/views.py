@@ -1,5 +1,5 @@
-from .serializers import AddProductSerializer, AddressSerializer, GallerySerializer, LocationSerializer, ProductSerializer, CategorySerializer
-from .models import Address, Location, ProductCategory, Product, ProductGallery
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, GallerySerializer, LocationSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .models import Address, Location, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -151,6 +151,13 @@ class LocationDetailView(RetrieveUpdateDestroyAPIView):
     
     
     
+class ComponentsDetailView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ProductComponentSerializer
+    queryset = ProductComponent.objects.all()
+    lookup_field = "id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
     
 
 class AddressListCreateView(ListCreateAPIView):
@@ -222,5 +229,26 @@ class AddressesDetailView(RetrieveUpdateDestroyAPIView):
         if instance.user != request.user:
             raise PermissionDenied(detail={"message": "you do not have permission to edit this address"})
         return super().delete(request, *args, **kwargs)
+    
+    
+    
+    
+
+@swagger_auto_schema(method="post", request_body=AddOrderSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def new_order(request):
+    
+    if request.method == "POST":
+        serializer = AddOrderSerializer(data=request.data)
+        serializer.is_valid(raise_exceptions=True)
+        # TODO: verify payment
+        order = serializer.save()
+        order.user = request.user
+        order.save()
+        
+        return Response({"message": "order successfully made"})
+    
     
     
