@@ -21,7 +21,8 @@ class UserRegistrationSerializer(BaseUserRegistrationSerializer):
         fields = ['id',"first_name", "last_name", "email", "role","phone", "password", "is_active"]
         
     
-   
+class UserDeleteSerializer(serializers.Serializer):
+    current_password = serializers.CharField(style={"input_type": "password"})
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(style={"input_type": "password"}, write_only=True, required=False)

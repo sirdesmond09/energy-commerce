@@ -18,6 +18,8 @@ from rest_framework.decorators import action
 from djoser.views import UserViewSet
 from rest_framework.views import APIView
 from .models import StoreBankDetail, StoreProfile
+from django.contrib.auth.hashers import check_password
+
 
 
  
@@ -39,6 +41,28 @@ class CustomUserViewSet(UserViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+    
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        password = serializer.validated_data.get("current_password")
+        
+        if check_password(password, instance.password):
+            
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        elif request.user.role == "admin" and check_password(password, request.user.password):
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        # elif password=="google" and request.user.provider=="google":
+        #     self.perform_destroy(instance)
+        #     return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            raise AuthenticationFailed(detail={"message":"incorrect password"})
 
 
 class AdminListCreateView(ListCreateAPIView):

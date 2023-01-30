@@ -153,7 +153,7 @@ class Common(Configuration):
         'SERIALIZERS':{
             'user_create': 'accounts.serializers.UserRegistrationSerializer',
             'user': 'accounts.serializers.UserRegistrationSerializer',
-            'user_delete': 'djoser.serializers.UserDeleteSerializer'
+            'user_delete': 'accounts.serializers.UserDeleteSerializer',
         }        
         
     }
@@ -212,6 +212,7 @@ class Common(Configuration):
     
     MEDIA_URL = '/media/'
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    
 
 
 
