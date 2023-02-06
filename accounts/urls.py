@@ -35,6 +35,8 @@ urlpatterns = [
     path("auth/users/vendor", views.AddVendorView.as_view(), name="vendor-signup"),
     path("vendors/", views.VendorListView.as_view(), name="vendors-list"),
     path("stores/", views.StoreListView.as_view(), name="stores"),
-    path("stores/<uuid:id>/", views.StoreDetailView.as_view(), name="store_detail")
+    path("stores/<uuid:id>/", views.StoreDetailView.as_view(), name="store_detail"),
+    path("users/my-favourites", views.user_favourites),
+    path("users/favourites/<uuid:product_id>", views.update_favorite),
     
 ]

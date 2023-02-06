@@ -6,9 +6,10 @@ from rest_framework.exceptions import ValidationError
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    gallery = serializers.ReadOnlyField()
-    product_components = serializers.ReadOnlyField()
+    # gallery = serializers.ReadOnlyField()
+    # product_components = serializers.ReadOnlyField()
     primary_img_url = serializers.ReadOnlyField()
+    category_name = serializers.ReadOnlyField()
     
     class Meta:
         fields = '__all__'
@@ -116,6 +117,10 @@ class AddOrderSerializer(serializers.Serializer):
         
 
 class EnergyCalculatorSerializer(serializers.Serializer ):
-    item = serializers.CharField(max_length=255)
-    wattage = serializers.IntegerField()
-    hours = serializers.IntegerField()
+    total_wattage = serializers.IntegerField()
+    total_watt_hour = serializers.IntegerField()
+    
+    
+    
+class MultipleProductSerializer(serializers.Serializer ):
+    uids = serializers.ListField()

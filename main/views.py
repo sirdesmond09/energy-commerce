@@ -1,4 +1,4 @@
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
 from .models import Address, Location, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
@@ -58,10 +58,10 @@ class ProductList(ListAPIView):
         
         
         if category:
-            queryset = queryset.filter(category__id=category)
+            queryset = queryset.filter(category__name=category)
             
         if vendor:
-            queryset = queryset.filter(vendor__id=category)
+            queryset = queryset.filter(vendor__id=vendor)
             
         if min_price and max_price:
             queryset = queryset.filter(price__gte=min_price).filter(price__lte=max_price)
@@ -266,7 +266,7 @@ def energy_calculator(request):
         
         if serializer.is_valid():
         
-            if battery == "tabular":
+            if battery == "tubular":
                 discharge_depth = 0.50
             elif battery == "lithium":
                 discharge_depth = 0.92
@@ -305,3 +305,19 @@ def energy_calculator(request):
         else:
             raise ValidationError(detail=serializer.errors)
             
+            
+            
+@swagger_auto_schema(method="post", request_body=MultipleProductSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def multiple_products_by_id(request):
+    
+    if request.method == "POST":
+        serializer = MultipleProductSerializer(data=request.data)
+        
+        serializer.is_valid(raise_exception=True)
+        
+        products = Product.objects.filter(id__in=serializer.validated_data.get("uids"), is_deleted=False)
+        
+        return Response(ProductSerializer(products, many=True).data, status=status.HTTP_200_OK)

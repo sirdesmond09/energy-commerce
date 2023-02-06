@@ -1,3 +1,4 @@
+from main.serializers import ProductSerializer
 from .serializers import AddVendorSerializer, LoginSerializer, LogoutSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, StoreProfileSerializer, BankDetailSerializer
 from rest_framework import status
 from rest_framework.response import Response
@@ -7,7 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth import get_user_model
 from .helpers.generators import generate_password
-from rest_framework.exceptions import PermissionDenied, AuthenticationFailed
+from rest_framework.exceptions import PermissionDenied, AuthenticationFailed, NotFound
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
@@ -19,7 +20,7 @@ from djoser.views import UserViewSet
 from rest_framework.views import APIView
 from .models import StoreBankDetail, StoreProfile
 from django.contrib.auth.hashers import check_password
-
+from main.models import Product
 
 
  
@@ -278,6 +279,49 @@ class StoreDetailView(RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
     authentication_classes([JWTAuthentication])
     permission_classes([IsAdminUser])
+    
+    
+    
+    
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def user_favourites(request):
+    
+    if  request.method == "GET":
+        serializer = ProductSerializer(request.user.favourite, many=True)
+        
+        return Response( {"data":serializer.data}, status=status.HTTP_200_OK)
+    
+
+
+
+@api_view(["PUT", "DELETE"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_favorite(request, product_id=None):
+    
+    """Use this method to add or remove favourite products"""
+    
+    user = request.user
+    
+    
+   
+    
+    try:
+        product = Product.objects.get(id=product_id, is_deleted=False)
+    except Product.DoesNotExist:
+        raise NotFound('Product not found')
+    
+    if request.method == 'PUT':
+        user.favourite.add(product)
+        
+        return Response({"message": "successfully added"}, status=status.HTTP_200_OK)
+    
+    elif request.method == 'DELETE':
+        user.favourite.remove(product)
+        
+        return Response({"message": "successfully removed"}, status=status.HTTP_200_OK) 
     
     
     

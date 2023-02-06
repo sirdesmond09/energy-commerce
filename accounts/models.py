@@ -32,6 +32,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     role          = models.CharField(_('role'), max_length = 255, choices=ROLE_CHOICES)
     email         = models.EmailField(_('email'), unique=True)
     phone         = models.CharField(_('phone'), max_length = 20, unique = True, validators=[phone_regex])
+    favourite    = models.ManyToManyField("main.Product")
     password      = models.CharField(_('password'), max_length=300)
     is_staff      = models.BooleanField(_('staff'), default=False)
     is_admin      = models.BooleanField(_('admin'), default= False)
@@ -62,6 +63,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def delete_permanently(self):
         super().delete()
         
+
     
     @property
     def store_profile(self):

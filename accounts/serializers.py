@@ -17,6 +17,7 @@ User = get_user_model()
         
 
 class UserRegistrationSerializer(BaseUserRegistrationSerializer):
+    
     class Meta(BaseUserRegistrationSerializer.Meta):
         fields = ['id',"first_name", "last_name", "email", "role","phone", "password", "is_active"]
         
@@ -28,10 +29,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(style={"input_type": "password"}, write_only=True, required=False)
     store_profile = serializers.ReadOnlyField()
     bank_detail = serializers.ReadOnlyField()
+    favourite_detail = serializers.ReadOnlyField()
     
     class Meta():
         model = User
-        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile"]
+        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail"]
         extra_kwargs = {
             'password': {'write_only': True}
         }

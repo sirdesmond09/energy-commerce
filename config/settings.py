@@ -152,7 +152,7 @@ class Common(Configuration):
         'ACTIVATION_URL' : 'activate/{uid}/{token}',
         'SERIALIZERS':{
             'user_create': 'accounts.serializers.UserRegistrationSerializer',
-            'user': 'accounts.serializers.UserRegistrationSerializer',
+            'user': 'accounts.serializers.CustomUserSerializer',
             'user_delete': 'accounts.serializers.UserDeleteSerializer',
         }        
         

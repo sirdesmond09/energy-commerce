@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import FileExtensionValidator
 # Create your models here.
 import uuid
+from pprint import pprint
 
 
 class ProductCategory(models.Model):
@@ -38,6 +39,11 @@ class Product(models.Model):
     amount = models.CharField(max_length=300)
     desc = models.TextField()
     price = models.FloatField()
+    battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
+                                                              ("lithium", "Lithium")),
+                                    null=True)
+    battery_cap = models.FloatField(null=True)
+    total_power = models.FloatField(null=True)
     qty_available = models.PositiveIntegerField(default=0)
     locations = models.ManyToManyField("main.Location", blank=True)
     primary_img = models.ImageField(
@@ -56,12 +62,18 @@ class Product(models.Model):
         return self.primary_img.url
     
     @property
+    def category_name(self):
+        return self.category.name
+    
+    @property
     def gallery(self):
-        return self.images.all().values(["image__url", "id"])
+        
+        return self.images.all()
+        
     
     @property
     def product_components(self):
-        return self.components.all().values(["item", "capacity", "qty","item_type"])
+        return self.components.all()
         
     def delete(self):
         self.is_deleted = True
