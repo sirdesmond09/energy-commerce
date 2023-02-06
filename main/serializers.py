@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id
-from .models import Address, Location, Order, OrderItem, ProductComponent, ProductGallery, ProductCategory, Product
+from .models import Address, Cart, Location, Order, OrderItem, ProductComponent, ProductGallery, ProductCategory, Product
 from rest_framework.exceptions import ValidationError
 
 
@@ -124,3 +124,11 @@ class EnergyCalculatorSerializer(serializers.Serializer ):
     
 class MultipleProductSerializer(serializers.Serializer ):
     uids = serializers.ListField()
+    
+    
+class CartSerializer(serializers.ModelSerializer):
+    
+
+    class Meta:
+        fields = "__all__"
+        model = Cart

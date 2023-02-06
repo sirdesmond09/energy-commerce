@@ -1,5 +1,5 @@
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
-from .models import Address, Location, ProductCategory, Product, ProductComponent, ProductGallery
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .models import Address, Cart, Location, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -321,3 +321,76 @@ def multiple_products_by_id(request):
         products = Product.objects.filter(id__in=serializer.validated_data.get("uids"), is_deleted=False)
         
         return Response(ProductSerializer(products, many=True).data, status=status.HTTP_200_OK)
+    
+    
+    
+class CartListCreateView(ListCreateAPIView):
+    
+    """Get and create a list of addresses. When getting, the most recent ones are returned on top"""
+    
+    queryset = Cart.objects.all().order_by('-date_added')
+    serializer_class =  CartSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        
+        for data in serializer.validated_data:
+            data["user"] = request.user
+        
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset()).filter(user=request.user)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    
+    
+    
+class CartDetailView(RetrieveUpdateDestroyAPIView):
+    
+    """Edit, retrieve, and delete an address"""
+
+    queryset = Cart.objects.all().order_by('-date_added')
+    serializer_class =  CartSerializer
+    lookup_field = "id"
+    
+    
+    @swagger_auto_schema(method="put", request_body=CartSerializer())
+    @action(methods=["put"], detail=True)
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if instance.user != request.user:
+            raise PermissionDenied(detail={"message": "you do not have permission to edit this Cart"})
+        return super().put(request, *args, **kwargs)
+    
+    @swagger_auto_schema(method="patch", request_body=CartSerializer())
+    @action(methods=["patch"], detail=True)
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if instance.user != request.user:
+            raise PermissionDenied(detail={"message": "you do not have permission to edit this Cart"})
+        return super().patch(request, *args, **kwargs)
+    
+    
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if instance.user != request.user:
+            raise PermissionDenied(detail={"message": "you do not have permission to edit this Cart"})
+        return super().delete(request, *args, **kwargs)

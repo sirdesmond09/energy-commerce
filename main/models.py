@@ -188,3 +188,29 @@ class PaymentDetail(models.Model):
                                               ("power-as-a-service", "Power as a service")))
     address = models.CharField(max_length=255)
     address2 = models.CharField(max_length=255, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+    def delete_permanently(self):
+        super().delete()
+    
+    
+    
+
+class Cart(models.Model):
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
+    product =  models.ForeignKey(Product, on_delete=models.CASCADE)
+    qty = models.PositiveIntegerField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    
+    
+    
+
+    
+   
+    

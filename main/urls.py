@@ -16,6 +16,8 @@ urlpatterns = [
     path("addresses/<uuid:id>/", views.AddressesDetailView.as_view(), name="user-address-detail"),
     path("orders/new/", views.new_order, name="new-orders"),
     path("energy-calculator/", views.energy_calculator),
-    path("products/multiple_products_by_id/", views.multiple_products_by_id)
+    path("products/multiple_products_by_id/", views.multiple_products_by_id),
+    path("cart/", views.CartListCreateView.as_view(), name="user-cart"),
+    path("cart/<int:id>/", views.CartDetailView.as_view(), name="user-cart-detail"),
     
 ]
