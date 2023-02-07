@@ -38,7 +38,7 @@ class ProductCategory(models.Model):
 class Product(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     name = models.CharField(max_length=300)
-    amount = models.CharField(max_length=300)
+    brand = models.CharField(max_length=300)
     desc = models.TextField()
     price = models.FloatField()
     battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
