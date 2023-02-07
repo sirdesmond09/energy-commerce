@@ -43,9 +43,9 @@ class Product(models.Model):
     price = models.FloatField()
     battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
                                                               ("lithium", "Lithium")),
-                                    null=True)
-    battery_cap = models.FloatField(null=True)
-    total_power = models.FloatField(null=True)
+                                    null=True, blank=True)
+    battery_cap = models.FloatField(null=True, blank=True)
+    total_power = models.FloatField(null=True, blank=True)
     qty_available = models.PositiveIntegerField(default=0)
     locations = models.ManyToManyField("main.Location", blank=True)
     primary_img = models.ImageField(
