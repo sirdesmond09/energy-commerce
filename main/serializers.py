@@ -10,12 +10,14 @@ class ProductSerializer(serializers.ModelSerializer):
     product_components = serializers.ReadOnlyField()
     primary_img_url = serializers.ReadOnlyField()
     category_name = serializers.ReadOnlyField()
+    locations_list = serializers.ReadOnlyField()
     
     class Meta:
         fields = '__all__'
         model = Product
         extra_kwargs = {
-            'primary_img': {'write_only': True}
+            'primary_img': {'write_only': True},
+            'location': {'write_only': True}
         }
         
 class GallerySerializer(serializers.ModelSerializer):

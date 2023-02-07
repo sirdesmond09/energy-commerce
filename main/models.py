@@ -76,7 +76,11 @@ class Product(models.Model):
     @property
     def product_components(self):
         return self.components.all()
-        
+    
+    @property
+    def locations_list(self):
+        return self.locations.values_list("name", flat=True)
+    
     def delete(self):
         self.is_deleted = True
         self.save()
