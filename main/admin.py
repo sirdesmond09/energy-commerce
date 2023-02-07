@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import *
 
-admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent])
 
 
 
@@ -15,5 +14,7 @@ class GalleryAdmin(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     list_display = ["name", "is_deleted"]
     list_editable = ["is_deleted"]
-    inlines = [ProductComponent,ProductGallery]
+    inlines = [ComponentsAdmin,GalleryAdmin]
     
+
+admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent])
