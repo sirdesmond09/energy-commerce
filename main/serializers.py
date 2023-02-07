@@ -64,7 +64,7 @@ class CategorySerializer(serializers.ModelSerializer):
         
         
     def get_products(self, category):
-        return ProductSerializer(category.objects.filter(is_deleted=False), many=True).data
+        return ProductSerializer(category.product_items.filter(is_deleted=False), many=True).data
 
 class LocationSerializer(serializers.ModelSerializer):
     
