@@ -75,7 +75,7 @@ class Product(models.Model):
     
     @property
     def product_components(self):
-        return self.components.values(fields=["item", "capacity", "item_type", "qty"])
+        return self.components.values("item", "capacity", "item_type", "qty")
     
     @property
     def locations_list(self):
