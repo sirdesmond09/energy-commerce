@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 
@@ -15,7 +15,7 @@ class CategoryView(ListCreateAPIView):
     serializer_class = CategorySerializer
     queryset = ProductCategory.objects.filter(is_deleted=False).order_by('-date_added')
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
 
 
@@ -42,7 +42,8 @@ def add_product(request):
 class ProductList(ListAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.filter(is_deleted=False)
-    
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
     def list(self, request, *args, **kwargs):
         
@@ -84,7 +85,8 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.filter(is_deleted=False)
     lookup_field="id"
-    
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 
@@ -367,6 +369,8 @@ class CartDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Cart.objects.all().order_by('-date_added')
     serializer_class =  CartSerializer
     lookup_field = "id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     
     
     @swagger_auto_schema(method="put", request_body=CartSerializer())
