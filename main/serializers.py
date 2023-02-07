@@ -6,8 +6,8 @@ from rest_framework.exceptions import ValidationError
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    # gallery = serializers.ReadOnlyField()
-    # product_components = serializers.ReadOnlyField()
+    gallery = serializers.ReadOnlyField()
+    product_components = serializers.ReadOnlyField()
     primary_img_url = serializers.ReadOnlyField()
     category_name = serializers.ReadOnlyField()
     
