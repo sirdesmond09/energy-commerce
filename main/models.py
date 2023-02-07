@@ -22,7 +22,9 @@ class ProductCategory(models.Model):
     def img_url(self):
         return self.img.url
         
-    
+    def __str__(self):
+        return self.name
+
     def delete(self):
         self.is_deleted = True
         self.save()
