@@ -17,7 +17,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         extra_kwargs = {
             'primary_img': {'write_only': True},
-            'location': {'write_only': True}
+            'locations': {'write_only': True}
         }
         
 class GallerySerializer(serializers.ModelSerializer):
