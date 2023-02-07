@@ -56,10 +56,15 @@ class AddProductSerializer(serializers.Serializer):
     
     
 class CategorySerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField()
+    
     class Meta:
         fields = "__all__"
         model = ProductCategory
         
+        
+    def get_products(self, category):
+        return ProductSerializer(category.objects.filter(is_deleted=False), many=True).data
 
 class LocationSerializer(serializers.ModelSerializer):
     
