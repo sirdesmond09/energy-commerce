@@ -27,6 +27,7 @@ router.register(r'users', views.CustomUserViewSet, basename="user")
 
 urlpatterns = [
     path('auth/', include(router.urls)),
+    path('auth/', include('djoser.urls.jwt')),
     path('auth/admin/', views.AdminListCreateView().as_view()),
     path('auth/login/', views.user_login, name="login_view"),
     path("auth/logout/", views.logout_view, name="logout_view"),
