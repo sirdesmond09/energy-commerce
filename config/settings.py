@@ -220,6 +220,7 @@ class Common(Configuration):
     EMAIL_PORT = 465
     EMAIL_USE_SSL = True
     EMAIL_USE_TLS = False 
+    DEFAULT_FROM_EMAIL = "Ope from Imperium <noreply@getmobile.tech>" # TODO: Change to imperium email
     
 
 
