@@ -277,38 +277,37 @@ def outright_payment(request, booking_id):
         serializer = PaymentSerializer(data=request.data)
         serializer.is_valid(raise_exceptions=True)
         
-        payment_type = serializer.validated_data.get("payment_type")
         
-        if payment_type == "outright":
-            try:
-                trans_id = serializer.validated_data["transaction_id"]
-            except KeyError:
-                raise ValidationError(detail={"message": "transaction_id was not provided"})
-            result = payment_is_verified(trans_id)
-            if isinstance(result, dict):
-                raise ValidationError(detail={"message": result})
-                
-            elif payment_is_verified(trans_id):
-                #create payment record
-                PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user)
-                
-                
-                #mark order as paid
-                order.is_paid_for =True
-                order.save()
-                
-                
-                
-                data = {
-                    "message": "success",
-                    "booking_id": order.booking_id,
-                    "total_amount" : order.total_price
-                }
-                
-                return Response(data, status=status.HTTP_201_CREATED)
+        try:
+            trans_id = serializer.validated_data["transaction_id"]
+        except KeyError:
+            raise ValidationError(detail={"message": "transaction_id was not provided"})
+        result = payment_is_verified(trans_id)
+        if isinstance(result, dict):
+            raise ValidationError(detail={"message": result})
             
-            else:
-                return Response({"message":"payment not successful"}, status=status.HTTP_201_CREATED)
+        elif payment_is_verified(trans_id):
+            #create payment record
+            PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='outright')
+            
+            
+            #mark order as paid
+            order.is_paid_for =True
+            order.status = "pending"
+            order.save()
+            
+            
+            
+            data = {
+                "message": "success",
+                "booking_id": order.booking_id,
+                "total_amount" : order.total_price
+            }
+            
+            return Response(data, status=status.HTTP_201_CREATED)
+        
+        else:
+            return Response({"message":"payment not successful"}, status=status.HTTP_201_CREATED)
                 
     
 

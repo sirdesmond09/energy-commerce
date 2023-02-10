@@ -157,9 +157,7 @@ class Order(models.Model):
                               choices=(("pending", "pending"),
                                        ("accepted", "accepted"),
                                        ("completed", "completed")
-                                    ),
-                              default="pending"
-                                )
+                                    ), null=True,blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
@@ -199,7 +197,8 @@ class PaymentDetail(models.Model):
                                     choices=(("specta", "Specta"),
                                              ("outright", "Outright"),
                                               ("lease", "Lease To Own"),
-                                              ("power-as-a-service", "Power as a service")))
+                                              ("power-as-a-service", "Power as a service")),
+                                    null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
