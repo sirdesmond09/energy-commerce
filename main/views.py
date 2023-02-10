@@ -297,7 +297,6 @@ def outright_payment(request, booking_id):
             order.save()
             
             
-            
             data = {
                 "message": "success",
                 "booking_id": order.booking_id,
@@ -402,7 +401,7 @@ class CartListCreateView(ListCreateAPIView):
             
             if self.queryset.filter(product=product, user=request.user).exists():
                 item = self.queryset.get(product=product, user=request.user)
-                item.qty = serializer.validated_data.get("qty")
+                item.qty = data.get("qty")
                 item.date_added = timezone.now()
                 serializer.validated_data.remove(data)
         else:
