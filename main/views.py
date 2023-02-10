@@ -262,7 +262,7 @@ def new_order(request):
 @api_view(["POST"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def payment(request, booking_id):
+def outright_payment(request, booking_id):
     
     if request.method == "POST":
         
