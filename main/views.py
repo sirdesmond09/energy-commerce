@@ -398,12 +398,13 @@ class CartListCreateView(ListCreateAPIView):
         for data in serializer.validated_data:
             data["user"] = request.user
         
-        product = serializer.validated_data.get("product")
-        
-        if self.queryset.filter(product=product, user=request.user).exists():
-            item = self.queryset.get(product=product, user=request.user)
-            item.qty = serializer.validated_data.get("qty")
-            item.date_added = timezone.now()
+            product = data.get("product")
+            
+            if self.queryset.filter(product=product, user=request.user).exists():
+                item = self.queryset.get(product=product, user=request.user)
+                item.qty = serializer.validated_data.get("qty")
+                item.date_added = timezone.now()
+                serializer.validated_data.remove(data)
         else:
             self.perform_create(serializer)
             
