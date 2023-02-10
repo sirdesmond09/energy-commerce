@@ -151,8 +151,15 @@ class Order(models.Model):
     address = models.ForeignKey("main.Address", null=True, on_delete=models.CASCADE)
     shipping_fee = models.FloatField()
     installation_fee = models.FloatField()
-    price = models.FloatField()
-    payment_method=models.CharField(max_length=10)
+    total_price = models.FloatField()
+    is_paid_for = models.BooleanField(default=False)
+    status = models.CharField(max_length=255, 
+                              choices=(("pending", "pending"),
+                                       ("accepted", "accepted"),
+                                       ("completed", "completed")
+                                    ),
+                              default="pending"
+                                )
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
@@ -185,15 +192,14 @@ class OrderItem(models.Model):
     
     
 class PaymentDetail(models.Model):
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, null=True, related_name="payment")
-    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE, related_name="payment")
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, null=True, related_name="payment",)
+    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE, related_name="payment", null=True)
+    transaction_id = models.CharField(max_length=350, blank=True, null=True)
     payment_type = models.CharField(max_length=300,
                                     choices=(("specta", "Specta"),
                                              ("outright", "Outright"),
                                               ("lease", "Lease To Own"),
                                               ("power-as-a-service", "Power as a service")))
-    address = models.CharField(max_length=255)
-    address2 = models.CharField(max_length=255, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     

@@ -1,5 +1,6 @@
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
-from .models import Address, Cart, Location, ProductCategory, Product, ProductComponent, ProductGallery
+from main.helpers import payment_is_verified
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .models import Address, Cart, Location, Order, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -8,8 +9,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
-
-
+from django.utils import timezone
 
 class CategoryView(ListCreateAPIView):
     serializer_class = CategorySerializer
@@ -245,15 +245,71 @@ def new_order(request):
     if request.method == "POST":
         serializer = AddOrderSerializer(data=request.data)
         serializer.is_valid(raise_exceptions=True)
-        # TODO: verify payment
         order = serializer.save()
         order.user = request.user
         order.save()
+        data = {
+            "message": "success",
+            "booking_id": order.booking_id,
+            "total_amount" : order.total_price
+        }
         
-        return Response({"message": "order successfully made"})
+        return Response(data, status=status.HTTP_201_CREATED)
     
     
+
+@swagger_auto_schema(method="post", request_body=PaymentSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def payment(request, booking_id):
     
+    if request.method == "POST":
+        
+        try:
+            order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+        except KeyError:
+            raise ValidationError(detail={"message": "order was not found"})
+        
+        if order.is_paid_for:
+            raise ValidationError(detail={"message": "multiple payment not allowed. order has been paid for"})
+        
+        serializer = PaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exceptions=True)
+        
+        payment_type = serializer.validated_data.get("payment_type")
+        
+        if payment_type == "outright":
+            try:
+                trans_id = serializer.validated_data["transaction_id"]
+            except KeyError:
+                raise ValidationError(detail={"message": "transaction_id was not provided"})
+            result = payment_is_verified(trans_id)
+            if isinstance(result, dict):
+                raise ValidationError(detail={"message": result})
+                
+            elif payment_is_verified(trans_id):
+                #create payment record
+                PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user)
+                
+                
+                #mark order as paid
+                order.is_paid_for =True
+                order.save()
+                
+                
+                
+                data = {
+                    "message": "success",
+                    "booking_id": order.booking_id,
+                    "total_amount" : order.total_price
+                }
+                
+                return Response(data, status=status.HTTP_201_CREATED)
+            
+            else:
+                return Response({"message":"payment not successful"}, status=status.HTTP_201_CREATED)
+                
     
 
 @swagger_auto_schema(method="post", request_body=EnergyCalculatorSerializer(many=True))
@@ -311,8 +367,8 @@ def energy_calculator(request):
             
 @swagger_auto_schema(method="post", request_body=MultipleProductSerializer())
 @api_view(["POST"])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def multiple_products_by_id(request):
     
     if request.method == "POST":
@@ -343,7 +399,15 @@ class CartListCreateView(ListCreateAPIView):
         for data in serializer.validated_data:
             data["user"] = request.user
         
-        self.perform_create(serializer)
+        product = serializer.validated_data.get("product")
+        
+        if self.queryset.filter(product=product, user=request.user).exists():
+            item = self.queryset.get(product=product, user=request.user)
+            item.qty = serializer.validated_data.get("qty")
+            item.date_added = timezone.now()
+        else:
+            self.perform_create(serializer)
+            
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id
-from .models import Address, Cart, Location, Order, OrderItem, ProductComponent, ProductGallery, ProductCategory, Product
+from .models import Address, Cart, Location, Order, OrderItem, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product
 from rest_framework.exceptions import ValidationError
 
 
@@ -134,8 +134,18 @@ class MultipleProductSerializer(serializers.Serializer ):
     
     
 class CartSerializer(serializers.ModelSerializer):
-    
+    product_detail = serializers.SerializerMethodField()
 
     class Meta:
         fields = "__all__"
         model = Cart
+        
+        
+    def get_product_detail(self, cart):
+         return ProductSerializer(cart.product).data
+        
+        
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = PaymentDetail
