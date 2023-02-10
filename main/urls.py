@@ -15,6 +15,7 @@ urlpatterns = [
     path("addresses/", views.AddressListCreateView.as_view(), name="user-addresses"),
     path("addresses/<uuid:id>/", views.AddressesDetailView.as_view(), name="user-address-detail"),
     path("orders/new/", views.new_order, name="new-orders"),
+    path("orders/<str:booking_id>/cancel/", views.order_cancel, name="order_cancel"),
     path("orders/<str:booking_id>/outright_payment/", views.outright_payment),
     path("energy-calculator/", views.energy_calculator),
     path("products/multiple_products_by_id/", views.multiple_products_by_id),

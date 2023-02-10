@@ -465,10 +465,27 @@ class CartDetailView(RetrieveUpdateDestroyAPIView):
     
     
     
-# @swagger_auto_schema(method="post", request_body=PaymentSerializer())
-# @api_view(["POST"])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
-# def order_cancel(request, booking_id):
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def order_cancel(request, booking_id):
+    
+    try:
+        order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+    except KeyError:
+        raise ValidationError(detail={"message": "order was not found"})
+    
+    
+    products = []
+    
+    for item in order.items.all():
+        item.product += item.qty
+        products.append(item.product)
+        
+    Product.objects.bulk_update(products)
+    
+    order.status = "user-canceled"
+    
+    return Response({"message": "Order canceled"}, status=status.HTTP_200_OK)
     
     

@@ -105,18 +105,24 @@ class AddOrderSerializer(serializers.Serializer):
         order = Order.objects.create(**validated_data.get('order_data'), booking_id=booking_id)
         
         order_items = []
+        products = []
+        
         for item in validated_data.get('order_items'):
             
             product = item.item #get the product 
             
             if product.qty_available >= item.qty:
                 item["unit_price"] = product.price
+                product.qty_available  -= item.qty
+                
                 order_items.append(OrderItem(**item, order=order))
+                products.append(product)
             else:
                 order.delete_permanently()
                 raise ValidationError({"message": f"product '{product.name}' is out of stock. Please try again."})
             
         OrderItem.objects.bulk_create(order_items)
+        Product.objects.bulk_update(products)
         
         return order
         

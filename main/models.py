@@ -156,7 +156,8 @@ class Order(models.Model):
     status = models.CharField(max_length=255, 
                               choices=(("pending", "pending"),
                                        ("accepted", "accepted"),
-                                       ("completed", "completed")
+                                       ("completed", "completed"),
+                                       ("user-canceled", "user-canceled"),
                                     ), null=True,blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
