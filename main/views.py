@@ -403,6 +403,7 @@ class CartListCreateView(ListCreateAPIView):
                 item = self.queryset.get(product=product, user=request.user)
                 item.qty = data.get("qty")
                 item.date_added = timezone.now()
+                item.save()
                 serializer.validated_data.remove(data)
         else:
             self.perform_create(serializer)
@@ -461,3 +462,13 @@ class CartDetailView(RetrieveUpdateDestroyAPIView):
         if instance.user != request.user:
             raise PermissionDenied(detail={"message": "you do not have permission to edit this Cart"})
         return super().delete(request, *args, **kwargs)
+    
+    
+    
+# @swagger_auto_schema(method="post", request_body=PaymentSerializer())
+# @api_view(["POST"])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# def order_cancel(request, booking_id):
+    
+    
