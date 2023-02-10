@@ -365,8 +365,6 @@ def energy_calculator(request):
             
 @swagger_auto_schema(method="post", request_body=MultipleProductSerializer())
 @api_view(["POST"])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
 def multiple_products_by_id(request):
     
     if request.method == "POST":
