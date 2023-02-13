@@ -1,10 +1,10 @@
 from main.helpers import payment_is_verified
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
 from .models import Address, Cart, Location, Order, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
-from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from drf_yasg.utils import swagger_auto_schema
@@ -463,7 +463,7 @@ class CartDetailView(RetrieveUpdateDestroyAPIView):
     
     
     
-@api_view(["GET"])
+@api_view(["DELETE"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def order_cancel(request, booking_id):
@@ -484,6 +484,51 @@ def order_cancel(request, booking_id):
     
     order.status = "user-canceled"
     
-    return Response({"message": "Order canceled"}, status=status.HTTP_200_OK)
+    return Response({},status=status.HTTP_204_NO_CONTENT)
+    
+    
+    
+class OrderList(ListAPIView):
+    
+    queryset = Order.objects.filter(is_deleted=False)
+    
+    serializer_class = OrderSerializer()
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        if request.user.role == "user":
+            queryset = queryset.filter(user=request.user)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    
+
+class OrderDetail(RetrieveAPIView):
+    queryset = Order.objects.filter(is_deleted=False)
+    
+    serializer_class = OrderSerializer()
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+    
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if request.user.role == "user" and instance.user != request.user:
+            raise PermissionDenied({"message": "cannot retrieve details for another user's order"})
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
     
     

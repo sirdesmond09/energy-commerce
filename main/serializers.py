@@ -88,6 +88,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
         
         
 class OrderSerializer(serializers.ModelSerializer):
+    order_items = serializers.ReadOnlyField()
+        
     class Meta:
         fields = "__all__"
         model = Order

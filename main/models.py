@@ -131,9 +131,10 @@ class Address(models.Model):
     last_name = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     state = models.CharField(max_length=255)
-    postal_code = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, null=True)
+    postal_code = models.CharField(max_length=255, null=True, blank=True)
     address_1 = models.CharField(max_length=500)
-    address_2 = models.CharField(max_length=500)
+    address_2 = models.CharField(max_length=500,null=True, blank=True)
     delivery_instruction = models.TextField(blank=True, null=True)
     additional_instruction = models.TextField(blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -169,6 +170,10 @@ class Order(models.Model):
         
     def delete_permanently(self):
         super().delete()
+        
+    @property 
+    def order_items(self):
+        return self.items.values("item__name", "unit_price", "qty")
         
         
         
