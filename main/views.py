@@ -474,17 +474,19 @@ def order_cancel(request, booking_id):
     except KeyError:
         raise ValidationError(detail={"message": "order was not found"})
     
+    if order.status == "user-canceled":
+        raise PermissionDenied(detail={"message":"cannot cancel an order twice"})
     
     products = []
     
-    for item in order.items.all():
-        item.product += item.qty
-        products.append(item.product)
+    for order_item in order.items.all():
+        order_item.item.qty_available += order_item.qty
+        products.append(order_item.item)
         
-    Product.objects.bulk_update(products)
+    Product.objects.bulk_update(products, ["qty_available"])
     
     order.status = "user-canceled"
-    
+    order.save()
     return Response({},status=status.HTTP_204_NO_CONTENT)
     
     

@@ -16,5 +16,19 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ["is_deleted"]
     inlines = [ComponentsAdmin,GalleryAdmin]
     
+    
 
+class OrderItemAdmin(admin.TabularInline):
+    model=OrderItem 
+
+class PaymentAdmin(admin.TabularInline):
+    model=PaymentDetail 
+    
+@admin.register(Order)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ["booking_id", "is_deleted"]
+    list_editable = ["is_deleted"]
+    inlines = [OrderItemAdmin,PaymentAdmin]
+    
+    
 admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent, Cart])

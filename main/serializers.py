@@ -110,13 +110,18 @@ class AddOrderSerializer(serializers.Serializer):
         products = []
         try:
             for item in validated_data.get('order_items'):
-                print(item)
+                print(1)
+                print(item.get("item"))
+                print(2)
                 
-                product = item.item #get the product 
+                product = item.get("item") #get the product 
+                qty = item.get('qty')
                 
-                if product.qty_available >= item.qty:
+                print(3)
+                if product.qty_available >= qty:
                     item["unit_price"] = product.price
-                    product.qty_available  -= item.qty
+                    print(item["unit_price"])
+                    product.qty_available  -= qty
                     
                     order_items.append(OrderItem(**item, order=order))
                     products.append(product)
@@ -125,7 +130,7 @@ class AddOrderSerializer(serializers.Serializer):
                     raise ValidationError({"message": f"product '{product.name}' is out of stock. Please try again."})
                 
             OrderItem.objects.bulk_create(order_items)
-            Product.objects.bulk_update(products)
+            Product.objects.bulk_update(products, ["qty_available"])
             
             return order
         except Exception as e:

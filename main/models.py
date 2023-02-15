@@ -140,7 +140,7 @@ class Address(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return self.address
+        return self.address_1
     
 
 
@@ -184,6 +184,10 @@ class OrderItem(models.Model):
     qty = models.PositiveIntegerField()
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
+    
+    
+    def __str__(self):
+        return self.item.name
     
     
     def delete(self):
