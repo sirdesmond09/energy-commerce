@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly, DjangoModelPermissions
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
+from accounts.permissions import CustomDjangoModelPermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
@@ -494,7 +495,7 @@ class OrderList(ListAPIView):
     
     serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated | CustomDjangoModelPermissions]
     
     
     def list(self, request, *args, **kwargs):
