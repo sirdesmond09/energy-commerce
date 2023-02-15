@@ -154,9 +154,11 @@ class Common(Configuration):
             'user_create': 'accounts.serializers.UserRegistrationSerializer',
             'user': 'accounts.serializers.CustomUserSerializer',
             'user_delete': 'accounts.serializers.UserDeleteSerializer',
+            "current_user" : 'accounts.serializers.CustomUserSerializer',
         }        
         
     }
+
 
     REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': (

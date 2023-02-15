@@ -9,7 +9,6 @@ from django.utils import timezone
 from django.core.validators import MinLengthValidator, FileExtensionValidator
 from django.forms import model_to_dict
 
-
 from .managers import UserManager
 import uuid
 import random
@@ -39,6 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active     = models.BooleanField(_('active'), default=True)
     is_deleted    = models.BooleanField(_('deleted'), default=False)
     date_joined   = models.DateTimeField(_('date joined'), auto_now_add=True)
+    
     
     objects = UserManager()
 
