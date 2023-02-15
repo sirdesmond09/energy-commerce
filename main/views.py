@@ -276,7 +276,7 @@ def outright_payment(request, booking_id):
             raise ValidationError(detail={"message": "multiple payment not allowed. order has been paid for"})
         
         serializer = PaymentSerializer(data=request.data)
-        serializer.is_valid(raise_exceptions=True)
+        serializer.is_valid(raise_exception=True)
         
         
         try:
