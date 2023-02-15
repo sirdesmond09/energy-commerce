@@ -183,4 +183,3 @@ class StoreBankDetail(models.Model):
         
     
     
-    
