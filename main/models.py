@@ -148,7 +148,7 @@ class Address(models.Model):
 class Order(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     user = models.ForeignKey("accounts.User", null=True, on_delete=models.CASCADE)
-    booking_id = models.CharField(max_length=10, unique=True,null=True)
+    booking_id = models.CharField(max_length=100, unique=True,null=True)
     address = models.ForeignKey("main.Address", null=True, on_delete=models.CASCADE)
     shipping_fee = models.FloatField()
     installation_fee = models.FloatField()
