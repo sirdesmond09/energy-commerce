@@ -39,5 +39,8 @@ urlpatterns = [
     path("stores/<uuid:id>/", views.StoreDetailView.as_view(), name="store_detail"),
     path("users/my-favourites", views.user_favourites),
     path("users/favourites/<uuid:product_id>", views.update_favorite),
+    path("permissions/", views.PermissionList.as_view(), name="permissions"),
+    path("roles/", views.GroupListCreate.as_view(), name="roles"),
+    path("roles/<int:id>", views.GroupDetail.as_view(), )
     
 ]

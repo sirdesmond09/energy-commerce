@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from .models import ActivationOtp, StoreBankDetail, StoreProfile
 from .signals import generate_otp, site_name,url
 from rest_framework.exceptions import ValidationError
+from django.contrib.auth.models import Permission, Group
 
 from config import settings
  
@@ -187,3 +188,20 @@ class AddVendorSerializer(serializers.Serializer):
             store.delete_permanently()
             raise ValidationError(str(e))
         return 
+    
+    
+class PermissionSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        fields = "__all__"
+        model = Permission
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        fields = "__all__"
+        model = Group
+        
+        
+    

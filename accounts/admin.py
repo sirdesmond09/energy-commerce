@@ -7,8 +7,8 @@ class CustomOutstandingTokenAdmin(admin.OutstandingTokenAdmin):
         return True # or whatever logic you want
 
 from django.contrib import admin
-from accounts.models import User, ActivationOtp, StoreBankDetail, StoreProfile
-
+from accounts.models import ModuleAccess, User, ActivationOtp, StoreBankDetail, StoreProfile
+from django.contrib.auth.models import Permission
 
 # Register your models here.
 @admin.register(User)
@@ -21,3 +21,4 @@ admin.site.register(ActivationOtp)
 admin.site.unregister(models.OutstandingToken)
 admin.site.register(models.OutstandingToken, CustomOutstandingTokenAdmin)
 admin.site.register([StoreProfile, StoreBankDetail])
+admin.site.register([Permission, ModuleAccess])

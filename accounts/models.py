@@ -12,7 +12,7 @@ from django.forms import model_to_dict
 from .managers import UserManager
 import uuid
 import random
-
+from django.contrib.auth.models import Group as DjangoGroup
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -182,4 +182,12 @@ class StoreBankDetail(models.Model):
         super().delete()
         
     
+class ModuleAccess(models.Model):
+    url = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     
+    
+    def __str__(self):
+        return self.name
+
+DjangoGroup.add_to_class('module_access', models.ManyToManyField(ModuleAccess))
