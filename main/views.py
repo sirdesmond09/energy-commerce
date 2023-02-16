@@ -519,7 +519,7 @@ class OrderList(ListAPIView):
 class OrderDetail(RetrieveAPIView):
     queryset = Order.objects.filter(is_deleted=False)
     
-    serializer_class = OrderSerializer()
+    serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     lookup_field = "id"
