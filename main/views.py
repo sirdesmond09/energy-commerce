@@ -497,7 +497,7 @@ class OrderList(ListAPIView):
     
     serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [CustomDjangoModelPermissions]
+    permission_classes = [ IsAuthenticated | CustomDjangoModelPermissions]
     
     
     def list(self, request, *args, **kwargs):
