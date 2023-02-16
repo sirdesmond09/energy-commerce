@@ -493,7 +493,7 @@ def order_cancel(request, booking_id):
     
 class OrderList(ListAPIView):
     
-    queryset = Order.objects.filter(is_deleted=False)
+    queryset = Order.objects.filter(is_deleted=False).order_by("-date_added")
     
     serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
