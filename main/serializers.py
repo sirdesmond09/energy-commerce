@@ -81,6 +81,8 @@ class AddressSerializer(serializers.ModelSerializer):
         
         
 class OrderItemSerializer(serializers.ModelSerializer):
+    item_name = serializers.ReadOnlyField()
+    image_url = serializers.ReadOnlyField()
     
     class Meta:
         fields = "__all__"

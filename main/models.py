@@ -184,7 +184,7 @@ class OrderItem(models.Model):
                                        ("processing", "processing"),
                                        ("completed", "completed"),
                                        ("user-canceled", "user-canceled"),
-                                    ), null=True,blank=True)
+                                    ), default="pending")
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
@@ -192,7 +192,11 @@ class OrderItem(models.Model):
     def __str__(self):
         return self.item.name
     
+    @property
+    def item_name(self):
+        return self.item.name
     
+    @property
     def image_url(self):
         return self.item.primary_img_url
     
