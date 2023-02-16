@@ -87,7 +87,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = OrderItem
-        
+
+
+class UpdateStatusSerializer(serializers.Serializer):
+    status = serializers.CharField(max_length=200)
         
         
 class OrderSerializer(serializers.ModelSerializer):
@@ -118,17 +121,12 @@ class AddOrderSerializer(serializers.Serializer):
         products = []
         try:
             for item in validated_data.get('order_items'):
-                print(1)
-                print(item.get("item"))
-                print(2)
-                
+                print(item.get("item"))                
                 product = item.get("item") #get the product 
                 qty = item.get('qty')
                 
-                print(3)
                 if product.qty_available >= qty:
                     item["unit_price"] = product.price
-                    print(item["unit_price"])
                     product.qty_available  -= qty
                     
                     order_items.append(OrderItem(**item, order=order))

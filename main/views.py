@@ -1,6 +1,6 @@
 from main.helpers import payment_is_verified
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
-from .models import Address, Cart, DeliveryDetail, Location, Order, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .models import Address, Cart, DeliveryDetail, Location, Order, OrderItem, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -611,3 +611,62 @@ class DeliveryDetailView(RetrieveUpdateDestroyAPIView):
         return super().delete(request, *args, **kwargs)
     
     
+    
+
+@api_view(["GET", "PUT"])
+def order_item_detail(request, booking_id, item_id):
+    
+    try:
+        order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+    except Order.DoesNotExist:
+        raise NotFound(detail={"message": "order not found"})
+    
+    
+    try:
+        item = OrderItem.objects.get(order=order, id=item_id, is_deleted=False)
+    except OrderItem.DoesNotExist:
+        raise NotFound(detail={"message": "order not found"})
+    
+    
+    if request.method == "GET":
+        serializer = OrderItemSerializer(item)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+    elif request.method == "PUT":
+        serializer = OrderItemSerializer(item, data=request.data, partial=True)
+        
+        serializer.is_valid(raise_exception=True)
+        
+        serializer.save()
+        
+        return Response({"message" : "success"}, status=status.HTTP_200_OK)
+    
+    
+    
+
+
+# @api_view(["PUT"])
+# def update_orderitem_status(request, booking_id, item_id):
+    
+#     try:
+#         order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+#     except Order.DoesNotExist:
+#         raise NotFound(detail={"message": "order not found"})
+    
+    
+#     try:
+#         item = OrderItem.objects.get(order=order, id=item_id, is_deleted=False)
+#     except OrderItem.DoesNotExist:
+#         raise NotFound(detail={"message": "order not found"})
+    
+    
+#     if request.method == "PUT":
+#         serializer = OrderItemSerializer(item, data=request.data, partial=True)
+        
+#         serializer.is_valid(raise_exception=True)
+        
+#         serializer.save()
+        
+#         return Response({"message" : "success"}, status=status.HTTP_200_OK)

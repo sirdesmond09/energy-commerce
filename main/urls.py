@@ -19,6 +19,7 @@ urlpatterns = [
     path("orders/<uuid:id>", views.OrderDetail.as_view(), name="order-detail"),
     path("orders/<str:booking_id>/cancel/", views.order_cancel, name="order_cancel"),
     path("orders/<str:booking_id>/outright_payment/", views.outright_payment),
+    path("orders/<str:booking_id>/item/<int:item_id>", views.order_item_detail),
     path("energy-calculator/", views.energy_calculator),
     path("products/multiple_products_by_id/", views.multiple_products_by_id),
     path("cart/", views.CartListCreateView.as_view(), name="user-cart"),

@@ -194,6 +194,7 @@ class OrderItem(models.Model):
                                        ("completed", "completed"),
                                        ("user-canceled", "user-canceled"),
                                     ), default="pending")
+    delivery_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
