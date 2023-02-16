@@ -173,7 +173,7 @@ class Order(models.Model):
         
     @property 
     def order_items(self):
-        return self.items.values("item__name", "unit_price", "qty")
+        return self.items.values("item__name", "unit_price", "qty", "item__primary_img_url" )
         
         
         
