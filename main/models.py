@@ -196,6 +196,9 @@ class OrderItem(models.Model):
                                     ), default="pending")
     delivery_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(null=True)
+    accepted_at = models.DateTimeField(null=True)
+    processed_at = models.DateTimeField(null=True)
     is_deleted = models.BooleanField(default=False)
     
     
