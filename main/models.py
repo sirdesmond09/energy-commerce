@@ -171,10 +171,7 @@ class Order(models.Model):
     def delete_permanently(self):
         super().delete()
         
-    @property 
-    def order_items(self):
-        return self.items.values("item__name", "unit_price", "qty", "item__primary_img__url" )
-        
+    
         
         
 class OrderItem(models.Model):
@@ -195,6 +192,9 @@ class OrderItem(models.Model):
     def __str__(self):
         return self.item.name
     
+    
+    def image_url(self):
+        return self.item.primary_img_url
     
     def delete(self):
         self.is_deleted = True

@@ -81,6 +81,7 @@ class AddressSerializer(serializers.ModelSerializer):
         
         
 class OrderItemSerializer(serializers.ModelSerializer):
+    
     class Meta:
         fields = "__all__"
         model = OrderItem
@@ -88,11 +89,16 @@ class OrderItemSerializer(serializers.ModelSerializer):
         
         
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = serializers.ReadOnlyField()
+    order_items = serializers.SerializerMethodField()
         
     class Meta:
         fields = "__all__"
         model = Order
+        
+        
+    def get_order_items(self):
+        return OrderItemSerializer(self.items.all(), many=True).data
+        
         
         
        
