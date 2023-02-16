@@ -156,7 +156,7 @@ class Order(models.Model):
     is_paid_for = models.BooleanField(default=False)
     status = models.CharField(max_length=255, 
                               choices=(("pending", "pending"),
-                                       ("accepted", "accepted"),
+                                       ("processing", "processing"),
                                        ("completed", "completed"),
                                        ("user-canceled", "user-canceled"),
                                     ), null=True,blank=True)
@@ -182,6 +182,12 @@ class OrderItem(models.Model):
     item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING)
     unit_price = models.FloatField(default=0)
     qty = models.PositiveIntegerField()
+    status = models.CharField(max_length=255, 
+                              choices=(("pending", "pending"),
+                                       ("processing", "processing"),
+                                       ("completed", "completed"),
+                                       ("user-canceled", "user-canceled"),
+                                    ), null=True,blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
