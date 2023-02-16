@@ -96,8 +96,8 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         
         
-    def get_order_items(self):
-        return OrderItemSerializer(self.items.all(), many=True).data
+    def get_order_items(self, order):
+        return OrderItemSerializer(order.items.all(), many=True).data
         
         
         
