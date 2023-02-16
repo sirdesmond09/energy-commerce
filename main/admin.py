@@ -31,4 +31,4 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = [OrderItemAdmin,PaymentAdmin]
     
     
-admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent, Cart])
+admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent, Cart, DeliveryDetail])

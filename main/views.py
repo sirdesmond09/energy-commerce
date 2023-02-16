@@ -1,6 +1,6 @@
 from main.helpers import payment_is_verified
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
-from .models import Address, Cart, Location, Order, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .models import Address, Cart, DeliveryDetail, Location, Order, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -533,5 +533,81 @@ class OrderDetail(RetrieveAPIView):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
+    
+
+
+
+
+class DeliveryDetailListCreateView(ListCreateAPIView):
+    
+    
+    
+    queryset = DeliveryDetail.objects.all()
+    serializer_class =  DeliveryDetailSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        serializer.validated_data["vendor"] = request.user    
+        self.perform_create(serializer)
+            
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset()).filter(vendor=request.user)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    
+    
+    
+class DeliveryDetailView(RetrieveUpdateDestroyAPIView):
+    
+    """Edit, retrieve, and delete an address"""
+
+    queryset = DeliveryDetail.objects.all()
+    serializer_class =  DeliveryDetailSerializer
+    lookup_field = "id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    
+    @swagger_auto_schema(method="put", request_body=DeliveryDetailSerializer())
+    @action(methods=["put"], detail=True)
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if instance.vendor != request.user:
+            raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})
+        return super().put(request, *args, **kwargs)
+    
+    @swagger_auto_schema(method="patch", request_body=DeliveryDetailSerializer())
+    @action(methods=["patch"], detail=True)
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if instance.vendor != request.user:
+            raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})
+        return super().patch(request, *args, **kwargs)
+    
+    
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if instance.vendor != request.user:
+            raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})
+        return super().delete(request, *args, **kwargs)
     
     

@@ -2,8 +2,9 @@ from django.db import models
 from django.core.validators import FileExtensionValidator
 # Create your models here.
 import uuid
-from pprint import pprint
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class ProductCategory(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
@@ -47,7 +48,7 @@ class Product(models.Model):
     battery_cap = models.FloatField(null=True, blank=True)
     total_power = models.FloatField(null=True, blank=True)
     qty_available = models.PositiveIntegerField(default=0)
-    locations = models.ManyToManyField("main.Location", blank=True)
+    locations = models.ManyToManyField("main.DeliveryDetail", blank=True)
     primary_img = models.ImageField(
         upload_to='products/primary_imgs', 
         validators=[
@@ -79,7 +80,7 @@ class Product(models.Model):
     
     @property
     def locations_list(self):
-        return self.locations.values_list("name", flat=True)
+        return self.locations.values("location__name", "delivery_fee")
     
     def delete(self):
         self.is_deleted = True
@@ -113,6 +114,14 @@ class ProductGallery(models.Model):
     
     
     
+class DeliveryDetail(models.Model):
+    location = models.ForeignKey("main.Location", on_delete=models.CASCADE)
+    delivery_fee = models.FloatField()
+    vendor = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    
+    
+    def __str__(self):
+        return self.location.name
     
 class Location(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
