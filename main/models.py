@@ -48,7 +48,7 @@ class Product(models.Model):
     battery_cap = models.FloatField(null=True, blank=True)
     total_power = models.FloatField(null=True, blank=True)
     qty_available = models.PositiveIntegerField(default=0)
-    locations = models.ManyToManyField("main.DeliveryDetail", blank=True)
+    # locations = models.ManyToManyField("main.DeliveryDetail", blank=True)
     primary_img = models.ImageField(
         upload_to='products/primary_imgs', 
         validators=[
