@@ -24,8 +24,8 @@ urlpatterns = [
     path("products/multiple_products_by_id/", views.multiple_products_by_id),
     path("cart/", views.CartListCreateView.as_view(), name="user-cart"),
     path("cart/<int:id>/", views.CartDetailView.as_view(), name="user-cart-detail"),
-    # path("delivery-location/", views.DeliveryDetailListCreateView.as_view(),),
-    # path("delivery-location/<int:id>", views.DeliveryDetailView.as_view(),),
+    path("delivery-location/", views.DeliveryDetailListCreateView.as_view(),),
+    path("delivery-location/<int:id>", views.DeliveryDetailView.as_view(),),
     
     
 ]
