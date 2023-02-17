@@ -115,6 +115,7 @@ class ProductGallery(models.Model):
     
     
 class DeliveryDetail(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     location = models.ForeignKey("main.Location", on_delete=models.CASCADE)
     delivery_fee = models.FloatField()
     vendor = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
