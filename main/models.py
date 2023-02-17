@@ -57,6 +57,7 @@ class Product(models.Model):
         ], blank=True)
     vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
+    installation_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
