@@ -54,7 +54,7 @@ class Product(models.Model):
         validators=[
             FileExtensionValidator(
                 allowed_extensions=['png', "jpg", "jpeg"])
-        ])
+        ], blank=True)
     vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
