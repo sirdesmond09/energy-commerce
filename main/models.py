@@ -114,14 +114,14 @@ class ProductGallery(models.Model):
     
     
     
-class DeliveryDetail(models.Model):
-    location = models.ForeignKey("main.Location", on_delete=models.CASCADE)
-    delivery_fee = models.FloatField()
-    vendor = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+# class DeliveryDetail(models.Model):
+#     location = models.ForeignKey("main.Location", on_delete=models.CASCADE)
+#     delivery_fee = models.FloatField()
+#     vendor = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     
     
-    def __str__(self):
-        return self.location.name
+#     def __str__(self):
+#         return self.location.name
     
 class Location(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
