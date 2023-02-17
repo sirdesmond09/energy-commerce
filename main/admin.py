@@ -12,8 +12,8 @@ class GalleryAdmin(admin.TabularInline):
     
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ["name", "price", "locations" ,"qty_available","is_deleted"]
-    list_editable = ["price", "qty_available", "locations","is_deleted"]
+    list_display = ["name", "price","qty_available","is_deleted"]
+    list_editable = ["price", "qty_available","is_deleted"]
     inlines = [ComponentsAdmin,GalleryAdmin]
     
     
