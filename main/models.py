@@ -128,6 +128,15 @@ class Location(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     name = models.CharField(max_length=255, unique=True)   
     date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+    def delete_permanently(self):
+        super().delete()
     
     def __str__(self):
         return self.name
@@ -149,6 +158,17 @@ class Address(models.Model):
     additional_instruction = models.TextField(blank=True, null=True)
     is_default = models.BooleanField(default=False)
     date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+    def delete_permanently(self):
+        super().delete()
+        
+        
     
     def __str__(self):
         return self.address_1
