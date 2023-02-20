@@ -167,7 +167,7 @@ class AddressListCreateView(ListCreateAPIView):
     
     """Get and create a list of addresses. When getting, the most recent ones are returned on top"""
     
-    queryset = Address.objects.all().order_by('is_default','-date_added')
+    queryset = Address.objects.all().order_by('-is_default','-date_added')
     serializer_class =  AddressSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
