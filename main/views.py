@@ -711,12 +711,18 @@ def accept_order(request, booking_id):
     except Order.DoesNotExist:
         raise NotFound(detail={"message": "order not found"})
     
+    if order.is_paid_for and order.status == "pending":
+        
     
-    order.status="processing"
-    order.processed_at = timezone.now()
-    order.save()
+        order.status="processing"
+        order.processed_at = timezone.now()
+        order.save()
+        
+        
+                
+                
+        return Response({"message" : "success"}, status=status.HTTP_200_OK)
     
     
-            
-            
-    return Response({"message" : "success"}, status=status.HTTP_200_OK)
+    else:
+        raise ValidationError(detail={"message" : "cannot accept and unpaid order"})
