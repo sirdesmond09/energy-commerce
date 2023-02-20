@@ -676,12 +676,12 @@ def order_item_detail(request, booking_id, item_id):
 @api_view(["GET"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def set_default_address(request, address_id):
+def set_default_address(request, id):
     
     user = request.user
     
     try:
-        address = Address.objects.get(id=address_id, user=user ,is_deleted=False)
+        address = Address.objects.get(id=id, user=user ,is_deleted=False)
     except Address.DoesNotExist:
         raise NotFound(detail={"message": "address not found"})
     
@@ -697,3 +697,25 @@ def set_default_address(request, address_id):
     return Response({"message" : "success"}, status=status.HTTP_200_OK)
     
     
+    
+    
+# @api_view(["GET"])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# def set_default_address(request, booking_id):
+    
+#     user = request.user
+    
+#     try:
+#         order = Order.objects.get(id=booking_id, is_paid_for=True ,is_deleted=False, status='pending')
+#     except Order.DoesNotExist:
+#         raise NotFound(detail={"message": "order not found"})
+    
+    
+#     order.=True
+#     address.save()
+    
+    
+            
+            
+#     return Response({"message" : "success"}, status=status.HTTP_200_OK)
