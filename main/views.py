@@ -699,23 +699,24 @@ def set_default_address(request, id):
     
     
     
-# @api_view(["GET"])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
-# def set_default_address(request, booking_id):
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAdminUser])
+def accept_order(request, booking_id):
     
-#     user = request.user
+   
     
-#     try:
-#         order = Order.objects.get(id=booking_id, is_paid_for=True ,is_deleted=False, status='pending')
-#     except Order.DoesNotExist:
-#         raise NotFound(detail={"message": "order not found"})
+    try:
+        order = Order.objects.get(id=booking_id, is_paid_for=True ,is_deleted=False, status='pending')
+    except Order.DoesNotExist:
+        raise NotFound(detail={"message": "order not found"})
     
     
-#     order.=True
-#     address.save()
+    order.status="processing"
+    order.processed_at = timezone.now()
+    order.save()
     
     
             
             
-#     return Response({"message" : "success"}, status=status.HTTP_200_OK)
+    return Response({"message" : "success"}, status=status.HTTP_200_OK)
