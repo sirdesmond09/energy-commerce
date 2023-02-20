@@ -14,6 +14,7 @@ urlpatterns = [
     path("product-components/<int:id>/", views.ComponentsDetailView.as_view(), name="product-component-detail"),
     path("addresses/", views.AddressListCreateView.as_view(), name="user-addresses"),
     path("addresses/<uuid:id>/", views.AddressesDetailView.as_view(), name="user-address-detail"),
+    path("addresses/<uuid:id>/set-default", views.set_default_address, name="user-address-default"),
     path("orders/new/", views.new_order, name="new-orders"),
     path("orders/", views.OrderList.as_view(), name="all-orders"),
     path("orders/<uuid:id>", views.OrderDetail.as_view(), name="order-detail"),
@@ -26,6 +27,7 @@ urlpatterns = [
     path("cart/<int:id>/", views.CartDetailView.as_view(), name="user-cart-detail"),
     path("delivery-location/", views.DeliveryDetailListCreateView.as_view(),),
     path("delivery-location/<int:id>", views.DeliveryDetailView.as_view(),),
+    
     
     
 ]

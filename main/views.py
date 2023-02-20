@@ -167,7 +167,7 @@ class AddressListCreateView(ListCreateAPIView):
     
     """Get and create a list of addresses. When getting, the most recent ones are returned on top"""
     
-    queryset = Address.objects.all().order_by('-date_added')
+    queryset = Address.objects.all().order_by('is_default','-date_added')
     serializer_class =  AddressSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -670,3 +670,30 @@ def order_item_detail(request, booking_id, item_id):
 #         serializer.save()
         
 #         return Response({"message" : "success"}, status=status.HTTP_200_OK)
+
+
+
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def set_default_address(request, address_id):
+    
+    user = request.user
+    
+    try:
+        address = Address.objects.get(id=address_id, user=user ,is_deleted=False)
+    except Address.DoesNotExist:
+        raise NotFound(detail={"message": "address not found"})
+    
+    
+    user.addresses.filter(is_deleted=False).update(is_default=False)
+    
+    address.is_default=True
+    address.save()
+    
+    
+            
+            
+    return Response({"message" : "success"}, status=status.HTTP_200_OK)
+    
+    

@@ -136,7 +136,7 @@ class Location(models.Model):
 
 class Address(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
-    user = models.ForeignKey("accounts.User", null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey("accounts.User", null=True, related_name="addresses", on_delete=models.CASCADE)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
@@ -147,6 +147,7 @@ class Address(models.Model):
     address_2 = models.CharField(max_length=500,null=True, blank=True)
     delivery_instruction = models.TextField(blank=True, null=True)
     additional_instruction = models.TextField(blank=True, null=True)
+    is_default = models.BooleanField(default=False)
     date_added = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
