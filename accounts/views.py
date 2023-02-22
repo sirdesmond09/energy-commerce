@@ -246,6 +246,8 @@ class AddVendorView(APIView):
     serializer_class = AddVendorSerializer
     
 
+    @swagger_auto_schema(method="post", request_body= AddVendorSerializer())
+    @action(methods=["post"], detail=True)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():

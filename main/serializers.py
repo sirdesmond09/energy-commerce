@@ -180,4 +180,16 @@ class DeliveryDetailSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = DeliveryDetail
+        
+        
+
+class UpdateStatusSerializer(serializers.Serializer):
+    
+    status = serializers.CharField(max_length=50)
+    
+    
+    def validate_status(self, value):
+        if value not in ("processing","in-transit", "delivered"):
+            raise ValidationError(detail={"status can only be 'processing' or 'in-transit' or 'delivered'"})
+    
     

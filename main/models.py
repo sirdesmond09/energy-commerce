@@ -192,6 +192,7 @@ class Order(models.Model):
                                        ("user-canceled", "user-canceled"),
                                     ), null=True,blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
     
     
@@ -207,20 +208,23 @@ class Order(models.Model):
         
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name="items")
-    item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING)
+    item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING, related_name="items")
     unit_price = models.FloatField(default=0)
     qty = models.PositiveIntegerField()
     status = models.CharField(max_length=255, 
                               choices=(("pending", "pending"),
+                                       ("confirmed", "confirmed"),
                                        ("processing", "processing"),
-                                       ("completed", "completed"),
+                                       ("in-transit", "in-transit"),
+                                       ("delivered", "delivered"),
                                        ("user-canceled", "user-canceled"),
                                     ), default="pending")
     delivery_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)
-    delivered_at = models.DateTimeField(null=True)
-    accepted_at = models.DateTimeField(null=True)
-    processed_at = models.DateTimeField(null=True)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    in_transit_at = models.DateTimeField(null=True, blank=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
     
     

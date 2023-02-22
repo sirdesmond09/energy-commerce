@@ -1,5 +1,5 @@
 from main.helpers import payment_is_verified
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
 from .models import Address, Cart, DeliveryDetail, Location, Order, OrderItem, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
@@ -11,6 +11,10 @@ from accounts.permissions import CustomDjangoModelPermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
+from django.conf import settings
+from rest_framework.pagination import LimitOffsetPagination
+
+pagination_class = LimitOffsetPagination()
 
 class CategoryView(ListCreateAPIView):
     serializer_class = CategorySerializer
@@ -719,6 +723,10 @@ def accept_order(request, booking_id):
         order.save()
         
         
+        order.items.filter(status="pending", is_deleted=False).update(status="confirmed",
+                                                    confirmed_at= timezone.now())
+        
+        
                 
                 
         return Response({"message" : "success"}, status=status.HTTP_200_OK)
@@ -726,3 +734,58 @@ def accept_order(request, booking_id):
     
     else:
         raise ValidationError(detail={"message" : "cannot accept and unpaid order"})
+    
+
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def vendor_items(request):
+    """Returns a list of order items for vendor to attend to"""
+    
+    items = OrderItem.objects.filter(item__vendor=request.user, status="confirmed", is_deleted=False).order_by("-date_added")
+    
+   
+    serializer = OrderItemSerializer(items, many=True)
+    
+    
+    
+
+    return Response(serializer.data , status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def vendor_update_item_status(request, id):
+    """Allows vendor to update the status of an order item"""
+    
+    try:
+        item = OrderItem.objects.get(id=id, is_deleted=False)
+    except OrderItem.DoesNotExist:
+        raise ValidationError(detail={"message":"order item is not valid or has been deleted"})
+    
+    if item.vendor != request.user:
+        raise PermissionDenied(detail={"message":"you do not have permission to perform this action"})
+   
+    
+    if request.method == "POST":
+        serializer = UpdateStatusSerializer(data = request.data)
+        
+        serializer.is_valid(raise_exception=True)
+        
+        status = serializer.validated_data.pop("status")
+        
+        rules = {
+            "processing" : "confirmed",
+            "in-transit" : "processing",
+            "delivered"  : "in-transit",
+        }
+        
+        if item.status == rules.get(status):
+            item.status = status
+            item.save()
+    
+
+            return Response({"message":"success"}, status=status.HTTP_200_OK)
+        
+        else:
+            raise ValidationError(detail={"message" : f"Order has to be {rules.get(status)} before {status}"})
