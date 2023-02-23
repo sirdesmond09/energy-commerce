@@ -30,6 +30,8 @@ urlpatterns = [
     path("delivery-location/<int:id>", views.DeliveryDetailView.as_view(),),
     path("vendors/order-items/", views.vendor_items),
     path("vendors/order-items/<int:id>/update-status", views.vendor_update_item_status),
+    path("admin/dashboard/", views.dashboard_stat),
+    
     
     
     

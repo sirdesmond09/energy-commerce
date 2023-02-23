@@ -789,3 +789,36 @@ def vendor_update_item_status(request, id):
         
         else:
             raise ValidationError(detail={"message" : f"Order has to be {rules.get(status)} before {status}"})
+        
+        
+        
+@api_view(["GET"])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAdminUser])
+def dashboard_stat(request):
+    payments = PaymentDetail.objects.all()
+    
+    
+    payment_data = {
+        "specta" : payments.filter(payment_type="specta").count(),
+        "outright" : payments.filter(payment_type="outright").count(),
+        "lease" :payments.filter(payment_type="lease").count(),
+        "power-as-a-service" : payments.filter(payment_type="power-as-a-service").count(),
+        }
+    
+    orders = Order.objects.filter(is_deleted=False)
+    order_data = {
+        "total_order" :  orders.count(),
+        "pending"  : orders.filter(status="pending").count(),
+        "processing"  : orders.filter(status="processing").count(),
+        "completed"  : orders.filter(status="completed").count(),
+        
+        
+    }
+    
+    data = {
+        'order_data' : order_data,
+        "payment_data" : payment_data
+    }
+    
+    return Response(data, status=status.HTTP_200_OK)
