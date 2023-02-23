@@ -137,4 +137,7 @@ def send_vendor_details(sender, instance, created, **kwargs):
         recipient_list = [instance.email]
         send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
         
+        instance.sent_vendor_email =True
+        instance.save()
+                
         return
