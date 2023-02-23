@@ -128,7 +128,7 @@ def send_vendor_details(sender, instance, created, **kwargs):
     Cheers,
     {site_name} Team            
     """   
-        msg_html = render_to_string('email/vendor_confirmation.html', {
+        msg_html = render_to_string('email/vendor_confirm.html', {
                         'first_name': str(instance.first_name).title(),
                         'site_name':site_name,
                         "url":url})
