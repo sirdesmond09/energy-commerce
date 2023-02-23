@@ -38,7 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     role          = models.CharField(_('role'), max_length = 255, choices=ROLE_CHOICES)
     email         = models.EmailField(_('email'), unique=True)
     phone         = models.CharField(_('phone'), max_length = 20, unique = True, validators=[phone_regex])
-    favourite    = models.ManyToManyField("main.Product")
+    favourite    = models.ManyToManyField("main.Product", blank=True)
     vendor_status = models.CharField(max_length=250, 
                                      blank=True, 
                                      null=True, 
@@ -82,7 +82,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.role == "vendor":
             profile = model_to_dict(self.store, exclude=["logo", "cac_doc", "is_deleted", "vendor" ])
             profile["id"] = self.store.id
-            profile['logo_url'] = self.store.logo.url
+            if self.store.logo != None:
+                profile['logo_url'] = self.store.logo.url
+            else:
+                profile['logo_url'] = ""
             profile['cac_doc_url'] = self.store.cac_doc.url
             
             return profile    
@@ -143,7 +146,9 @@ class StoreProfile(models.Model):
     
     @property
     def logo_url(self):
-        return self.logo.url
+        if self.logo:
+            return self.logo.url
+        return ""
     
     @property
     def cac_doc_url(self):

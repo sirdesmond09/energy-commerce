@@ -3,6 +3,8 @@ from rest_framework import serializers
 from main.generators import generate_booking_id
 from .models import Address, Cart, DeliveryDetail, Location, Order, OrderItem, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product
 from rest_framework.exceptions import ValidationError
+from accounts.serializers import StoreProfileSerializer
+from djoser.serializers import UserSerializer
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -11,6 +13,8 @@ class ProductSerializer(serializers.ModelSerializer):
     primary_img_url = serializers.ReadOnlyField()
     category_name = serializers.ReadOnlyField()
     locations_list = serializers.ReadOnlyField()
+    vendor_detail = serializers.SerializerMethodField()
+    store_detail = serializers.SerializerMethodField()
     
     class Meta:
         fields = '__all__'
@@ -19,6 +23,14 @@ class ProductSerializer(serializers.ModelSerializer):
             'primary_img': {'write_only': True},
             'locations': {'write_only': True}
         }
+        
+        
+    def get_vendor_detail(self, obj):
+        return UserSerializer(obj.vendor).data
+    
+    def get_store_detail(self, obj):
+        return StoreProfileSerializer(obj.vendor.store).data
+
         
 class GallerySerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,6 +41,11 @@ class ProductComponentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = ProductComponent
+        
+        
+        
+    
+        
          
 class AddProductSerializer(serializers.Serializer):
     product  = ProductSerializer()
