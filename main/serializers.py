@@ -29,7 +29,15 @@ class ProductSerializer(serializers.ModelSerializer):
         return UserSerializer(obj.vendor).data
     
     def get_store_detail(self, obj):
-        return StoreProfileSerializer(obj.vendor.store).data
+        
+        try:
+            
+            return StoreProfileSerializer(obj.vendor.store).data
+        
+        except Exception as e:
+            return {}
+        
+        
 
         
 class GallerySerializer(serializers.ModelSerializer):
