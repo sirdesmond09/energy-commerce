@@ -121,10 +121,12 @@ def user_login(request):
         if serializer.is_valid():
             data = serializer.validated_data
             user = authenticate(request, email = data['email'], password = data['password'], is_deleted=False)
-            print(user)
+
             if user:
                 if user.is_active==True:
                 
+                    if user.role == "vendor" and user.vendor_status != "approved":
+                        raise PermissionDenied(detail={'cannot login as vendor. your current status is {}'.format(user.vendor_status)})
                     
                     try:
                         
@@ -345,3 +347,27 @@ class GroupDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = GroupSerializer
     queryset = Group.objects.all()
     lookup_field = "id"
+    
+    
+
+
+@api_view(["GET"])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAdminUser])
+def dashboard_vendor_stat(request):
+    
+    """Gives admin a statistc of vendor information"""
+    vendors = User.objects.filter(role="vendor", is_deleted=False)
+    
+  
+    data = {
+        "total" :  vendors.count(),
+        "approved"  : vendors.filter(vendor_status="approved").count(),
+        "unapproved"  : vendors.filter(vendor_status="unapproved").count(),
+        "blocked"  : vendors.filter(vendor_status="blocked").count(),
+        
+        
+    }
+    
+    
+    return Response(data, status=status.HTTP_200_OK)

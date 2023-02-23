@@ -21,7 +21,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('admin', 'Admin'),
         ('user', 'User'),
         ('vendor', 'Vendor'),
-    )    
+    )   
+    
+    VENDOR_STATUS = (
+        ('applied', 'applied'),
+        ('approved', 'approved'),
+        ('unapproved', 'unapproved'),
+        ('blocked', 'blocked'),
+    )  
     
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+2341234567890'. Up to 15 digits allowed.")
     
@@ -32,12 +39,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     email         = models.EmailField(_('email'), unique=True)
     phone         = models.CharField(_('phone'), max_length = 20, unique = True, validators=[phone_regex])
     favourite    = models.ManyToManyField("main.Product")
+    vendor_status = models.CharField(max_length=250, 
+                                     blank=True, 
+                                     null=True, 
+                                     choices=VENDOR_STATUS)
     password      = models.CharField(_('password'), max_length=300)
     is_staff      = models.BooleanField(_('staff'), default=False)
     is_admin      = models.BooleanField(_('admin'), default= False)
     is_active     = models.BooleanField(_('active'), default=True)
     is_deleted    = models.BooleanField(_('deleted'), default=False)
     date_joined   = models.DateTimeField(_('date joined'), auto_now_add=True)
+    sent_vendor_email = models.BooleanField(default=False)
     
     
     objects = UserManager()

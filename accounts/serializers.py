@@ -164,8 +164,7 @@ class AddVendorSerializer(serializers.Serializer):
         if "role" in vendor_data.keys():
             vendor_data.pop("role") 
             
-        vendor = User.objects.create(**vendor_data, role="vendor")
-        print(vendor)
+        vendor = User.objects.create(**vendor_data, role="vendor", vendor_status="applied")
         
         try:
         

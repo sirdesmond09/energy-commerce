@@ -54,60 +54,87 @@ Regards,
             
 @receiver(user_registered)
 def activate_otp(user, request, *args,**kwargs):
-    user.is_active = False
-    user.save()
     
-    code = generate_otp(6)
-    expiry_date = timezone.now() + timezone.timedelta(minutes=10)
-    ActivationOtp.objects.create(code=code, expiry_date=expiry_date, user=user)
-    
-    
-    subject = f"ACCOUNT VERIFICATION FOR {site_name}".upper()
+    if user.role == "user":
+        user.is_active = False
+        user.save()
         
-    message = f"""Hi, {str(user.first_name).title()}.
-Thank you for signing up!
-Complete your verification on the {site_name} with the OTP below:
+        code = generate_otp(6)
+        expiry_date = timezone.now() + timezone.timedelta(minutes=10)
+        ActivationOtp.objects.create(code=code, expiry_date=expiry_date, user=user)
+        
+        
+        subject = f"ACCOUNT VERIFICATION FOR {site_name}".upper()
+            
+        message = f"""Hi, {str(user.first_name).title()}.
+    Thank you for signing up!
+    Complete your verification on the {site_name} with the OTP below:
 
-                {code}        
+                    {code}        
 
-Expires in 5 minutes!
+    Expires in 5 minutes!
 
-Cheers,
-{site_name} Team            
-"""   
-    msg_html = render_to_string('email/activation.html', {
-                    'first_name': str(user.first_name).title(),
-                    'code':code,
-                    'site_name':site_name,
-                    "url":url})
-    
-    email_from = settings.Common.DEFAULT_FROM_EMAIL
-    recipient_list = [user.email]
-    send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
-    
-    return
+    Cheers,
+    {site_name} Team            
+    """   
+        msg_html = render_to_string('email/activation.html', {
+                        'first_name': str(user.first_name).title(),
+                        'code':code,
+                        'site_name':site_name,
+                        "url":url})
+        
+        email_from = settings.Common.DEFAULT_FROM_EMAIL
+        recipient_list = [user.email]
+        send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+        
+        return
 
 
 @receiver(user_activated)
 def comfirmaion_email(user, request, *args,**kwargs):
     
-    
-    subject = "VERIFICATION COMPLETE"
-        
-    message = f"""Hi, {str(user.first_name).title()}.
-Your account has been activated and is ready to use!
+    if user.role == "user":
+        subject = "VERIFICATION COMPLETE"
+            
+        message = f"""Hi, {str(user.first_name).title()}.
+    Your account has been activated and is ready to use!
 
-Cheers,
-{site_name} Team            
-"""   
-    msg_html = render_to_string('email/confirmation.html', {
-                    'first_name': str(user.first_name).title(),
-                    'site_name':site_name,
-                    "url":url})
-    
-    email_from = settings.Common.DEFAULT_FROM_EMAIL
-    recipient_list = [user.email]
-    send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
-    
-    return
+    Cheers,
+    {site_name} Team            
+    """   
+        msg_html = render_to_string('email/confirmation.html', {
+                        'first_name': str(user.first_name).title(),
+                        'site_name':site_name,
+                        "url":url})
         
+        email_from = settings.Common.DEFAULT_FROM_EMAIL
+        recipient_list = [user.email]
+        send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+        
+        return
+        
+        
+        
+
+@receiver(post_save, sender=User)
+def send_vendor_details(sender, instance, created, **kwargs):
+    if instance.role =="vendor" and instance.vendor_status=="approved" and instance.sent_vendor_email==False:
+        # print(instance.password)
+        subject = "You can now sell on imperium"
+            
+        message = f"""Hi, {str(instance.first_name).title()}.
+    Your vendor account has been approved and is ready to use!
+
+    Cheers,
+    {site_name} Team            
+    """   
+        msg_html = render_to_string('email/vendor_confirmation.html', {
+                        'first_name': str(instance.first_name).title(),
+                        'site_name':site_name,
+                        "url":url})
+        
+        email_from = settings.Common.DEFAULT_FROM_EMAIL
+        recipient_list = [instance.email]
+        send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+        
+        return

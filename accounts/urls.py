@@ -41,6 +41,7 @@ urlpatterns = [
     path("users/favourites/<uuid:product_id>", views.update_favorite),
     path("permissions/", views.PermissionList.as_view(), name="permissions"),
     path("roles/", views.GroupListCreate.as_view(), name="roles"),
-    path("roles/<int:id>", views.GroupDetail.as_view(), )
+    path("roles/<int:id>", views.GroupDetail.as_view(), ),
+    path("admin/vendors-stat", views.dashboard_vendor_stat,)
     
 ]
