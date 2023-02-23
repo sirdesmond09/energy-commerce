@@ -204,3 +204,11 @@ class GroupSerializer(serializers.ModelSerializer):
         
         
     
+class VendorStatusSerializer(serializers.Serializer):
+    status = serializers.CharField(max_length=200)
+    
+    
+    def validate_status(self, value):
+        if value not in ('approved','unapproved','blocked'):
+            raise ValidationError(detail={"message": "status must be either ('approved','unapproved','blocked')" })
+        

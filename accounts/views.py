@@ -1,5 +1,5 @@
 from main.serializers import ProductSerializer
-from .serializers import AddVendorSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer
+from .serializers import AddVendorSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -311,9 +311,6 @@ def update_favorite(request, product_id=None):
     
     user = request.user
     
-    
-   
-    
     try:
         product = Product.objects.get(id=product_id, is_deleted=False)
     except Product.DoesNotExist:
@@ -371,3 +368,23 @@ def dashboard_vendor_stat(request):
     
     
     return Response(data, status=status.HTTP_200_OK)
+
+
+
+
+@api_view(["POST", "DELETE"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_vendor_status(request, id):
+    
+    try:
+       user= User.objects.get(id=id, is_deleted=False, role="vendor")
+    except User.DoesNotExist:
+        raise NotFound(detail={"message":"vendor not found"})
+    
+    if request.method == "POST":
+        serializer = VendorStatusSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        user.vendor_
+        

@@ -28,6 +28,7 @@ urlpatterns = [
     path("cart/<int:id>/", views.CartDetailView.as_view(), name="user-cart-detail"),
     path("delivery-location/", views.DeliveryDetailListCreateView.as_view(),),
     path("delivery-location/<int:id>", views.DeliveryDetailView.as_view(),),
+    path("vendors/products/", views.VendorProductList.as_view()),
     path("vendors/order-items/", views.vendor_items),
     path("vendors/order-items/<int:id>/update-status", views.vendor_update_item_status),
     path("admin/dashboard/", views.dashboard_stat),
