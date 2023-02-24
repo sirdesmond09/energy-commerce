@@ -1,5 +1,5 @@
 from main.helpers import payment_is_verified
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
 from .models import Address, Cart, DeliveryDetail, Location, Order, OrderItem, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
@@ -489,30 +489,176 @@ class CartDetailView(RetrieveUpdateDestroyAPIView):
         return super().delete(request, *args, **kwargs)
     
     
-    
+
+@swagger_auto_schema(method="delete", request_body=CancelSerializer())
 @api_view(["DELETE"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def order_cancel(request, booking_id):
+def request_order_cancel(request, booking_id):
+    
+    """Use this endpoint to request to cancel the whole order"""
+    
+    try:
+        order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+    except Order.DoesNotExist:
+        raise ValidationError(detail={"message": "order was not found"})
+    
+    if order.status == "cancel-requested":
+        raise PermissionDenied(detail={"message":"cancel already requested"})
+    
+    if order.status == "user-canceled":
+        raise PermissionDenied(detail={"message":"order is already canceled"})
+    
+    if request.method == "DELETE":
+        serializer = CancelSerializer(data=request.data)
+        
+        serializer.is_valid(raise_exception=True)
+        
+        
+        order.prev_status = order.status
+        order.status = "cancel-requested"
+        order.cancellation_reason = serializer.validated_data.get("reason")
+        order.cancel_requested_at = timezone.now()
+        order.save()
+        return Response({"message":"success"},status=status.HTTP_202_ACCEPTED)
+    
+    
+    
+    
+@swagger_auto_schema(method="delete", request_body=CancelSerializer())
+@api_view(["DELETE"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def request_order_item_cancel(request, booking_id, item_id):
+    
+    """Use this endpoint to request cancel  for an item in the order"""
+    
+    try:
+        order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+        order_item = OrderItem.objects.get(id=item_id, order=order,is_deleted=False)
+        
+    except Order.DoesNotExist:
+        raise ValidationError(detail={"message": "order was not found"})
+    
+    except OrderItem.DoesNotExist:
+        raise ValidationError(detail={"message": "item was not found"})
+    
+    if order_item.status == "cancel-requested":
+        raise PermissionDenied(detail={"message":"cancel already requested"})
+    if order_item.status == "user-canceled":
+        raise PermissionDenied(detail={"message":"item is already canceled"})
+    
+    if request.method == "DELETE":
+        serializer = CancelSerializer(data=request.data)
+        
+        serializer.is_valid(raise_exception=True)
+        
+        order_item.prev_status = order_item.status
+        order_item.status = "cancel-requested"
+        order_item.cancellation_reason = serializer.validated_data.get("reason")
+        order_item.cancel_requested_at = timezone.now()
+        order_item.save()
+        return Response({"message":"success"},status=status.HTTP_202_ACCEPTED)
+    
+    
+@swagger_auto_schema(method="patch", request_body=CancelResponseSerializer())
+@api_view(["PATCH"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def respond_to_cancel_request(request, booking_id=None, item_id=None):
+    
+    if booking_id:
+        obj = Order.objects.get(booking_id=booking_id, is_deleted=False)
+    
+    if item_id:    
+        obj = OrderItem.objects.get(id=item_id, order=obj,is_deleted=False)
+    
+    if obj.status != "cancel-requested":
+        raise ValidationError(detail={"message":"owner did not request to cancel"})
+        
+    serializer = CancelResponseSerializer(data=request.data)
+    
+    serializer.is_valid(raise_exception=True)
+    
+    response = serializer.validated_data.get("status")
+    
+    
+    if response == "accepted":
+        obj.status = "user-canceled"
+        obj.cancellation_response_reason = serializer.validated_data.get("reason")
+        obj.cancel_responded_at = timezone.now()
+        obj.save()
+        
+        if isinstance(obj, Order):
+        
+            products = []
+            
+            for order_item in obj.items.all():
+                order_item.item.qty_available += order_item.qty
+                order_item.prev_status = order_item.status
+                order_item.status = "user-canceled"
+                order_item.cancel_responded_at = timezone.now()
+                order_item.cancellation_response_reason = "order was canceled"
+                order_item.save()
+                products.append(order_item.item)
+                
+            Product.objects.bulk_update(products, ["qty_available"])
+        
+        elif isinstance(obj, OrderItem):
+            
+            ### return the products and save
+            obj.item.qty_available += obj.qty
+            obj.item.save()
+            
+            ##check if all other items are canceled, then mark order as canceled
+            order = obj.order
+            if all(i.status == "user-canceled" for i in order.items.filter(is_deleted=True)):
+                order.status="user-canceled"
+                order.cancellation_response_reason = "all items were cancelled"
+                order.cancel_responded_at = timezone.now()
+                order.save()
+    
+                
+    elif response == "rejected":  
+                
+        obj.status = obj.prev_status
+        obj.cancellation_response_reason = serializer.validated_data.get("reason")
+        obj.cancel_responded_at = timezone.now()
+        obj.save()    
+        
+    
+    return Response({"message": "{} successfully".format(response)}, status=status.HTTP_200_OK)
+                
+    
+    
+    
+
+
+
+
+
+@api_view(["DELETE"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def permanently_delete_order(request, booking_id):
+    """Perform a hard delete. This cannot be undone because it completely deletes the record from the database"""
     
     try:
         order = Order.objects.get(booking_id=booking_id, is_deleted=False)
     except KeyError:
         raise ValidationError(detail={"message": "order was not found"})
-    
-    if order.status == "user-canceled":
-        raise PermissionDenied(detail={"message":"cannot cancel an order twice"})
+
     
     products = []
     
     for order_item in order.items.all():
         order_item.item.qty_available += order_item.qty
         products.append(order_item.item)
+        order_item.delete_permanently()
         
     Product.objects.bulk_update(products, ["qty_available"])
     
-    order.status = "user-canceled"
-    order.save()
+    order.delete_permanently()
     return Response({},status=status.HTTP_204_NO_CONTENT)
     
     
@@ -785,9 +931,12 @@ def vendor_update_item_status(request, id):
     except OrderItem.DoesNotExist:
         raise ValidationError(detail={"message":"order item is not valid or has been deleted"})
     
+        
     if item.vendor != request.user:
         raise PermissionDenied(detail={"message":"you do not have permission to perform this action"})
    
+    if item.status == "user-canceled":
+        raise ValidationError(detail={"message":"item has been canceled from the order"})
     
     if request.method == "POST":
         serializer = UpdateStatusSerializer(data = request.data)
@@ -795,6 +944,7 @@ def vendor_update_item_status(request, id):
         serializer.is_valid(raise_exception=True)
         
         status = serializer.validated_data.pop("status")
+        
         
         rules = {
             "processing" : "confirmed",

@@ -185,14 +185,20 @@ class Order(models.Model):
     installation_fee = models.FloatField()
     total_price = models.FloatField()
     is_paid_for = models.BooleanField(default=False)
+    cancellation_reason = models.TextField(blank=True, null=True)
+    cancellation_response_reason = models.TextField(blank=True, null=True)
+    prev_status = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, 
                               choices=(("pending", "pending"),
                                        ("processing", "processing"),
                                        ("completed", "completed"),
+                                       ("cancel-requested", "cancel-requested"),
                                        ("user-canceled", "user-canceled"),
                                     ), null=True,blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
+    cancel_requested_at = models.DateTimeField(null=True, blank=True)
+    cancel_responded_at = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
     
     
@@ -217,14 +223,20 @@ class OrderItem(models.Model):
                                        ("processing", "processing"),
                                        ("in-transit", "in-transit"),
                                        ("delivered", "delivered"),
+                                       ("cancel-requested", "cancel-requested"),
                                        ("user-canceled", "user-canceled"),
                                     ), default="pending")
+    cancellation_reason = models.TextField(blank=True, null=True)
+    cancellation_response_reason = models.TextField(blank=True, null=True)
+    prev_status = models.CharField(max_length=255, null=True, blank=True)
     delivery_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)
     confirmed_at = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     in_transit_at = models.DateTimeField(null=True, blank=True)
     processed_at = models.DateTimeField(null=True, blank=True)
+    cancel_requested_at = models.DateTimeField(null=True, blank=True)
+    cancel_responded_at = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
     
     

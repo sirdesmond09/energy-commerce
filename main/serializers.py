@@ -217,4 +217,21 @@ class UpdateStatusSerializer(serializers.Serializer):
         if value not in ("processing","in-transit", "delivered"):
             raise ValidationError(detail={"status can only be 'processing' or 'in-transit' or 'delivered'"})
     
+        return value
     
+class CancelSerializer(serializers.Serializer):
+    
+    reason = serializers.CharField(max_length=50000)
+
+
+class CancelResponseSerializer(serializers.Serializer):
+    
+    status = serializers.CharField(max_length=50)
+    reason = serializers.CharField(max_length=1000)
+    
+    
+    def validate_status(self, value):
+        if value not in ("accepted","rejected"):
+            raise ValidationError(detail={"status can only be 'accepted' or 'rejected'"})
+        
+        return value
