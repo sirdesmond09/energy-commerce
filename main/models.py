@@ -84,6 +84,11 @@ class Product(models.Model):
     def locations_list(self):
         return self.locations.values("location__name", "delivery_fee")
     
+    
+    @property
+    def store(self):
+        return self.vendor.store_profile
+    
     def delete(self):
         self.is_deleted = True
         self.save()
@@ -256,6 +261,14 @@ class OrderItem(models.Model):
     @property
     def image_url(self):
         return self.item.primary_img_url
+    
+    @property
+    def address_data(self):
+        return model_to_dict(self.item.address, exclude=["id", "user", "date_added", "is_deleted"])
+    
+    @property
+    def store(self):
+        return self.item.store
     
     def delete(self):
         self.is_deleted = True
