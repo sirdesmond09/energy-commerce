@@ -118,7 +118,7 @@ def comfirmaion_email(user, request, *args,**kwargs):
 
 @receiver(post_save, sender=User)
 def send_vendor_details(sender, instance, created, **kwargs):
-    if instance.role =="vendor" and instance.vendor_status=="approved" and instance.sent_vendor_email==False:
+    if (instance.role =="vendor" and instance.vendor_status=="approved") and instance.sent_vendor_email is False:
         # print(instance.password)
         subject = "You can now sell on imperium"
             
