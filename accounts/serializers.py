@@ -203,10 +203,19 @@ class ModuleAccessSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
+    module_access_data = serializers.SerializerMethodField()
+    permissions_data = serializers.SerializerMethodField()
     
     class Meta:
         fields = "__all__"
         model = Group
+        
+        
+    def get_module_access_data(self, obj):
+        return ModuleAccessSerializer(obj.module_access, many=True).data
+    
+    def get_permissions_data(self, obj):
+        return PermissionSerializer(obj.permissions, many=True).data
         
         
     
