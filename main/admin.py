@@ -15,6 +15,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ["name", "price","qty_available","is_deleted"]
     list_editable = ["price", "qty_available","is_deleted"]
     inlines = [ComponentsAdmin,GalleryAdmin]
+    save_as = True
     
     
 

@@ -312,7 +312,40 @@ class Cart(models.Model):
     
     
 
-    
+class Commission(models.Model):
+    percent = models.PositiveIntegerField(default=12)
    
     
+    
+class PayOuts(models.Model):
+    vendor = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL)
+    amount = models.FloatField()
+    order_booking_id = models.CharField(max_length=255)
+    commission = models.FloatField()
+    commission_percent = models.FloatField()
+    status = models.CharField(max_length=255, choices=(("pending", "pending"),
+                                                       ("paid", "paid"),))
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_paid = models.DateTimeField()
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+    def delete_permanently(self):
+        super().delete()
+        
+        
+    @property 
+    def store(self):
+        return self.vendor.store_profile
+    
+    
+    @property
+    def bank_data(self):
+        return self.vendor.bank_detail
+        
+        
     

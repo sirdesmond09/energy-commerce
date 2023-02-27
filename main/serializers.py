@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id
-from .models import Address, Cart, DeliveryDetail, Location, Order, OrderItem, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product
+from .models import Address, Cart, DeliveryDetail, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -207,6 +207,13 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = PaymentDetail
+        
+        
+
+class PayOutSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = PayOuts
         
         
 
