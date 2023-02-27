@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
-from .models import ActivationOtp, StoreBankDetail, StoreProfile
+from .models import ActivationOtp, ModuleAccess, StoreBankDetail, StoreProfile
 from .signals import generate_otp, site_name,url
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import Permission, Group
@@ -194,6 +194,12 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Permission
+
+class ModuleAccessSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        fields = "__all__"
+        model = ModuleAccess
 
 
 class GroupSerializer(serializers.ModelSerializer):

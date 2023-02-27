@@ -1,5 +1,5 @@
 from main.serializers import ProductSerializer
-from .serializers import AddVendorSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
+from .serializers import AddVendorSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -18,7 +18,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.decorators import action
 from djoser.views import UserViewSet
 from rest_framework.views import APIView
-from .models import StoreBankDetail, StoreProfile
+from .models import ModuleAccess, StoreBankDetail, StoreProfile
 from django.contrib.auth.hashers import check_password
 from main.models import Product
 from django.contrib.auth.models import Permission, Group
@@ -333,6 +333,10 @@ class PermissionList(ListAPIView):
     serializer_class = PermissionSerializer
     queryset = Permission.objects.all()
     
+    
+class ModuleAccessList(ListAPIView):
+    serializer_class = ModuleAccessSerializer
+    queryset = ModuleAccess.objects.all()
 
 
 class GroupListCreate(ListCreateAPIView):
