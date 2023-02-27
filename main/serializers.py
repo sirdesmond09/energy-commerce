@@ -120,6 +120,7 @@ class UpdateStatusSerializer(serializers.Serializer):
         
 class OrderSerializer(serializers.ModelSerializer):
     order_items = serializers.SerializerMethodField()
+    address_data = serializers.ReadOnlyField()
         
     class Meta:
         fields = "__all__"
@@ -128,7 +129,13 @@ class OrderSerializer(serializers.ModelSerializer):
         
     def get_order_items(self, order):
         return OrderItemSerializer(order.items.all(), many=True).data
+    
+    
+    def validate_address(self, value):
+        if value is None:
+            raise ValidationError("This field is required")
         
+        return value
         
         
        

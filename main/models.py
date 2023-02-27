@@ -3,6 +3,7 @@ from django.core.validators import FileExtensionValidator
 # Create your models here.
 import uuid
 from django.contrib.auth import get_user_model
+from django.forms import model_to_dict
 
 User = get_user_model()
 
@@ -208,6 +209,11 @@ class Order(models.Model):
         
     def delete_permanently(self):
         super().delete()
+        
+        
+    @property
+    def address_data(self):
+        return model_to_dict(self.address, exclude=["id", "user", "date_added", "is_deleted"])
         
     
         
