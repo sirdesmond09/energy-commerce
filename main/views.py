@@ -1,6 +1,6 @@
 from main.helpers import payment_is_verified
 from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
-from .models import Address, Cart, DeliveryDetail, Location, Order, OrderItem, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
+from .models import Address, Cart, Commission, DeliveryDetail, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -15,6 +15,8 @@ from django.conf import settings
 from rest_framework.pagination import LimitOffsetPagination
 
 pagination_class = LimitOffsetPagination()
+
+COMMISSION = round(Commission.objects.first().percent / 100, 2)
 
 class CategoryView(ListCreateAPIView):
     serializer_class = CategorySerializer
@@ -322,6 +324,17 @@ def outright_payment(request, booking_id):
             order.is_paid_for =True
             order.status = "pending"
             order.save()
+            
+            func = lambda order_item : PayOuts.objects.create(vendor=order_item.item.vendor,
+                                                       item= order_item,
+                                                       amount = (order_item.unit_price * order_item.qty) - ((order_item.unit_price * order_item.qty) * COMMISSION) ,
+                                                       order_booking_id = order.booking_id,
+                                                       commission = (order_item.unit_price * order_item.qty) * COMMISSION,
+                                                       commission_percent = COMMISSION,
+                                                    )
+            
+            
+            map(func,order.items.filter(is_deleted=False))
             
             
             data = {

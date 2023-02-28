@@ -319,14 +319,15 @@ class Commission(models.Model):
     
 class PayOuts(models.Model):
     vendor = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL)
+    item = models.ForeignKey(OrderItem, on_delete=models.CASCADE, null=True)
     amount = models.FloatField()
     order_booking_id = models.CharField(max_length=255)
     commission = models.FloatField()
     commission_percent = models.FloatField()
     status = models.CharField(max_length=255, choices=(("pending", "pending"),
-                                                       ("paid", "paid"),))
+                                                       ("paid", "paid"),), default="pending")
     date_added = models.DateTimeField(auto_now_add=True)
-    date_paid = models.DateTimeField()
+    date_paid = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
     
     
