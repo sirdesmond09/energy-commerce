@@ -16,7 +16,7 @@ from rest_framework.pagination import LimitOffsetPagination
 
 pagination_class = LimitOffsetPagination()
 
-COMMISSION = round(Commission.objects.first().percent / 100, 2)
+COMMISSION = 2
 
 class CategoryView(ListCreateAPIView):
     serializer_class = CategorySerializer
