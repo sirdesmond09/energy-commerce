@@ -211,6 +211,10 @@ class PaymentSerializer(serializers.ModelSerializer):
         
 
 class PayOutSerializer(serializers.ModelSerializer):
+    
+    store = serializers.ReadOnlyField()
+    bank_data = serializers.ReadOnlyField()
+    
     class Meta:
         fields = "__all__"
         model = PayOuts

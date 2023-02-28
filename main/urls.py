@@ -44,6 +44,9 @@ urlpatterns = [
     path("vendors/order-items/<int:id>/update-status", views.vendor_update_item_status),
     path("admin/dashboard/", views.dashboard_stat),
     
+    path("payouts/", views.PayOutList.as_view(),),
+    path("payouts/<int:id>", views.PayOutDetail.as_view(),),
+    
     
     
     

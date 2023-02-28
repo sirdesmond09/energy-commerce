@@ -1,5 +1,5 @@
 from main.helpers import payment_is_verified
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
 from .models import Address, Cart, Commission, DeliveryDetail, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
 from rest_framework.response import Response
@@ -1008,3 +1008,14 @@ def dashboard_stat(request):
     return Response(data, status=status.HTTP_200_OK)
 
 
+
+class PayOutList(ListAPIView):
+    serializer_class = PayOutSerializer
+    queryset = PayOuts.objects.all()
+
+
+
+class PayOutDetail(RetrieveUpdateDestroyAPIView):
+    serializer_class = PayOutSerializer
+    queryset = PayOuts.objects.all()
+    lookup_field = "id"
