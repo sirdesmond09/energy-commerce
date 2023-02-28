@@ -325,17 +325,16 @@ def outright_payment(request, booking_id):
             order.status = "pending"
             order.save()
             
-            func = lambda order_item : PayOuts.objects.create(vendor=order_item.item.vendor,
+            payouts = [PayOuts(vendor=order_item.item.vendor,
                                                        item= order_item,
                                                        amount = (order_item.unit_price * order_item.qty) - ((order_item.unit_price * order_item.qty) * COMMISSION) ,
                                                        order_booking_id = order.booking_id,
                                                        commission = (order_item.unit_price * order_item.qty) * COMMISSION,
                                                        commission_percent = COMMISSION,
-                                                    )
+                                                    ) for order_item in order.items.filter(is_deleted=False)]
             
             
-            map(func,order.items.filter(is_deleted=False))
-            
+            PayOuts.objects.bulk_create(payouts)
             
             data = {
                 "message": "success",
