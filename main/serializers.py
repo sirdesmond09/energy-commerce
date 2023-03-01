@@ -129,6 +129,13 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         
         
+    
+    def validate_delivery_fee(self, value):
+        if value is None:
+            raise ValidationError("delivery_fee is required")
+        return value
+        
+        
     def get_order_items(self, order):
         return OrderItemSerializer(order.items.all(), many=True).data
     
@@ -149,28 +156,38 @@ class AddOrderSerializer(serializers.Serializer):
     
     def create(self, validated_data):
         booking_id = generate_booking_id()
+        
         order = Order.objects.create(**validated_data.get('order_data'), booking_id=booking_id)
         
         order_items = []
         products = []
+        
+        total_price = 0
+        
         try:
             for item in validated_data.get('order_items'):
-                print(item.get("item"))                
+                                
                 product = item.get("item") #get the product 
                 qty = item.get('qty')
                 
                 if product.qty_available >= qty:
                     item["unit_price"] = product.price
+                    item["installation_fee"] = product.installation_fee
                     product.qty_available  -= qty
                     
                     order_items.append(OrderItem(**item, order=order))
                     products.append(product)
+                    
+                    total_price += ((item["unit_price"] +  item["installation_fee"] + item["delivery_fee"]) * qty)
                 else:
                     order.delete_permanently()
                     raise ValidationError({"message": f"product '{product.name}' is out of stock. Please try again."})
                 
             OrderItem.objects.bulk_create(order_items)
             Product.objects.bulk_update(products, ["qty_available"])
+            
+            order.total_price = total_price
+            order.save()
             
             return order
         except Exception as e:

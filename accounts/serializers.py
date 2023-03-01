@@ -227,3 +227,23 @@ class VendorStatusSerializer(serializers.Serializer):
         if value not in ('approved','unapproved','blocked'):
             raise ValidationError(detail={"message": "status must be either ('approved','unapproved','blocked')" })
         
+        
+class AssignRoleSerializer(serializers.Serializer):
+    roles = serializers.ListField()
+    
+    
+    def __to_int(self, obj):
+        return list(map(int, obj))
+    
+    def validate_roles(self, data):
+        data = self.__to_int(data)
+        group_ids = set(data)
+        groups = Group.objects.filter(id__in=group_ids)
+        roles = list(groups)
+
+        if len(roles) != len(group_ids):
+            missing_ids = group_ids - set(g.id for g in roles)
+            raise ValidationError(detail={"message": f"roles with ids {missing_ids} not found"})
+        
+        print([role.id for role in roles])
+        return [role.id for role in roles]

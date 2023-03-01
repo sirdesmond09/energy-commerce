@@ -22,7 +22,7 @@ def generate_otp(n):
 
 @receiver(post_save, sender=User)
 def send_details(sender, instance, created, **kwargs):
-    if created and instance.is_superuser!=True and instance.is_admin==True:
+    if (created and instance.is_superuser!=True) and instance.is_admin==True:
         # print(instance.password)
         subject = f"YOUR ADMIN ACCOUNT FOR {site_name}".upper()
         

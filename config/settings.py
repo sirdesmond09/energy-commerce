@@ -134,8 +134,7 @@ class Common(Configuration):
 
     AUTH_USER_MODEL = 'accounts.User'
     
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    DEFAULT_FROM_EMAIL = "Alex from Imperium <hello@imperium.io>"
+    
 
     DJOSER = {
         "USER_ID_FIELD" : "id",
@@ -247,6 +246,9 @@ class Development(Common):
     DATABASES = values.DatabaseURLValue(
         'sqlite:///{}'.format(os.path.join(Common.BASE_DIR, 'db.sqlite3'))
     )
+    
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = "Alex from Imperium <hello@imperium.io>"
 
 
 class Staging(Common):

@@ -82,7 +82,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.role == "vendor":
             profile = model_to_dict(self.store, exclude=["logo", "cac_doc", "is_deleted", "vendor" ])
             profile["id"] = self.store.id
-            if self.store.logo != None:
+            
+            if bool(self.store.logo) != False:
                 profile['logo_url'] = self.store.logo.url
             else:
                 profile['logo_url'] = ""
@@ -207,4 +208,4 @@ class ModuleAccess(models.Model):
     def __str__(self):
         return self.name
 
-DjangoGroup.add_to_class('module_access', models.ManyToManyField(ModuleAccess))
+DjangoGroup.add_to_class('module_access', models.ManyToManyField(ModuleAccess,  blank=True))

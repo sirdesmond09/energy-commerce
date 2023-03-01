@@ -1,5 +1,6 @@
+from accounts.permissions import CustomDjangoModelPermissions, UserTablePermissions
 from main.serializers import ProductSerializer
-from .serializers import AddVendorSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
+from .serializers import AddVendorSerializer, AssignRoleSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -8,7 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth import get_user_model
 from .helpers.generators import generate_password
-from rest_framework.exceptions import PermissionDenied, AuthenticationFailed, NotFound
+from rest_framework.exceptions import PermissionDenied, AuthenticationFailed, NotFound, ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
@@ -73,8 +74,8 @@ class AdminListCreateView(ListCreateAPIView):
     
     queryset = User.objects.filter(is_deleted=False, is_active=True, role="admin").order_by('-date_joined')
     serializer_class =  CustomUserSerializer
-    authentication_classes([JWTAuthentication])
-    permission_classes([IsAdminUser])
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [CustomDjangoModelPermissions]
     
     
     @swagger_auto_schema(method="post", request_body= CustomUserSerializer())
@@ -85,6 +86,7 @@ class AdminListCreateView(ListCreateAPIView):
         if serializer.is_valid():
                 
                 serializer.validated_data['password'] = generate_password()
+                serializer.validated_data['is_superuser'] = False
                 serializer.validated_data['is_active'] = True
                 serializer.validated_data['is_admin'] = True
                 serializer.validated_data['role'] = "admin"
@@ -376,19 +378,49 @@ def dashboard_vendor_stat(request):
 
 
 
-@api_view(["POST", "DELETE"])
+# @api_view(["POST", "DELETE"])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# def update_vendor_status(request, id):
+    
+#     try:
+#        user= User.objects.get(id=id, is_deleted=False, role="vendor")
+#     except User.DoesNotExist:
+#         raise NotFound(detail={"message":"vendor not found"})
+    
+#     if request.method == "POST":
+#         serializer = VendorStatusSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+        
+#         user.vendor_
+
+
+
+@swagger_auto_schema(method="patch", request_body=AssignRoleSerializer())
+@api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-def update_vendor_status(request, id):
+@permission_classes([UserTablePermissions])
+def assign_role(request, user_id):
     
     try:
-       user= User.objects.get(id=id, is_deleted=False, role="vendor")
-    except User.DoesNotExist:
-        raise NotFound(detail={"message":"vendor not found"})
+        user = User.objects.get(id=user_id, is_deleted=False)
     
-    if request.method == "POST":
-        serializer = VendorStatusSerializer(data=request.data)
+    except User.DoesNotExist:
+        raise NotFound(detail={"message":"Admin not found"})
+    
+    
+    if user.role != "admin":
+        raise ValidationError(detail={"message":"this is not an admin user"})
+    
+    if request.method == "PATCH":
+    
+        serializer = AssignRoleSerializer(data=request.data)
+        
         serializer.is_valid(raise_exception=True)
         
-        user.vendor_
+        user.groups.add(*serializer.validated_data.get("roles"))
+        
+        
+        return Response({"message":"success"}, status=status.HTTP_200_OK)
+        
         

@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from accounts.permissions import CustomDjangoModelPermissions
+from accounts.permissions import CustomDjangoModelPermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderTablePermissions, ProductTablePermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
@@ -17,6 +17,7 @@ from rest_framework.pagination import LimitOffsetPagination
 pagination_class = LimitOffsetPagination()
 
 COMMISSION = round(Commission.objects.first().percent / 100, 2)
+
 
 class CategoryView(ListCreateAPIView):
     serializer_class = CategorySerializer
@@ -38,14 +39,19 @@ class CategoryDetailView(RetrieveUpdateDestroyAPIView):
 @swagger_auto_schema(method="post", request_body=AddProductSerializer())
 @api_view(["POST"])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAdminUser])
+@permission_classes([IsVendor])
 def add_product(request):
+    
+    """Allows only vendors to add their products"""
     
     serializer = AddProductSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     
+    return Response({"message": "successful"}, status=status.HTTP_201_CREATED)
     
+    
+
 class ProductList(ListAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.filter(is_deleted=False)
@@ -92,7 +98,7 @@ class VendorProductList(ListAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.filter(is_deleted=False)
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVendor | ProductTablePermissions]
     
     def list(self, request, *args, **kwargs):
         
@@ -115,12 +121,14 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.filter(is_deleted=False)
     lookup_field="id"
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsVendorOrReadOnly]
 
 
 
 @swagger_auto_schema(method="delete", request_body=GallerySerializer())
 @api_view(["POST", "DELETE"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsVendor])
 def update_galley(request, product_id, img_id=None):
     
     if request.method == "POST":
@@ -168,8 +176,8 @@ def update_galley(request, product_id, img_id=None):
 class LocationView(ListCreateAPIView):
     serializer_class = LocationSerializer
     queryset = Location.objects.all().order_by('-date_added')
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminUser]
     
 
 
@@ -187,7 +195,7 @@ class ComponentsDetailView(RetrieveUpdateDestroyAPIView):
     queryset = ProductComponent.objects.all()
     lookup_field = "id"
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVendorOrReadOnly]
     
     
 
@@ -233,6 +241,8 @@ class AddressesDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Address.objects.all().order_by('-date_added')
     serializer_class =  AddressSerializer
     lookup_field = "id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     
     
     @swagger_auto_schema(method="put", request_body=AddressSerializer())
@@ -277,6 +287,7 @@ def new_order(request):
         order = serializer.save()
         order.user = request.user
         order.save()
+        
         data = {
             "message": "success",
             "booking_id": order.booking_id,
@@ -326,11 +337,10 @@ def outright_payment(request, booking_id):
             order.save()
             
             payouts = [PayOuts(vendor=order_item.item.vendor,
-                                                       item= order_item,
-                                                       amount = (order_item.unit_price * order_item.qty) - ((order_item.unit_price * order_item.qty) * COMMISSION) ,
-                                                       order_booking_id = order.booking_id,
-                                                       commission = (order_item.unit_price * order_item.qty) * COMMISSION,
-                                                       commission_percent = COMMISSION,
+                               item= order_item,
+                               amount = ((order_item.unit_price * order_item.qty) - ((order_item.unit_price * order_item.qty) * COMMISSION)) + ((order_item.delivery_fee + order_item.installation_fee)* order_item.qty),
+                               order_booking_id = order.booking_id,
+                               commission = (order_item.unit_price * order_item.qty) * COMMISSION,commission_percent = COMMISSION,
                                                     ) for order_item in order.items.filter(is_deleted=False)]
             
             
@@ -404,6 +414,8 @@ def energy_calculator(request):
             
 @swagger_auto_schema(method="post", request_body=MultipleProductSerializer())
 @api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def multiple_products_by_id(request):
     
     if request.method == "POST":
@@ -505,7 +517,7 @@ class CartDetailView(RetrieveUpdateDestroyAPIView):
 @swagger_auto_schema(method="delete", request_body=CancelSerializer())
 @api_view(["DELETE"])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsUserOrVendor])
 def request_order_cancel(request, booking_id):
     
     """Use this endpoint to request to cancel the whole order"""
@@ -681,13 +693,14 @@ class OrderList(ListAPIView):
     
     serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [ IsAuthenticated | CustomDjangoModelPermissions]
+    permission_classes = [IsUserOrVendor |  OrderTablePermissions  ]
     
     
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         
-        if request.user.role == "user":
+        
+        if request.user.role == "user" or request.user.role == "vendor":
             queryset = queryset.filter(user=request.user)
 
         page = self.paginate_queryset(queryset)
@@ -705,7 +718,7 @@ class OrderDetail(RetrieveAPIView):
     
     serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated | OrderTablePermissions]
     lookup_field = "id"
     
     
@@ -714,6 +727,11 @@ class OrderDetail(RetrieveAPIView):
         
         if request.user.role == "user" and instance.user != request.user:
             raise PermissionDenied({"message": "cannot retrieve details for another user's order"})
+        
+        if request.user.role == "admin" and not OrderTablePermissions.has_permission():
+            raise PermissionDenied({"message" : "you do not have permission to perform this action"})
+            
+            
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
@@ -798,6 +816,8 @@ class DeliveryDetailView(RetrieveUpdateDestroyAPIView):
     
 
 @api_view(["GET", "PUT"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def order_item_detail(request, booking_id, item_id):
     
     try:
@@ -883,9 +903,9 @@ def set_default_address(request, id):
     
     
     
-@api_view(["GET"])
+@api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAdminUser])
+@permission_classes([OrderTablePermissions])
 def accept_order(request, booking_id):
     
    
@@ -895,25 +915,26 @@ def accept_order(request, booking_id):
     except Order.DoesNotExist:
         raise NotFound(detail={"message": "order not found"})
     
-    if order.is_paid_for and order.status == "pending":
+    if request.method == "PATCH":
+        if order.is_paid_for and order.status == "pending":
+            
         
-    
-        order.status="processing"
-        order.processed_at = timezone.now()
-        order.save()
+            order.status="processing"
+            order.processed_at = timezone.now()
+            order.save()
+            
+            
+            order.items.filter(status="pending", is_deleted=False).update(status="confirmed",
+                                                        confirmed_at= timezone.now())
+            
+            
+                    
+                    
+            return Response({"message" : "success"}, status=status.HTTP_200_OK)
         
         
-        order.items.filter(status="pending", is_deleted=False).update(status="confirmed",
-                                                    confirmed_at= timezone.now())
-        
-        
-                
-                
-        return Response({"message" : "success"}, status=status.HTTP_200_OK)
-    
-    
-    else:
-        raise ValidationError(detail={"message" : "cannot accept and unpaid order"})
+        else:
+            raise ValidationError(detail={"message" : "cannot accept and unpaid order"})
     
 
 @api_view(["GET"])
@@ -977,8 +998,8 @@ def vendor_update_item_status(request, id):
         
         
 @api_view(["GET"])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAdminUser])
+@authentication_classes([JWTAuthentication])
+@permission_classes([CustomDjangoModelPermissions])
 def dashboard_stat(request):
     payments = PaymentDetail.objects.all()
     

@@ -227,6 +227,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name="items")
     item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING, related_name="items")
     unit_price = models.FloatField(default=0)
+    installation_fee = models.FloatField(default=0)
     qty = models.PositiveIntegerField()
     status = models.CharField(max_length=255, 
                               choices=(("pending", "pending"),
