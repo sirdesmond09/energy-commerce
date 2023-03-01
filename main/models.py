@@ -4,6 +4,7 @@ from django.core.validators import FileExtensionValidator
 import uuid
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
+from django.contrib.postgres.fields import ArrayField
 
 User = get_user_model()
 
@@ -43,12 +44,16 @@ class Product(models.Model):
     brand = models.CharField(max_length=300)
     desc = models.TextField()
     price = models.FloatField()
+    product_sku = models.CharField(max_length=255, null=True)
     battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
                                                               ("lithium", "Lithium")),
                                     null=True, blank=True)
-    battery_cap = models.FloatField(null=True, blank=True)
-    total_power = models.FloatField(null=True, blank=True)
+    battery_cap_AH = models.FloatField(null=True, blank=True)
+    total_power_kva = models.FloatField(null=True, blank=True)
+    battery_voltage = models.FloatField(null=True, blank=True)
     qty_available = models.PositiveIntegerField(default=0)
+    max_order_qty = models.PositiveIntegerField(null=True)
+    dimensions = models.CharField(max_length=255, null=True)
     locations = models.ManyToManyField("main.DeliveryDetail", blank=True)
     primary_img = models.ImageField(
         upload_to='products/primary_imgs', 
@@ -56,6 +61,8 @@ class Product(models.Model):
             FileExtensionValidator(
                 allowed_extensions=['png', "jpg", "jpeg"])
         ], blank=True)
+    key_features = ArrayField(base_field=models.CharField(max_length=255), blank=True, null=True)
+    warranty = models.TextField(blank=True, null=True)
     vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
     installation_fee = models.FloatField(default=0)
@@ -103,6 +110,7 @@ class ProductComponent(models.Model):
     qty = models.PositiveIntegerField()
     item_type = models.CharField(max_length=255)
     product = models.ForeignKey("main.Product", on_delete=models.CASCADE, null=True, related_name="components")
+    unit = models.CharField(max_length=255, null=True)
     
     
 class ProductGallery(models.Model):
