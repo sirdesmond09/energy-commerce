@@ -953,7 +953,10 @@ def vendor_items(request):
 
     return Response(serializer.data , status=status.HTTP_200_OK)
 
-@api_view(["GET"])
+
+
+@swagger_auto_schema(method="patch", request_body=UpdateStatusSerializer())
+@api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def vendor_update_item_status(request, id):
@@ -971,7 +974,7 @@ def vendor_update_item_status(request, id):
     if item.status == "user-canceled":
         raise ValidationError(detail={"message":"item has been canceled from the order"})
     
-    if request.method == "POST":
+    if request.method == "PATCH":
         serializer = UpdateStatusSerializer(data = request.data)
         
         serializer.is_valid(raise_exception=True)
