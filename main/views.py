@@ -184,7 +184,7 @@ class LocationView(ListCreateAPIView):
     serializer_class = LocationSerializer
     queryset = Location.objects.all().order_by('-date_added')
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
 
 
