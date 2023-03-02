@@ -110,10 +110,15 @@ class OrderItemSerializer(serializers.ModelSerializer):
     image_url = serializers.ReadOnlyField()
     address_data = serializers.ReadOnlyField()
     store = serializers.ReadOnlyField()
+    product_sku = serializers.SerializerMethodField()
     
     class Meta:
         fields = "__all__"
         model = OrderItem
+        
+        
+    def get_product_sku(self, obj):
+        return obj.item.product_sku
 
 
 class UpdateStatusSerializer(serializers.Serializer):
