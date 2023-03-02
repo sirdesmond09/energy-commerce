@@ -97,7 +97,7 @@ class Product(models.Model):
     
     @property
     def locations_list(self):
-        return self.locations.values("location__name", "location__region")
+        return self.locations.values("name", "region")
     
     
     @property
