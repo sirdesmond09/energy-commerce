@@ -969,7 +969,7 @@ class VendorItemListView(ListAPIView):
         
         if startDate and endDate:
             startDate = datetime.strptime(startDate, "%Y-%m-%d").date()
-            endDate = datetime.strptime(startDate, "%Y-%m-%d").date()
+            endDate = datetime.strptime(endDate, "%Y-%m-%d").date()
             queryset = queryset.filter(date_added__range=[startDate, endDate])
 
 
