@@ -949,7 +949,7 @@ def accept_order(request, booking_id):
 class VendorItemListView(ListAPIView):
     """Returns a list of order items for vendor to attend to"""
     
-    queryset = OrderItem.objects.filter(is_deleted=False).exclude(status="user-canceled").exclude(status="pending").exclude(status="cancel-requested").order_by("status","-date_added")
+    queryset = OrderItem.objects.filter(is_deleted=False).exclude(status="user-canceled").exclude(status="pending").exclude(status="cancel-requested").order_by("-date_added")
     
    
     serializer_class = OrderItemSerializer
@@ -958,7 +958,12 @@ class VendorItemListView(ListAPIView):
     
     
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset()).filter(item__vendor=request.user)
+        
+        status = self.request.GET.get('status')
+        queryset = self.filter_queryset(self.get_queryset()).filter(item__vendor=self.request.user)
+        
+        if status:
+            queryset = queryset.filter(status=status)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
