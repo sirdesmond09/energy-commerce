@@ -273,7 +273,7 @@ class OrderItem(models.Model):
     
     @property
     def address_data(self):
-        return model_to_dict(self.item.address, exclude=["id", "user", "date_added", "is_deleted"])
+        return self.order.address_data
     
     @property
     def store(self):
