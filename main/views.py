@@ -724,7 +724,7 @@ class OrderDetail(RetrieveAPIView):
     
     serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated | OrderTablePermissions]
+    permission_classes = [IsUserOrVendor | OrderTablePermissions]
     lookup_field = "id"
     
     
@@ -734,8 +734,6 @@ class OrderDetail(RetrieveAPIView):
         if request.user.role == "user" and instance.user != request.user:
             raise PermissionDenied({"message": "cannot retrieve details for another user's order"})
         
-        if request.user.role == "admin" and not OrderTablePermissions.has_permission():
-            raise PermissionDenied({"message" : "you do not have permission to perform this action"})
             
             
         serializer = self.get_serializer(instance)
