@@ -952,7 +952,7 @@ class VendorItemListView(ListAPIView):
     queryset = OrderItem.objects.filter(is_deleted=False).exclude(status="user-canceled").exclude(status="pending").exclude(status="cancel-requested").order_by("status","-date_added")
     
    
-    serializer = OrderItemSerializer
+    serializer_class = OrderItemSerializer
     authentication_classes([JWTAuthentication])
     permission_classes([IsVendor])
     
