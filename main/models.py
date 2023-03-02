@@ -55,7 +55,7 @@ class Product(models.Model):
     qty_available = models.PositiveIntegerField(default=0)
     max_order_qty = models.PositiveIntegerField(null=True)
     dimensions = models.CharField(max_length=255, null=True)
-    # locations = models.ManyToManyField("main.Location", blank=True)
+    locations = models.ManyToManyField("main.Location", blank=True)
     SE_delivery_fee  = models.FloatField(default=0)
     SW_delivery_fee  = models.FloatField(default=0)
     SS_delivery_fee  = models.FloatField(default=0)
