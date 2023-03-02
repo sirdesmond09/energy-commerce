@@ -45,6 +45,7 @@ class Product(models.Model):
     desc = models.TextField()
     price = models.FloatField()
     product_sku = models.CharField(max_length=255, null=True)
+    ships_from = models.CharField(max_length=255, null=True)
     battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
                                                               ("lithium", "Lithium")),
                                     null=True, blank=True)
@@ -54,7 +55,13 @@ class Product(models.Model):
     qty_available = models.PositiveIntegerField(default=0)
     max_order_qty = models.PositiveIntegerField(null=True)
     dimensions = models.CharField(max_length=255, null=True)
-    locations = models.ManyToManyField("main.DeliveryDetail", blank=True)
+    locations = models.ManyToManyField("main.Location", blank=True)
+    SE_delivery_fee  = models.FloatField(default=0)
+    SW_delivery_fee  = models.FloatField(default=0)
+    SS_delivery_fee  = models.FloatField(default=0)
+    NE_delivery_fee  = models.FloatField(default=0)
+    NW_delivery_fee  = models.FloatField(default=0)
+    NC_delivery_fee  = models.FloatField(default=0)
     primary_img = models.ImageField(
         upload_to='products/primary_imgs', 
         validators=[
@@ -63,6 +70,7 @@ class Product(models.Model):
         ], blank=True)
     key_features = ArrayField(base_field=models.CharField(max_length=255), blank=True, null=True)
     warranty = models.TextField(blank=True, null=True)
+    disclaimer = models.TextField(blank=True, null=True)
     vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
     installation_fee = models.FloatField(default=0)
@@ -89,7 +97,7 @@ class Product(models.Model):
     
     @property
     def locations_list(self):
-        return self.locations.values("location__name", "delivery_fee")
+        return self.locations.values("location__name", "location__region")
     
     
     @property
@@ -129,18 +137,28 @@ class ProductGallery(models.Model):
     
     
     
-class DeliveryDetail(models.Model):
-    location = models.ForeignKey("main.Location", on_delete=models.CASCADE)
-    delivery_fee = models.FloatField()
-    vendor = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+# class DeliveryDetail(models.Model):
+#     location = models.ForeignKey("main.Location", on_delete=models.CASCADE)
+#     delivery_fee = models.FloatField()
+#     vendor = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     
     
-    def __str__(self):
-        return self.location.name
+#     def __str__(self):
+#         return self.location.name
     
 class Location(models.Model):
+    
+    REGIONS = (
+        ("NW", "NW"),
+        ("NE", "NE"),
+        ("NC", "NC"),
+        ("SW", "SW"),
+        ("SE", "SE"),
+        ("SS", "SS"),
+    )
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     name = models.CharField(max_length=255, unique=True)   
+    region = models.CharField(max_length=255, null=True, choices=REGIONS)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
