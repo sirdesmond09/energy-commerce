@@ -1,3 +1,4 @@
+from datetime import datetime
 from main.helpers import payment_is_verified
 from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, DeliveryDetailSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
 from .models import Address, Cart, Commission, DeliveryDetail, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
@@ -958,10 +959,19 @@ class VendorItemListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         
         status = self.request.GET.get('status')
+        startDate = request.GET.get('start_date')
+        endDate = request.GET.get('end_date')
         queryset = self.filter_queryset(self.get_queryset()).filter(item__vendor=self.request.user)
         
         if status:
             queryset = queryset.filter(status=status)
+            
+        
+        if startDate and endDate:
+            startDate = datetime.strptime(startDate, "%Y-%m-%d").date()
+            endDate = datetime.strptime(startDate, "%Y-%m-%d").date()
+            queryset = queryset.filter(date_added__range=[startDate, endDate])
+
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -1066,4 +1076,4 @@ class PayOutList(ListAPIView):
 class PayOutDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = PayOutSerializer
     queryset = PayOuts.objects.all()
-    lookup_field = "id"
+    lookup_field = "id"    
