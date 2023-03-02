@@ -944,28 +944,39 @@ def accept_order(request, booking_id):
             raise ValidationError(detail={"message" : "cannot accept and unpaid order"})
     
 
-@api_view(["GET"])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-def vendor_items(request):
+
+        
+class VendorItemListView(ListAPIView):
     """Returns a list of order items for vendor to attend to"""
     
-    items = OrderItem.objects.filter(item__vendor=request.user, status="confirmed", is_deleted=False).order_by("-date_added")
+    queryset = OrderItem.objects.filter(is_deleted=False).exclude(status="user-canceled").exclude(status="pending").exclude(status="cancel-requested").order_by("status","-date_added")
     
    
-    serializer = OrderItemSerializer(items, many=True)
+    serializer = OrderItemSerializer
+    authentication_classes([JWTAuthentication])
+    permission_classes([IsVendor])
     
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset()).filter(item__vendor=request.user)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
     
     
 
-    return Response(serializer.data , status=status.HTTP_200_OK)
 
 
 
 @swagger_auto_schema(method="patch", request_body=UpdateStatusSerializer())
 @api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsVendor])
 def vendor_update_item_status(request, id):
     """Allows vendor to update the status of an order item"""
     
@@ -980,6 +991,9 @@ def vendor_update_item_status(request, id):
    
     if item.status == "user-canceled":
         raise ValidationError(detail={"message":"item has been canceled from the order"})
+    
+    if item.status == "cancel-requested":
+        raise ValidationError(detail={"message":"owner has requested to cancel"})
     
     if request.method == "PATCH":
         serializer = UpdateStatusSerializer(data = request.data)
