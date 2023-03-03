@@ -460,8 +460,9 @@ def assign_role(request, user_id):
 @permission_classes([IsAuthenticated])
 def activity_logs(request):
     
-    """Gives admin a statistc of vendor information"""
-    logs = ActivityLog.objects.filter(is_deleted=False, user=request.user).order_by("-date_created").values("action")
+    """shows 10 most recent logged user activities"""
+    
+    logs = ActivityLog.objects.filter(is_deleted=False, user=request.user).order_by("-date_created").values("action")[:10]
     
     
     
