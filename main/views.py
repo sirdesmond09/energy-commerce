@@ -930,8 +930,7 @@ def accept_order(request, booking_id):
             order.save()
             
             
-            order.items.filter(status="pending", is_deleted=False).update(status="confirmed",
-                                                        confirmed_at= timezone.now())
+            order.items.filter(status="pending", is_deleted=False).update(status="confirmed",confirmed_at= timezone.now())
             
             
                     

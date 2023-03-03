@@ -21,7 +21,9 @@ class ProductAdmin(admin.ModelAdmin):
 
 class OrderItemAdmin(admin.TabularInline):
     model=OrderItem 
-
+    list_display = ["order", "status",]
+    list_filter = ["order", "status"]
+ 
 class PaymentAdmin(admin.TabularInline):
     model=PaymentDetail 
     
