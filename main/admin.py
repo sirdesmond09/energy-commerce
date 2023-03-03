@@ -21,8 +21,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 class OrderItemAdmin(admin.TabularInline):
     model=OrderItem 
-    list_display = ["order", "status",]
-    list_filter = ["order", "status"]
+    
  
 class PaymentAdmin(admin.TabularInline):
     model=PaymentDetail 
@@ -33,5 +32,10 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ["is_deleted"]
     inlines = [OrderItemAdmin,PaymentAdmin]
     
+@admin.register(OrderItem)
+class ItemAdmin(admin.ModelAdmin):
+    model = OrderItem
+    list_display = ["order", "status",]
+    list_filter = ["order", "status"]
     
-admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent, Cart, OrderItem, PayOuts, Commission])
+admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent, Cart, PayOuts, Commission])
