@@ -120,3 +120,12 @@ class IsVendorOrReadOnly(BasePermission):
             request.user.role=="vendor" and
             request.user.is_authenticated
         )
+        
+        
+
+class DashboardPermission(BasePermission):
+    
+    def has_permission(self, request, view):
+        return bool(
+            request.user.is_authenticated and request.user.has_perm("accounts.view_dashboard") 
+        )

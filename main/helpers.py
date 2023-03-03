@@ -1,6 +1,7 @@
 import os
 import requests
 from rest_framework.exceptions import ValidationError
+from django.utils import timezone
 
 def payment_is_verified(trans_id):
     base_url = os.getenv("FLUTTER_VERIFICATION_URL")
@@ -25,3 +26,7 @@ def payment_is_verified(trans_id):
     else:
         return {"message": "payment not found"}
     
+
+def calculate_start_date(days_ago):
+    """Helper function to calculate start date"""
+    return (timezone.now() - timezone.timedelta(days=days_ago)).date()

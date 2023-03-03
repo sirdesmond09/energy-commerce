@@ -104,6 +104,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         else:
             return None   
         
+        
+    class Meta:
+        permissions = [
+            ("view_dashboard", "Can view all dashboards"),
+        ]
+        
     
     
         

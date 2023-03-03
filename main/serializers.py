@@ -82,6 +82,7 @@ class AddProductSerializer(serializers.Serializer):
     
 class CategorySerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField()
+    product_count = serializers.SerializerMethodField()
     
     class Meta:
         fields = "__all__"
@@ -90,6 +91,11 @@ class CategorySerializer(serializers.ModelSerializer):
         
     def get_products(self, category):
         return ProductSerializer(category.product_items.filter(is_deleted=False), many=True).data[:4]
+    
+    
+    def get_product_count(self, category):
+        return category.product_items.filter(is_deleted=False).count()
+        
 
 class LocationSerializer(serializers.ModelSerializer):
     

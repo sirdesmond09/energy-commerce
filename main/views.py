@@ -1,5 +1,5 @@
 from datetime import datetime
-from main.helpers import payment_is_verified
+from main.helpers import payment_is_verified, calculate_start_date
 from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
 from .models import Address, Cart, Commission, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
 from rest_framework import status
@@ -8,12 +8,14 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from accounts.permissions import CustomDjangoModelPermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderTablePermissions, ProductTablePermissions
+from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderTablePermissions, ProductTablePermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
 from django.conf import settings
 from rest_framework.pagination import LimitOffsetPagination
+import calendar
+
 
 pagination_class = LimitOffsetPagination()
 
@@ -1034,8 +1036,11 @@ def vendor_update_item_status(request, id):
         
 @api_view(["GET"])
 @authentication_classes([JWTAuthentication])
-@permission_classes([CustomDjangoModelPermissions])
+@permission_classes([DashboardPermission])
 def dashboard_stat(request):
+    
+    today = timezone.now().date()
+    
     payments = PaymentDetail.objects.all()
     
     
@@ -1055,10 +1060,29 @@ def dashboard_stat(request):
         
         
     }
+    start_date = calculate_start_date(6)
+    order_items = OrderItem.objects.filter(is_deleted=False,
+                                           date_added__date__range=[start_date, today])
+    
+    product_orders = {
+        "pending" : order_items.filter(status="confirmed").count(),
+        "processing" : order_items.filter(status="processing").count(),
+        "delivered" : order_items.filter(status="delivered").count(),
+    }
+    
+    payout = PayOuts.objects.filter(is_deleted=False)
+    
+    payout_data = {
+        "total" : payout.count(),
+        "pending" : payout.filter(status="pending").count(),
+        "paid" : payout.filter(status="paid").count(),
+    }
     
     data = {
         'order_data' : order_data,
-        "payment_data" : payment_data
+        "payment_data" : payment_data,
+        "product_orders" : product_orders,
+        "payout_data" : payout_data
     }
     
     return Response(data, status=status.HTTP_200_OK)
