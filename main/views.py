@@ -1,4 +1,5 @@
 from datetime import datetime
+from accounts.models import ActivityLog
 from main.helpers import payment_is_verified, calculate_start_date
 from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
 from .models import Address, Cart, Commission, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
@@ -143,13 +144,12 @@ def update_galley(request, product_id, img_id=None):
     
     if request.method == "POST":
         serializer = GallerySerializer(data=request.data, many=True)
-        
+        images = []
         serializer.is_valid(raise_exception=True)
         
         try:
             product = Product.objects.get(id=product_id, is_deleted=False)
             
-            images = []
             for data in serializer.validated_data:
                 images.append(ProductGallery(**data, product=product))
             ProductGallery.objects.bulk_create(images)
@@ -160,6 +160,12 @@ def update_galley(request, product_id, img_id=None):
     
         except Exception as e:
             raise ValidationError(str(e))
+        
+        
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"Added {len(images)} image(s) to product gallery"
+            )
         
         return Response({"message": "success"}, status=status.HTTP_202_ACCEPTED)
     
@@ -178,6 +184,10 @@ def update_galley(request, product_id, img_id=None):
         except ProductGallery.DoesNotExist:
             raise NotFound(detail={"message": "Image not found or does not exist"})
         
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"Removed image from product gallery"
+            )
         
         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
     
@@ -226,6 +236,12 @@ class AddressListCreateView(ListCreateAPIView):
         serializer.validated_data["user"] = request.user
         
         self.perform_create(serializer)
+        
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"created new delivery address"
+            )
+        
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
@@ -262,6 +278,7 @@ class AddressesDetailView(RetrieveUpdateDestroyAPIView):
         
         if instance.user != request.user:
             raise PermissionDenied(detail={"message": "you do not have permission to edit this address"})
+        
         return super().put(request, *args, **kwargs)
     
     @swagger_auto_schema(method="patch", request_body=AddressSerializer())
@@ -303,6 +320,7 @@ def new_order(request):
             "booking_id": order.booking_id,
             "total_amount" : order.total_price
         }
+        
         
         return Response(data, status=status.HTTP_201_CREATED)
     
@@ -355,6 +373,11 @@ def outright_payment(request, booking_id):
             
             
             PayOuts.objects.bulk_create(payouts)
+            
+            ActivityLog.objects.create(
+                user=request.user,
+                action = f"Created and paid outright for order {order.booking_id}"
+            )
             
             data = {
                 "message": "success",
@@ -464,6 +487,11 @@ class CartListCreateView(ListCreateAPIView):
                 serializer.validated_data.remove(data)
         else:
             self.perform_create(serializer)
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"Created a new cart"
+            )
             
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -552,6 +580,12 @@ def request_order_cancel(request, booking_id):
         order.cancellation_reason = serializer.validated_data.get("reason")
         order.cancel_requested_at = timezone.now()
         order.save()
+        
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"Requested to cancel order {booking_id}"
+                )
+        
         return Response({"message":"success"},status=status.HTTP_202_ACCEPTED)
     
     
@@ -590,6 +624,12 @@ def request_order_item_cancel(request, booking_id, item_id):
         order_item.cancellation_reason = serializer.validated_data.get("reason")
         order_item.cancel_requested_at = timezone.now()
         order_item.save()
+        
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"Requested to cancel order item ID {item_id} from order {booking_id}"
+                )
+        
         return Response({"message":"success"},status=status.HTTP_202_ACCEPTED)
     
     
@@ -635,6 +675,11 @@ def respond_to_cancel_request(request, booking_id=None, item_id=None):
                 products.append(order_item.item)
                 
             Product.objects.bulk_update(products, ["qty_available"])
+            
+            ActivityLog.objects.create(
+                user=request.user,
+                action = f"Accepted to cancel order {booking_id}"
+                )
         
         elif isinstance(obj, OrderItem):
             
@@ -649,6 +694,11 @@ def respond_to_cancel_request(request, booking_id=None, item_id=None):
                 order.cancellation_response_reason = "all items were cancelled"
                 order.cancel_responded_at = timezone.now()
                 order.save()
+                
+            ActivityLog.objects.create(
+            user=request.user,
+            action = f"Accepted to cancel order item ID {item_id} from order {booking_id}"
+            )
     
                 
     elif response == "rejected":  
@@ -657,7 +707,10 @@ def respond_to_cancel_request(request, booking_id=None, item_id=None):
         obj.cancellation_response_reason = serializer.validated_data.get("reason")
         obj.cancel_responded_at = timezone.now()
         obj.save()    
-        
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"Declined a cancel request"
+        )
     
     return Response({"message": "{} successfully".format(response)}, status=status.HTTP_200_OK)
                 
@@ -851,6 +904,12 @@ def order_item_detail(request, booking_id, item_id):
         
         serializer.save()
         
+        #log activity
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"Edited an item in order {order.booking_id}"
+        )
+        
         return Response({"message" : "success"}, status=status.HTTP_200_OK)
     
     
@@ -902,6 +961,11 @@ def set_default_address(request, id):
     address.save()
     
     
+    #log activity
+    ActivityLog.objects.create(
+            user=request.user,
+            action = f"Set an address as default"
+    )
             
             
     return Response({"message" : "success"}, status=status.HTTP_200_OK)
@@ -934,12 +998,17 @@ def accept_order(request, booking_id):
             
             
                     
+            #log activity
+            ActivityLog.objects.create(
+                    user=request.user,
+                    action = f"Accepted order {order.booking_id}"
+            )
                     
             return Response({"message" : "success"}, status=status.HTTP_200_OK)
         
         
         else:
-            raise ValidationError(detail={"message" : "cannot accept and unpaid order"})
+            raise ValidationError(detail={"message" : "cannot accept an unpaid order"})
     
 
 
@@ -1024,8 +1093,13 @@ def vendor_update_item_status(request, id):
         if item.status == rules.get(status):
             item.status = status
             item.save()
-    
 
+            #log activity
+            ActivityLog.objects.create(
+                    user=request.user,
+                    action = f"Changed order item status to {item.status}"
+            )
+            
             return Response({"message":"success"}, status=status.HTTP_200_OK)
         
         else:

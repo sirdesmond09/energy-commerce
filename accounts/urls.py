@@ -44,6 +44,7 @@ urlpatterns = [
     path("modules/", views.ModuleAccessList.as_view(), name="modules"),
     path("roles/", views.GroupListCreate.as_view(), name="roles"),
     path("roles/<int:id>", views.GroupDetail.as_view(), ),
-    path("admin/vendors-stat", views.dashboard_vendor_stat,)
+    path("admin/vendors-stat", views.dashboard_vendor_stat,),
+    path("activity-logs/", views.activity_logs)
     
 ]

@@ -1,4 +1,4 @@
-from accounts.permissions import CustomDjangoModelPermissions, UserTablePermissions
+from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, UserTablePermissions
 from main.serializers import ProductSerializer
 from .serializers import AddVendorSerializer, AssignRoleSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
@@ -19,10 +19,11 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.decorators import action
 from djoser.views import UserViewSet
 from rest_framework.views import APIView
-from .models import ModuleAccess, StoreBankDetail, StoreProfile
+from .models import ActivityLog, ModuleAccess, StoreBankDetail, StoreProfile
 from django.contrib.auth.hashers import check_password
 from main.models import Product
 from django.contrib.auth.models import Permission, Group
+from django.contrib.admin.models import LogEntry
 
 
 
@@ -56,10 +57,18 @@ class CustomUserViewSet(UserViewSet):
         if check_password(password, instance.password):
             
             self.perform_destroy(instance)
+            ActivityLog.objects.create(
+                user=instance,
+                action = f"Deleted account"
+            )
             return Response(status=status.HTTP_204_NO_CONTENT)
         
         elif request.user.role == "admin" and check_password(password, request.user.password):
             self.perform_destroy(instance)
+            ActivityLog.objects.create(
+                user=request.user,
+                action = f"Deleted account with ID {instance.id}"
+            )
             return Response(status=status.HTTP_204_NO_CONTENT)
         
         # elif password=="google" and request.user.provider=="google":
@@ -90,12 +99,17 @@ class AdminListCreateView(ListCreateAPIView):
                 serializer.validated_data['is_active'] = True
                 serializer.validated_data['is_admin'] = True
                 serializer.validated_data['role'] = "admin"
-                serializer.save()
+                instance = serializer.save()
                 
                 data = {
                     'message' : "success",
                     'data' : serializer.data,
                 }
+                
+                ActivityLog.objects.create(
+                user=request.user,
+                action = f"Created admin with email {instance.email}"
+                )
 
                 return Response(data, status = status.HTTP_201_CREATED)
 
@@ -255,7 +269,11 @@ class AddVendorView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            instance = serializer.save()
+            ActivityLog.objects.create(
+                user=instance,
+                action = f"Signed up as a vendor"
+                )
             return Response({"message":"success"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -293,7 +311,7 @@ class StoreDetailView(RetrieveUpdateDestroyAPIView):
     
 @api_view(["GET"])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsUserOrVendor])
 def user_favourites(request):
     
     if  request.method == "GET":
@@ -321,11 +339,19 @@ def update_favorite(request, product_id=None):
     if request.method == 'PUT':
         user.favourite.add(product)
         
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"Added a product to favorites"
+                )
+        
         return Response({"message": "successfully added"}, status=status.HTTP_200_OK)
     
     elif request.method == 'DELETE':
         user.favourite.remove(product)
-        
+        ActivityLog.objects.create(
+                user=request.user,
+                action = f"Removed a product from favorites"
+                )
         return Response({"message": "successfully removed"}, status=status.HTTP_200_OK) 
     
     
@@ -355,8 +381,8 @@ class GroupDetail(RetrieveUpdateDestroyAPIView):
 
 
 @api_view(["GET"])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAdminUser])
+@authentication_classes([JWTAuthentication])
+@permission_classes([DashboardPermission])
 def dashboard_vendor_stat(request):
     
     """Gives admin a statistc of vendor information"""
@@ -417,10 +443,26 @@ def assign_role(request, user_id):
         serializer = AssignRoleSerializer(data=request.data)
         
         serializer.is_valid(raise_exception=True)
+        roles = serializer.validated_data.get("roles")
+        user.groups.add(*roles)
         
-        user.groups.add(*serializer.validated_data.get("roles"))
-        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"Updated roles for {user.email}"
+            )
         
         return Response({"message":"success"}, status=status.HTTP_200_OK)
         
         
+        
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def activity_logs(request):
+    
+    """Gives admin a statistc of vendor information"""
+    logs = ActivityLog.objects.filter(is_deleted=False, user=request.user).order_by("-date_created").values("action")
+    
+    
+    
+    return Response(logs, status=status.HTTP_200_OK)

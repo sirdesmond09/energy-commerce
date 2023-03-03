@@ -215,3 +215,24 @@ class ModuleAccess(models.Model):
         return self.name
 
 DjangoGroup.add_to_class('module_access', models.ManyToManyField(ModuleAccess,  blank=True))
+
+
+class ActivityLog(models.Model):
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    action = models.CharField(max_length=255)
+    date_created = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+        
+        
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} {self.action}"
+    
