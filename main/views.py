@@ -985,7 +985,7 @@ def accept_order(request,  booking_id, item_id):
    
     
     try:
-        order = OrderItem.objects.get(booking_id=booking_id, is_paid_for=True ,is_deleted=False, status='pending')
+        order = Order.objects.get(booking_id=booking_id, is_paid_for=True ,is_deleted=False, status='pending')
         item = OrderItem.objects.get(id=item_id, order=order, is_deleted=False)
     except Order.DoesNotExist:
         raise NotFound(detail={"message": "order not found"})
