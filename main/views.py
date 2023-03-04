@@ -1126,7 +1126,8 @@ def dashboard_stat(request):
         "power-as-a-service" : payments.filter(payment_type="power-as-a-service").count(),
         }
     
-    orders = Order.objects.filter(is_deleted=False)
+    # orders = Order.objects.filter(is_deleted=False)
+    orders = OrderItem.objects.filter(is_deleted=False)
     order_data = {
         "total_order" :  orders.count(),
         "pending"  : orders.filter(status="pending").count(),
@@ -1140,7 +1141,7 @@ def dashboard_stat(request):
                                            date_added__date__range=[start_date, today])
     
     product_orders = {
-        "pending" : order_items.filter(status="confirmed").count(),
+        "pending" : order_items.filter(status="pending").count(),
         "processing" : order_items.filter(status="processing").count(),
         "delivered" : order_items.filter(status="delivered").count(),
     }
