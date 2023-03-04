@@ -18,14 +18,14 @@ urlpatterns = [
     path("orders/new/", views.new_order, name="new-orders"),
     path("orders/", views.OrderList.as_view(), name="all-orders"),
     path("orders/<uuid:id>", views.OrderDetail.as_view(), name="order-detail"),
-    path("orders/<str:booking_id>/accept/", views.accept_order, name="order_accept"),
+    path("orders/<str:booking_id>/accept/<int:item_id>/", views.accept_order, name="order_accept"),
     
     
-    path("orders/<str:booking_id>/cancel/", views.request_order_cancel, name="request_order_cancel"),
+    # path("orders/<str:booking_id>/cancel/", views.request_order_cancel, name="request_order_cancel"),
     
     path("orders/<str:booking_id>/items/<int:item_id>/cancel/", views.request_order_item_cancel, name="request_orderitem_cancel"),
     
-    path("orders/<str:booking_id>/cancel/respond", views.respond_to_cancel_request, name="respond_order_cancel"),
+    # path("orders/<str:booking_id>/cancel/respond", views.respond_to_cancel_request, name="respond_order_cancel"),
     path("orders/<str:booking_id>/items/<int:item_id>/cancel/respond", views.respond_to_cancel_request, name="respond_orderitem_cancel"),
     
     

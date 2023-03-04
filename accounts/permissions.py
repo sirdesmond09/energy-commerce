@@ -3,7 +3,7 @@ from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework import exceptions
 from django.contrib.auth import get_user_model
 
-from main.models import Order, PaymentDetail, Product
+from main.models import Order, OrderItem, PaymentDetail, Product
 
 
 
@@ -77,6 +77,12 @@ class OrderTablePermissions(CustomBasePermissions):
     
     def __init__(self):
         self.model = Order
+        
+
+class OrderItemTablePermissions(CustomBasePermissions):
+    
+    def __init__(self):
+        self.model = OrderItem
 
 class ProductTablePermissions(CustomBasePermissions):
     

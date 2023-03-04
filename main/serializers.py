@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from main.generators import generate_booking_id
+from main.generators import generate_booking_id, generate_order_id
 from .models import Address, Cart, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
@@ -117,6 +117,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     address_data = serializers.ReadOnlyField()
     store = serializers.ReadOnlyField()
     product_sku = serializers.SerializerMethodField()
+    booking_id = serializers.SerializerMethodField()
     
     class Meta:
         fields = "__all__"
@@ -125,6 +126,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
         
     def get_product_sku(self, obj):
         return obj.item.product_sku
+    
+    def get_booking_id(self,obj):
+        return obj.order.booking_id
 
 
 class UpdateStatusSerializer(serializers.Serializer):
@@ -182,6 +186,7 @@ class AddOrderSerializer(serializers.Serializer):
                 qty = item.get('qty')
                 
                 if product.qty_available >= qty:
+                    item["unique_id"] = generate_order_id()
                     item["unit_price"] = product.price
                     item["installation_fee"] = product.installation_fee
                     product.qty_available  -= qty

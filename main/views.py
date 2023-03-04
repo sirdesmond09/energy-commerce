@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderTablePermissions, ProductTablePermissions
+from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, ProductTablePermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
@@ -637,13 +637,17 @@ def request_order_item_cancel(request, booking_id, item_id):
 @api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def respond_to_cancel_request(request, booking_id=None, item_id=None):
+def respond_to_cancel_request(request, booking_id, item_id):
     
-    if booking_id:
-        obj = Order.objects.get(booking_id=booking_id, is_deleted=False)
+    try:
+        order = Order.objects.get(booking_id=booking_id, is_deleted=False)       
+        obj = OrderItem.objects.get(id=item_id, order=order,is_deleted=False)
     
-    if item_id:    
-        obj = OrderItem.objects.get(id=item_id, order=obj,is_deleted=False)
+    except Order.DoesNotExist:
+        raise NotFound(detail={"Not found"})
+      
+    except OrderItem.DoesNotExist:
+        raise NotFound(detail={"Not found"})
     
     if obj.status != "cancel-requested":
         raise ValidationError(detail={"message":"owner did not request to cancel"})
@@ -661,44 +665,44 @@ def respond_to_cancel_request(request, booking_id=None, item_id=None):
         obj.cancel_responded_at = timezone.now()
         obj.save()
         
-        if isinstance(obj, Order):
-        
-            products = []
+        # if isinstance(obj, Order):
             
-            for order_item in obj.items.all():
-                order_item.item.qty_available += order_item.qty
-                order_item.prev_status = order_item.status
-                order_item.status = "user-canceled"
-                order_item.cancel_responded_at = timezone.now()
-                order_item.cancellation_response_reason = "order was canceled"
-                order_item.save()
-                products.append(order_item.item)
+        #     products = []
+            
+        #     for order_item in obj.items.all():
+        #         order_item.item.qty_available += order_item.qty
+        #         order_item.prev_status = order_item.status
+        #         order_item.status = "user-canceled"
+        #         order_item.cancel_responded_at = timezone.now()
+        #         order_item.cancellation_response_reason = "order was canceled"
+        #         order_item.save()
+        #         products.append(order_item.item)
                 
-            Product.objects.bulk_update(products, ["qty_available"])
+        #     Product.objects.bulk_update(products, ["qty_available"])
             
-            ActivityLog.objects.create(
-                user=request.user,
-                action = f"Accepted to cancel order {booking_id}"
-                )
+        #     ActivityLog.objects.create(
+        #         user=request.user,
+        #         action = f"Accepted to cancel order {booking_id}"
+        #         )
         
-        elif isinstance(obj, OrderItem):
+        # elif isinstance(obj, OrderItem):
             
             ### return the products and save
-            obj.item.qty_available += obj.qty
-            obj.item.save()
+        obj.item.qty_available += obj.qty
+        obj.item.save()
+        
+        ##check if all other items are canceled, then mark order as canceled
+        order = obj.order
+        if all(i.status == "user-canceled" for i in order.items.filter(is_deleted=True)):
+            order.status="user-canceled"
+            order.cancellation_response_reason = "all items were cancelled"
+            order.cancel_responded_at = timezone.now()
+            order.save()
             
-            ##check if all other items are canceled, then mark order as canceled
-            order = obj.order
-            if all(i.status == "user-canceled" for i in order.items.filter(is_deleted=True)):
-                order.status="user-canceled"
-                order.cancellation_response_reason = "all items were cancelled"
-                order.cancel_responded_at = timezone.now()
-                order.save()
-                
-            ActivityLog.objects.create(
-            user=request.user,
-            action = f"Accepted to cancel order item ID {item_id} from order {booking_id}"
-            )
+        ActivityLog.objects.create(
+        user=request.user,
+        action = f"Accepted to cancel order {obj.unique_id}"
+        )
     
                 
     elif response == "rejected":  
@@ -709,7 +713,7 @@ def respond_to_cancel_request(request, booking_id=None, item_id=None):
         obj.save()    
         ActivityLog.objects.create(
                 user=request.user,
-                action = f"Declined a cancel request"
+                action = f"Declined a cancel item request"
         )
     
     return Response({"message": "{} successfully".format(response)}, status=status.HTTP_200_OK)
@@ -750,11 +754,11 @@ def permanently_delete_order(request, booking_id):
     
 class OrderList(ListAPIView):
     
-    queryset = Order.objects.filter(is_deleted=False).order_by("-date_added")
+    queryset = OrderItem.objects.filter(is_deleted=False).order_by("-date_added")
     
-    serializer_class = OrderSerializer
+    serializer_class = OrderItemSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsUserOrVendor |  OrderTablePermissions  ]
+    permission_classes = [IsUserOrVendor |  OrderItemTablePermissions  ]
     
     
     def list(self, request, *args, **kwargs):
@@ -762,7 +766,7 @@ class OrderList(ListAPIView):
         
         
         if request.user.role == "user" or request.user.role == "vendor":
-            queryset = queryset.filter(user=request.user)
+            queryset = queryset.filter(order__user=request.user)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -775,18 +779,18 @@ class OrderList(ListAPIView):
     
 
 class OrderDetail(RetrieveAPIView):
-    queryset = Order.objects.filter(is_deleted=False)
+    queryset = OrderItem.objects.filter(is_deleted=False)
     
-    serializer_class = OrderSerializer
+    serializer_class = OrderItemSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsUserOrVendor | OrderTablePermissions]
+    permission_classes = [IsUserOrVendor | OrderItemTablePermissions]
     lookup_field = "id"
     
     
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         
-        if request.user.role == "user" and instance.user != request.user:
+        if request.user.role == "user" and instance.order.user != request.user:
             raise PermissionDenied({"message": "cannot retrieve details for another user's order"})
         
             
@@ -976,25 +980,23 @@ def set_default_address(request, id):
 @api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([OrderTablePermissions])
-def accept_order(request, booking_id):
+def accept_order(request,  booking_id, item_id):
     
    
     
     try:
-        order = Order.objects.get(booking_id=booking_id, is_paid_for=True ,is_deleted=False, status='pending')
+        order = OrderItem.objects.get(booking_id=booking_id, is_paid_for=True ,is_deleted=False, status='pending')
+        item = OrderItem.objects.get(id=item_id, order=order, is_deleted=False)
     except Order.DoesNotExist:
         raise NotFound(detail={"message": "order not found"})
     
     if request.method == "PATCH":
-        if order.is_paid_for and order.status == "pending":
+        if order.is_paid_for and item.status == "pending":
             
         
-            order.status="processing"
-            order.processed_at = timezone.now()
-            order.save()
-            
-            
-            order.items.filter(status="pending", is_deleted=False).update(status="confirmed",confirmed_at= timezone.now())
+            item.status="confirmed"
+            item.confirmed_at = timezone.now()
+            item.save()
             
             
                     

@@ -250,6 +250,7 @@ class Order(models.Model):
         
         
 class OrderItem(models.Model):
+    unique_id = models.CharField(max_length=20, null=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name="items")
     item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING, related_name="items")
     unit_price = models.FloatField(default=0)
