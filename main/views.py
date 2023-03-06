@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, ProductTablePermissions
+from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductTablePermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
@@ -358,7 +358,7 @@ def outright_payment(request, booking_id):
             
         elif payment_is_verified(trans_id):
             #create payment record
-            PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='outright')
+            PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='outright', status="approved")
             
             
             #mark order as paid
@@ -393,6 +393,172 @@ def outright_payment(request, booking_id):
             return Response({"message":"payment not successful"}, status=status.HTTP_201_CREATED)
                 
     
+    
+@swagger_auto_schema(method="post", request_body=PaymentSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def lease_to_own_payment(request, booking_id):
+    
+    if request.method == "POST":
+        
+        try:
+            order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+        except KeyError:
+            raise ValidationError(detail={"message": "order was not found"})
+        
+        if order.is_paid_for:
+            raise ValidationError(detail={"message": "multiple payment not allowed. order has been paid for"})
+        
+        if PaymentDetail.objects.filter(order=order).exists():
+            raise ValidationError(detail={"message": "payment already initiated for this order. please contact support"})
+            
+        serializer = PaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        
+        try:
+            trans_id = serializer.validated_data["transaction_id"]
+        except KeyError:
+            raise ValidationError(detail={"message": "transaction_id was not provided"})
+        
+            
+    
+        #create payment record
+        PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='lease', status="pending")
+        
+        
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"Created and request lease to own for order {order.booking_id}"
+        )
+        
+        data = {
+            "message": "success",
+            "booking_id": order.booking_id,
+            "total_amount" : order.total_price
+        }
+        
+        return Response(data, status=status.HTTP_201_CREATED)
+    
+
+
+@swagger_auto_schema(method="post", request_body=PaymentSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def power_as_a_service_payment(request, booking_id):
+    
+    if request.method == "POST":
+        
+        try:
+            order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+        except KeyError:
+            raise ValidationError(detail={"message": "order was not found"})
+        
+        if order.is_paid_for:
+            raise ValidationError(detail={"message": "multiple payment not allowed. order has been paid for"})
+        
+        if PaymentDetail.objects.filter(order=order).exists():
+            raise ValidationError(detail={"message": "payment already initiated for this order. please contact support"})
+            
+        serializer = PaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        
+        try:
+            trans_id = serializer.validated_data["transaction_id"]
+        except KeyError:
+            raise ValidationError(detail={"message": "transaction_id was not provided"})
+        
+            
+    
+        #create payment record
+        PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='power-as-a-service', status="pending")
+        
+        
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"Created and request power as a service for order {order.booking_id}"
+        )
+        
+        data = {
+            "message": "success",
+            "booking_id": order.booking_id,
+            "total_amount" : order.total_price
+        }
+        
+        return Response(data, status=status.HTTP_201_CREATED)
+        
+
+
+@swagger_auto_schema(method="patch", request_body=PaymentSerializer())
+@api_view(["PATCH"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([PaymentTablePermissions])
+def validate_payment(request, payment_id):  
+    
+    try:
+        payment = PaymentDetail.objects.get(id=payment_id, is_deleted=False, status="pending") 
+    except PaymentDetail.DoesNotExist:
+        raise NotFound(detail={"message":"payment not found"})
+    
+    serializer  = PaymentSerializer(payment, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data.get("status", None)
+    
+    if data and data in ("approved", "declined"):
+        serializer.save()
+        
+        if data == "approved":
+            
+            order = payment.order
+            
+            #mark order as paid
+            order.is_paid_for =True
+            order.status = "pending"
+            order.save()
+
+            # create payout
+            
+            payouts = [PayOuts(vendor=order_item.item.vendor,
+                                item= order_item,
+                                amount = ((order_item.unit_price * order_item.qty) - ((order_item.unit_price * order_item.qty) * COMMISSION)) + ((order_item.delivery_fee + order_item.installation_fee)* order_item.qty),
+                                order_booking_id = order.booking_id,
+                                commission = (order_item.unit_price * order_item.qty) * COMMISSION,commission_percent = COMMISSION,
+                                                    ) for order_item in order.items.filter(is_deleted=False)]
+            
+            
+            PayOuts.objects.bulk_create(payouts)
+            
+        else:
+            
+            # TODO: what happend when payment is declined?
+            pass
+        
+        action = ""
+        
+        if payment.payment_type == "lease":
+            action = "lease to own"
+        
+        elif payment.payment_type == "power-as-a-service":
+            action = "power as a service"
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"{data.title()} {action} for order {order.booking_id}"
+        )
+        
+        return Response({"message": "success"}, status=status.HTTP_200_OK)
+    
+    
+    raise ValidationError(detail={"message": "status cannot be {} it should be either verified or declined".format(data)})
+        
+    
+               
+                
 
 @swagger_auto_schema(method="post", request_body=EnergyCalculatorSerializer(many=True))
 @api_view(["POST"])

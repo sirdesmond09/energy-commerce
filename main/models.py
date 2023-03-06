@@ -317,6 +317,11 @@ class PaymentDetail(models.Model):
                                               ("lease", "Lease To Own"),
                                               ("power-as-a-service", "Power as a service")),
                                     null=True, blank=True)
+    note = models.TextField(null=True)
+    status = models.CharField(max_length=20,choices=(
+        ("pending", "pending"),
+        ("approved", "approved"),
+        ("declined", "declined")), default="pending")
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     

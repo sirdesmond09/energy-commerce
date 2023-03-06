@@ -32,6 +32,8 @@ urlpatterns = [
     
     path("orders/<str:booking_id>/clear/", views.permanently_delete_order, name="order_clear"),
     path("orders/<str:booking_id>/outright_payment/", views.outright_payment),
+    path("orders/<str:booking_id>/lease_to_own_payment/", views.lease_to_own_payment),
+    path("orders/<str:booking_id>/power_as_a_service_payment/", views.power_as_a_service_payment),
     path("orders/<str:booking_id>/item/<int:item_id>", views.order_item_detail),
     path("energy-calculator/", views.energy_calculator),
     path("products/multiple_products_by_id/", views.multiple_products_by_id),
@@ -47,6 +49,7 @@ urlpatterns = [
     
     path("payouts/", views.PayOutList.as_view(),),
     path("payouts/<int:id>", views.PayOutDetail.as_view(),),
+    path("payments/<int:payment_id>/validate", views.validate_payment,),
     
     
     
