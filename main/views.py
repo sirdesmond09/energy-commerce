@@ -16,7 +16,9 @@ from django.utils import timezone
 from django.conf import settings
 from rest_framework.pagination import LimitOffsetPagination
 import calendar
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 pagination_class = LimitOffsetPagination()
 
@@ -1175,3 +1177,60 @@ class PayOutDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = PayOutSerializer
     queryset = PayOuts.objects.all()
     lookup_field = "id"    
+    
+    
+
+
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([DashboardPermission]) 
+def admin_dashboard_graph(request):
+    """
+    Give ADMIN a graph analytics.
+    Can add url query `start_date` with the date to start from in the format `YY-MM-DD` e.g `start_date=2022-01-11` to see data from 11th to 17th of january.
+    If no query is provided, it gives data for last 7 days
+    """
+    
+    startDate = request.GET.get('start_date')
+    
+   
+    if startDate:
+        start_date = datetime.strptime(startDate, "%Y-%m-%d").date()
+    else:
+        start_date = timezone.now().date() - timezone.timedelta(days=7)
+        
+        
+    all_orders = OrderItem.objects.filter(is_deleted=False)
+    signups = User.objects.filter(is_deleted=False, role="user")
+    
+    
+    
+    date_list = [start_date +  timezone.timedelta(days=x) for x in range(7)]
+    
+    array = []
+    
+    for date in date_list:
+        data = {}
+        orders = all_orders.filter(date_added__date = date)
+        signup = signups.filter(date_joined__date = date)
+        
+        data["day"] = calendar.day_name[date.weekday()][:3]
+        data["date"] = date 
+        data["num_of_orders"] = orders.count()
+        data["signedup_users"] =signup.count()
+        
+        # total_weight = orders.aggregate(total_weight=Sum('weight')).get("total_weight")
+        # data["total_weight"] = total_weight
+        # if total_weight is None:
+        #     data["total_weight"] = 0
+            
+        
+        # total_amount =  orders.aggregate(total_cost=Sum('approximate_cost')).get("total_cost")
+        
+        # data["total_amount"] = total_amount
+        # if total_amount is None:
+        #     data["total_amount"] = 0
+        
+        array.append(data)
+        
+    return Response(array, status=status.HTTP_200_OK)

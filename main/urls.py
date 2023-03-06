@@ -43,6 +43,7 @@ urlpatterns = [
     path("vendors/order-items/", views.VendorItemListView.as_view()),
     path("vendors/order-items/<int:id>/update-status", views.vendor_update_item_status),
     path("admin/dashboard/", views.dashboard_stat),
+    path("admin/dashboard/analytics", views.admin_dashboard_graph),
     
     path("payouts/", views.PayOutList.as_view(),),
     path("payouts/<int:id>", views.PayOutDetail.as_view(),),
