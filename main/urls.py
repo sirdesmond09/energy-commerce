@@ -50,6 +50,8 @@ urlpatterns = [
     path("payouts/", views.PayOutList.as_view(),),
     path("payouts/<int:id>", views.PayOutDetail.as_view(),),
     path("payments/<int:payment_id>/validate", views.validate_payment,),
+    path("payments/", views.PaymentListView.as_view()),
+    path("payments/<int:id>/", views.PaymentDetailView.as_view()),
     
     
     

@@ -240,9 +240,15 @@ class CartSerializer(serializers.ModelSerializer):
         
         
 class PaymentSerializer(serializers.ModelSerializer):
+    order_detail = serializers.SerializerMethodField()
+    
     class Meta:
         fields = "__all__"
         model = PaymentDetail
+        
+        
+    def get_order_detail(self, payment):
+        return OrderSerializer(payment.order).data
         
         
 

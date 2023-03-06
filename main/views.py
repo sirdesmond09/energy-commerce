@@ -1400,3 +1400,28 @@ def admin_dashboard_graph(request):
         array.append(data)
         
     return Response(array, status=status.HTTP_200_OK)
+
+
+
+class PaymentListView(ListAPIView):
+    
+    """Get a list of payments"""
+    
+    queryset = PaymentDetail.objects.filter(is_deleted=False).order_by('-date_added')
+    serializer_class =  PaymentSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [PaymentTablePermissions]
+    
+    
+    
+    
+    
+class PaymentDetailView(RetrieveAPIView):
+    
+    """Get a payment detail"""
+
+    queryset = PaymentDetail.objects.filter(is_deleted=False).order_by('-date_added')
+    serializer_class =  PaymentSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [PaymentTablePermissions]
+    lookup_field = "id"
