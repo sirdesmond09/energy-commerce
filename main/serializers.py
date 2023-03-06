@@ -62,7 +62,10 @@ class AddProductSerializer(serializers.Serializer):
     
     
     def create(self, validated_data):
+        locations = validated_data['product'].pop("locations")
         product = Product.objects.create(**validated_data['product'])
+        product.locations.set(locations)
+        product.save() 
         
         try:
             gallery = []
