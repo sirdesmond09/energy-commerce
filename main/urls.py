@@ -17,7 +17,7 @@ urlpatterns = [
     path("addresses/<uuid:id>/set-default", views.set_default_address, name="user-address-default"),
     path("orders/new/", views.new_order, name="new-orders"),
     path("orders/", views.OrderList.as_view(), name="all-orders"),
-    path("orders/<uuid:id>", views.OrderDetail.as_view(), name="order-detail"),
+    path("orders/<int:id>", views.OrderDetail.as_view(), name="order-detail"),
     path("orders/<str:booking_id>/accept/<int:item_id>/", views.accept_order, name="order_accept"),
     
     
