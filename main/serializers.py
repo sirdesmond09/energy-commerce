@@ -66,8 +66,8 @@ class AddProductSerializer(serializers.Serializer):
     
     
     def create(self, validated_data):
-        primary_img = validated_data.pop('primary_img')
         locations = validated_data['product'].pop("locations")
+        primary_img = validated_data['product'].pop('primary_img')
         product = Product.objects.create(**validated_data['product'], primary_img=primary_img)
         product.locations.set(locations)
         product.save() 
