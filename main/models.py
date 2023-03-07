@@ -71,7 +71,7 @@ class Product(models.Model):
     key_features = ArrayField(base_field=models.CharField(max_length=255), blank=True, null=True)
     warranty = models.TextField(blank=True, null=True)
     disclaimer = models.TextField(blank=True, null=True)
-    vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
+    vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE, null=True)
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
     installation_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)

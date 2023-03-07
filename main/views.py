@@ -52,6 +52,7 @@ def add_product(request):
     
     serializer = AddProductSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    serializer.validated_data['product']['vendor'] = request.user
     serializer.save()
     
     return Response({"message": "successful"}, status=status.HTTP_201_CREATED)
