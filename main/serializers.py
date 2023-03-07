@@ -73,17 +73,24 @@ class AddProductSerializer(serializers.Serializer):
         product.save() 
         
         try:
-            gallery = []
-            components = []
-            for data in validated_data.get("gallery"):
-                image = data.pop("image")
-                gallery.append(ProductGallery(**data, product=product, image=image))
-            for data in validated_data.get("components"):
-                components.append(ProductComponent(**data, product=product))
+            if  "gallery" in validated_data.keys():
+                gallery = []
+            
+                for data in validated_data.get("gallery"):
+                    image = data.pop("image")
+                    gallery.append(ProductGallery(**data, product=product, image=image))
+                    
+                ProductGallery.objects.bulk_create(gallery)
+                
+            if  "components" in validated_data.keys():
+                components = []
+                for data in validated_data.get("components"):
+                    components.append(ProductComponent(**data, product=product))
 
-            ProductGallery.objects.bulk_create(gallery)
-            ProductComponent.objects.bulk_create(components)
+                ProductComponent.objects.bulk_create(components)
+            
         except Exception as e:
+            product.delete_permanently()
             raise ValidationError(str(e))
         
         return product
