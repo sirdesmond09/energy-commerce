@@ -134,6 +134,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     store = serializers.ReadOnlyField()
     product_sku = serializers.SerializerMethodField()
     booking_id = serializers.SerializerMethodField()
+    total_order = serializers.ReadOnlyField() 
     
     class Meta:
         fields = "__all__"

@@ -104,6 +104,14 @@ class Product(models.Model):
     def store(self):
         return self.vendor.store_profile
     
+    
+    @property
+    def total_order(self):
+        
+        items = self.order_items.filter(is_deleted=True).exclude(status__in=["pending","cancel-requested","user-canceled"])
+        return items.count()
+    
+    
     def delete(self):
         self.is_deleted = True
         self.save()
@@ -252,7 +260,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     unique_id = models.CharField(max_length=20, null=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name="items")
-    item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING, related_name="items")
+    item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING, related_name="order_items")
     unit_price = models.FloatField(default=0)
     installation_fee = models.FloatField(default=0)
     qty = models.PositiveIntegerField()
