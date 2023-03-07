@@ -103,7 +103,7 @@ class ProductList(ListAPIView):
 
 class VendorProductList(ListAPIView):
     serializer_class = ProductSerializer
-    queryset = Product.objects.filter(is_deleted=False)
+    queryset = Product.objects.filter(is_deleted=False).order_by("-date_added")
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsVendor | ProductTablePermissions]
     
