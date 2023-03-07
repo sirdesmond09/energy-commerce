@@ -9,7 +9,7 @@ from drf_extra_fields.fields import Base64ImageField
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    primary_img = Base64ImageField
+    primary_img = Base64ImageField()
     gallery = serializers.ReadOnlyField()
     product_components = serializers.ReadOnlyField()
     primary_img_url = serializers.ReadOnlyField()
