@@ -5,9 +5,11 @@ from .models import Address, Cart, Location, Order, OrderItem, PayOuts, PaymentD
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    primary_img = Base64ImageField
     gallery = serializers.ReadOnlyField()
     product_components = serializers.ReadOnlyField()
     primary_img_url = serializers.ReadOnlyField()
@@ -41,6 +43,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
         
 class GallerySerializer(serializers.ModelSerializer):
+
+    image = Base64ImageField()
     class Meta:
         fields = "__all__"
         model = ProductGallery
@@ -62,8 +66,9 @@ class AddProductSerializer(serializers.Serializer):
     
     
     def create(self, validated_data):
+        primary_img = validated_data.pop('primary_img')
         locations = validated_data['product'].pop("locations")
-        product = Product.objects.create(**validated_data['product'])
+        product = Product.objects.create(**validated_data['product'], primary_img=primary_img)
         product.locations.set(locations)
         product.save() 
         
@@ -71,7 +76,8 @@ class AddProductSerializer(serializers.Serializer):
             gallery = []
             components = []
             for data in validated_data.get("gallery"):
-                gallery.append(ProductGallery(**data, product=product))
+                image = data.pop("image")
+                gallery.append(ProductGallery(**data, product=product, image=image))
             for data in validated_data.get("components"):
                 components.append(ProductComponent(**data, product=product))
 
