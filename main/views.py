@@ -1268,7 +1268,7 @@ def vendor_update_item_status(request, id):
             #log activity
             ActivityLog.objects.create(
                     user=request.user,
-                    action = f"Changed order item status to {item.status_}"
+                    action = f"Changed order item status to {item.status}"
             )
             
             return Response({"message":"success"}, status=status.HTTP_200_OK)
