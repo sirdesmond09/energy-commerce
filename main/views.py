@@ -1292,7 +1292,7 @@ def dashboard_stat(request):
         "specta" : payments.filter(payment_type="specta").count(),
         "outright" : payments.filter(payment_type="outright").count(),
         "lease" :payments.filter(payment_type="lease").count(),
-        "power-as-a-service" : payments.filter(payment_type="power-as-a-service").count(),
+        "powerService" : payments.filter(payment_type="power-as-a-service").count(),
         }
     
     # orders = Order.objects.filter(is_deleted=False)
