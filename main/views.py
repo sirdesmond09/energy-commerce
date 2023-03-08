@@ -1252,7 +1252,7 @@ def vendor_update_item_status(request, id):
         
         serializer.is_valid(raise_exception=True)
         
-        status = serializer.validated_data.pop("status")
+        status_ = serializer.validated_data.pop("status")
         
         
         rules = {
@@ -1261,20 +1261,20 @@ def vendor_update_item_status(request, id):
             "delivered"  : "in-transit",
         }
         
-        if item.status == rules.get(status):
-            item.status = status
+        if item.status == rules.get(status_):
+            item.status = status_
             item.save()
 
             #log activity
             ActivityLog.objects.create(
                     user=request.user,
-                    action = f"Changed order item status to {item.status}"
+                    action = f"Changed order item status to {item.status_}"
             )
             
             return Response({"message":"success"}, status=status.HTTP_200_OK)
         
         else:
-            raise ValidationError(detail={"message" : f"Order has to be {rules.get(status)} before {status}"})
+            raise ValidationError(detail={"message" : f"Order has to be {rules.get(status_)} before {status_}"})
         
         
         
