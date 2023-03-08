@@ -1238,7 +1238,7 @@ def vendor_update_item_status(request, id):
         raise ValidationError(detail={"message":"order item is not valid or has been deleted"})
     
         
-    if item.vendor != request.user:
+    if item.order.vendor != request.user:
         raise PermissionDenied(detail={"message":"you do not have permission to perform this action"})
    
     if item.status == "user-canceled":
