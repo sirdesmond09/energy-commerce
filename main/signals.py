@@ -49,3 +49,40 @@ def log_delete_delete(sender, instance:Product, created, **kwargs):
     )
     
 
+
+
+@receiver(post_save, sender=ValidationOTP)
+def verification_otp(sender, instance:ValidationOTP, created, *args,**kwargs):
+    
+    if created:
+        
+        item = instance.order_item
+        user = item.order.user
+        item:OrderItem
+        
+        subject = f"OTP to validate your order"
+            
+        message = f"""Hi, {str(user.first_name).title()}.
+    Your order is on the way.
+    
+    Complete your verification with the OTP below:
+
+                    {instance.code}        
+
+    Expires in 5 minutes!
+
+    Cheers,
+    Imperium Team            
+    """   
+        msg_html = render_to_string('email/verification_otp.html', {
+                        'first_name': str(user.first_name).title(),
+                        'code':instance.code,
+                        'site_name':"Imperium",
+                        "url":"imperium.com.ng",
+                        "order_id" : item.unique_id})
+        
+        email_from = settings.Common.DEFAULT_FROM_EMAIL
+        recipient_list = [user.email]
+        send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+        
+        return

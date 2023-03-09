@@ -287,6 +287,7 @@ class PayOutSerializer(serializers.ModelSerializer):
 class UpdateStatusSerializer(serializers.Serializer):
     
     status = serializers.CharField(max_length=50)
+    verification_code = serializers.CharField(max_length=6, required=False)
     
     
     def validate_status(self, value):
@@ -294,6 +295,8 @@ class UpdateStatusSerializer(serializers.Serializer):
             raise ValidationError(detail={"status can only be 'processing' or 'in-transit' or 'delivered'"})
     
         return value
+    
+    
     
 class CancelSerializer(serializers.Serializer):
     

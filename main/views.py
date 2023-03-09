@@ -1,8 +1,9 @@
 from datetime import datetime
+import random
 from accounts.models import ActivityLog
 from main.helpers import payment_is_verified, calculate_start_date
 from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, UpdateStatusSerializer
-from .models import Address, Cart, Commission, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery
+from .models import Address, Cart, Commission, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -1262,6 +1263,28 @@ def vendor_update_item_status(request, id):
         }
         
         if item.status == rules.get(status_):
+            
+            if status_ == "in-transit":
+                code = "".join([str(random.choice(range(10))) for _ in range(6)])
+                ValidationOTP.objects.create(order_item=item, code = code, vendor=request.user )
+                
+            
+            if status_ == "delivered":
+                code = serializer.validated_data.get("verification_code", None)
+                
+                if code is None:
+                    raise ValidationError(detail={"message": "verification code needed to mark order as delivered"})
+                
+                try:
+                    otp = ValidationOTP.objects.get(code=code, order_item=item,vendor=request.user,is_verified=False )
+                    
+                except ValidationOTP.DoesNotExist:
+                    raise ValidationError(detail={"message": "verification code invalid"})
+                
+                
+                otp.is_verified = True
+                otp.save()
+                
             item.status = status_
             item.save()
 
@@ -1271,6 +1294,7 @@ def vendor_update_item_status(request, id):
                     action = f"Changed order item status to {item.status}"
             )
             
+
             return Response({"message":"success"}, status=status.HTTP_200_OK)
         
         else:

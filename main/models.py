@@ -390,4 +390,10 @@ class PayOuts(models.Model):
         return self.vendor.bank_detail
         
         
+class ValidationOTP(models.Model):
+    order_item = models.ForeignKey(OrderItem, related_name="validation_otp", on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    vendor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    is_verified = models.BooleanField(default=False)
+    
     
