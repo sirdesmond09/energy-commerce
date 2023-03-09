@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id, generate_order_id
-from .models import Address, Cart, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product
+from .models import Address, Cart, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -17,7 +17,7 @@ class ProductSerializer(serializers.ModelSerializer):
     locations_list = serializers.ReadOnlyField()
     vendor_detail = serializers.SerializerMethodField()
     store_detail = serializers.SerializerMethodField()
-    
+    rating = serializers.ReadOnlyField()
     class Meta:
         fields = '__all__'
         model = Product
@@ -39,6 +39,8 @@ class ProductSerializer(serializers.ModelSerializer):
         except Exception as e:
             return {}
         
+        
+    
         
 
         
@@ -135,7 +137,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     product_sku = serializers.SerializerMethodField()
     booking_id = serializers.SerializerMethodField()
     total_order = serializers.ReadOnlyField() 
-    
+    rating_made = serializers.SerializerMethodField()
     class Meta:
         fields = "__all__"
         model = OrderItem
@@ -146,7 +148,19 @@ class OrderItemSerializer(serializers.ModelSerializer):
     
     def get_booking_id(self,obj):
         return obj.order.booking_id
-
+    
+    def get_rating_made(self,obj):
+        rating = obj.rating  
+        
+        if rating is not None:
+            
+            return {
+                "id" : rating.id,
+                "rating": rating.rating,
+                "review" : rating.review
+            }
+            
+        return None
 
 class UpdateStatusSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=200)
@@ -314,3 +328,8 @@ class CancelResponseSerializer(serializers.Serializer):
             raise ValidationError(detail={"status can only be 'accepted' or 'rejected'"})
         
         return value
+    
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Rating
+        fields = "__all__"

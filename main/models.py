@@ -5,6 +5,8 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
 from django.contrib.postgres.fields import ArrayField
+from django.db.models import Sum
+
 
 User = get_user_model()
 
@@ -71,7 +73,7 @@ class Product(models.Model):
     key_features = ArrayField(base_field=models.CharField(max_length=255), blank=True, null=True)
     warranty = models.TextField(blank=True, null=True)
     disclaimer = models.TextField(blank=True, null=True)
-    vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE, null=True)
+    vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE, null=True, related_name="products")
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
     installation_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -110,6 +112,17 @@ class Product(models.Model):
         
         items = self.order_items.filter(is_deleted=True).exclude(status__in=["pending","cancel-requested","user-canceled"])
         return items.count()
+    
+
+    @property
+    def rating(self, obj):
+        all_ratings = obj.ratings.filter(is_deleted=False)
+        
+        if all_ratings.count() > 0:
+            total = all_ratings.aggregate(Sum("rating"))["rating__sum"]
+            rating = total/all_ratings.count()
+            return round(rating, 2)
+        return 0
     
     
     def delete(self):
@@ -397,3 +410,20 @@ class ValidationOTP(models.Model):
     is_verified = models.BooleanField(default=False)
     
     
+class Rating(models.Model):
+    product = models.ForeignKey("main.Product", null=True, on_delete=models.SET_NULL, related_name="ratings")
+    order_item = models.OneToOneField("main.OrderItem", null=True, on_delete=models.SET_NULL, related_name="rating")
+    review = models.TextField(blank=True, null=True)
+    rating = models.PositiveIntegerField()
+    date_created = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+        

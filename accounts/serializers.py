@@ -31,14 +31,23 @@ class CustomUserSerializer(serializers.ModelSerializer):
     store_profile = serializers.ReadOnlyField()
     bank_detail = serializers.ReadOnlyField()
     favourite_detail = serializers.ReadOnlyField()
+    vendor_rating = serializers.SerializerMethodField()
     
     class Meta():
         model = User
-        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions"]
+        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating"]
         extra_kwargs = {
             'password': {'write_only': True}
         }
         
+        
+    def get_vendor_rating(self, vendor):
+        
+        products = vendor.products.filter(is_deleted=False)
+        
+        ratings =  list(map(lambda product : product.rating, products))
+
+        return round(sum(ratings)/len(ratings), 2)
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -245,5 +254,4 @@ class AssignRoleSerializer(serializers.Serializer):
             missing_ids = group_ids - set(g.id for g in roles)
             raise ValidationError(detail={"message": f"roles with ids {missing_ids} not found"})
         
-        print([role.id for role in roles])
         return [role.id for role in roles]
