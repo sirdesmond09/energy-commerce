@@ -115,8 +115,8 @@ class Product(models.Model):
     
 
     @property
-    def rating(self, obj):
-        all_ratings = obj.ratings.filter(is_deleted=False)
+    def rating(self):
+        all_ratings = self.ratings.filter(is_deleted=False)
         
         if all_ratings.count() > 0:
             total = all_ratings.aggregate(Sum("rating"))["rating__sum"]
