@@ -283,6 +283,7 @@ class OrderItem(models.Model):
                                        ("processing", "processing"),
                                        ("in-transit", "in-transit"),
                                        ("delivered", "delivered"),
+                                       ("installed", "installed"),
                                        ("cancel-requested", "cancel-requested"),
                                        ("user-canceled", "user-canceled"),
                                     ), default="pending")
@@ -295,6 +296,7 @@ class OrderItem(models.Model):
     delivered_at = models.DateTimeField(null=True, blank=True)
     in_transit_at = models.DateTimeField(null=True, blank=True)
     processed_at = models.DateTimeField(null=True, blank=True)
+    installed_at = models.DateTimeField(null=True, blank=True)
     cancel_requested_at = models.DateTimeField(null=True, blank=True)
     cancel_responded_at = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)

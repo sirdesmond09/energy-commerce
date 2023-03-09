@@ -932,8 +932,18 @@ class OrderList(ListAPIView):
     
     
     def list(self, request, *args, **kwargs):
+        filterBy = request.GET.get('filterBy')
+        
         queryset = self.filter_queryset(self.get_queryset())
         
+        if filterBy == "open":
+            queryset = queryset.filter(status__in=["pending",  "confirmed","processing", "in-transit"])
+        if  filterBy == "completed":
+            queryset = queryset.filter(status__in=["installed",  "delivered"])
+        
+        if  filterBy == "cancellations":
+                queryset = queryset.filter(status__in=["cancel-requested","user-canceled"])   
+            
         
         if request.user.role == "user" or request.user.role == "vendor":
             queryset = queryset.filter(order__user=request.user)
@@ -971,8 +981,32 @@ class OrderDetail(RetrieveAPIView):
     
 
 
+class PaidOrdersView(ListAPIView):
+    
+    queryset = Order.objects.filter(is_deleted=False).order_by("-date_added")
+    
+    serializer_class = OrderSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsUserOrVendor |  OrderItemTablePermissions  ]
+    
+    
+    def list(self, request, *args, **kwargs):
+        
+        queryset = self.filter_queryset(self.get_queryset()) 
+            
+        
+        if request.user.role == "user" or request.user.role == "vendor":
+            queryset = queryset.filter(order__user=request.user)
 
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    
 # class DeliveryDetailListCreateView(ListCreateAPIView):
     
     
@@ -1155,7 +1189,7 @@ def accept_order(request,  booking_id, item_id):
    
     
     try:
-        order = Order.objects.get(booking_id=booking_id, is_paid_for=True ,is_deleted=False, status='pending')
+        order = Order.objects.get(booking_id=booking_id, is_deleted=False, status='pending')
         item = OrderItem.objects.get(id=item_id, order=order, is_deleted=False)
     except Order.DoesNotExist:
         raise NotFound(detail={"message": "order not found"})
@@ -1260,6 +1294,14 @@ def vendor_update_item_status(request, id):
             "processing" : "confirmed",
             "in-transit" : "processing",
             "delivered"  : "in-transit",
+            "installed" : "delivered",
+        }
+        
+        time_rule = {
+             "processing" : "processed_at",
+            "in-transit" : "in_transit_at",
+            "delivered"  : "delivered_at",
+            "installed" : "installed_at",
         }
         
         if item.status == rules.get(status_):
@@ -1286,6 +1328,8 @@ def vendor_update_item_status(request, id):
                 otp.save()
                 
             item.status = status_
+            time_field = time_rule.get(status_)
+            setattr(item, time_field, timezone.now())
             item.save()
 
             #log activity
@@ -1325,7 +1369,7 @@ def dashboard_stat(request):
         "total_order" :  orders.count(),
         "pending"  : orders.filter(status="pending").count(),
         "processing"  : orders.filter(status="processing").count(),
-        "completed"  : orders.filter(status="completed").count(),
+        "completed"  : orders.filter(status="installed").count() + orders.filter(status="delivered").count(),
         
         
     }
