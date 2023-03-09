@@ -88,7 +88,7 @@ class Product(models.Model):
     @property
     def gallery(self):
         
-        return [i.image.url for i in self.images.all()]
+        return [{"id" : i.id,"image_url":i.image.url} for i in self.images.all()]
         
     
     @property
