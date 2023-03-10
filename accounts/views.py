@@ -161,6 +161,9 @@ def user_login(request):
                         user_logged_in.send(sender=user.__class__,
                                             request=request, user=user)
 
+                        if user.role == 'admin':
+                            user_detail["modules"] = user.module_access
+                            
                         data = {
     
                         "message":"success",

@@ -64,6 +64,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.email} -- {self.role}"
     
+    @property
+    def module_access(self):
+        unique_modules = ModuleAccess.objects.filter(group__user=self.id).distinct().values()
+        
+        return unique_modules
+    
     
     def delete(self):
         self.is_deleted = True
