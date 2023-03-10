@@ -150,7 +150,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return obj.order.booking_id
     
     def get_rating_made(self,obj):
-        rating = obj.rating  
+        rating = Rating.objects.filter(order_item=obj, is_deleted=False)[0]
         
         if rating is not None:
             
