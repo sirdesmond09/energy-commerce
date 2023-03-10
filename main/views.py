@@ -1297,7 +1297,7 @@ class VendorItemListView(ListAPIView):
 @swagger_auto_schema(method="patch", request_body=UpdateStatusSerializer())
 @api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsVendor])
+@permission_classes([IsVendor | OrderItemTablePermissions ])
 def vendor_update_item_status(request, id):
     """Allows vendor to update the status of an order item"""
     
@@ -1306,8 +1306,9 @@ def vendor_update_item_status(request, id):
     except OrderItem.DoesNotExist:
         raise ValidationError(detail={"message":"order item is not valid or has been deleted"})
     
+    user_role = request.user.role 
         
-    if item.item.vendor != request.user:
+    if (item.item.vendor != request.user) and (user_role != "admin"):
         raise PermissionDenied(detail={"message":"you do not have permission to perform this action"})
    
     if item.status == "user-canceled":
@@ -1340,12 +1341,12 @@ def vendor_update_item_status(request, id):
         
         if item.status == rules.get(status_):
             
-            if status_ == "in-transit":
+            if status_ == "in-transit" and user_role != "admin":
                 code = "".join([str(random.choice(range(10))) for _ in range(6)])
                 ValidationOTP.objects.create(order_item=item, code = code, vendor=request.user )
                 
             
-            if status_ == "delivered":
+            if status_ == "delivered" and user_role != "admin":
                 code = serializer.validated_data.get("verification_code", None)
                 
                 if code is None:
