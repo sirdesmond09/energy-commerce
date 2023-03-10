@@ -1222,10 +1222,12 @@ def accept_order(request,  booking_id, item_id):
    
     
     try:
-        order = Order.objects.get(booking_id=booking_id, is_deleted=False, status='pending')
+        order = Order.objects.get(booking_id=booking_id, is_deleted=False)
         item = OrderItem.objects.get(id=item_id, order=order, is_deleted=False)
     except Order.DoesNotExist:
         raise NotFound(detail={"message": "order not found"})
+    except OrderItem.DoesNotExist:
+        raise NotFound(detail={"message": "Item ordered not found"})
     
     if request.method == "PATCH":
         if order.is_paid_for and item.status == "pending":
