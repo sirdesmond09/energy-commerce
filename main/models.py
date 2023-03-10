@@ -47,7 +47,7 @@ class Product(models.Model):
     desc = models.TextField()
     price = models.FloatField()
     product_sku = models.CharField(max_length=255, null=True)
-    ships_from = models.CharField(max_length=255, null=True)
+    # ships_from = models.CharField(max_length=255, null=True)
     battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
                                                               ("lithium", "Lithium")),
                                     null=True, blank=True)
@@ -77,6 +77,11 @@ class Product(models.Model):
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
     installation_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=100, 
+                              choices= [("pending", "pending"),
+                                        ("verified", "verified"),
+                                        ("unapproved", "unapproved")],
+                              default="pending")
     is_deleted = models.BooleanField(default=False)
     
     @property
