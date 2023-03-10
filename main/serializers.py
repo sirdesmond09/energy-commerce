@@ -338,7 +338,10 @@ class UpdateStatusSerializer(serializers.Serializer):
         return value
     
     
+class StatusSerializer(serializers.Serializer):
     
+    status = serializers.CharField(max_length=50)
+
 class CancelSerializer(serializers.Serializer):
     
     reason = serializers.CharField(max_length=50000)

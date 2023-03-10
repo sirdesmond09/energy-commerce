@@ -2,7 +2,7 @@ from datetime import datetime
 import random
 from accounts.models import ActivityLog
 from main.helpers import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, UpdateStatusSerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, UpdateStatusSerializer
 from .models import Address, Cart, Commission, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
@@ -139,7 +139,7 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsVendorOrReadOnly]
 
 
-@swagger_auto_schema(method="patch", request_body=UpdateStatusSerializer())
+@swagger_auto_schema(method="patch", request_body=StatusSerializer())
 @api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([ProductTablePermissions])
@@ -155,7 +155,7 @@ def update_product_status(request, product_id):
     
     
     if request.method == "PATCH":
-        serializer = UpdateStatusSerializer(data=request.data)
+        serializer = StatusSerializer(data=request.data)
         
         serializer.is_valid(raise_exception=True)
         
