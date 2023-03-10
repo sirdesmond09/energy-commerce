@@ -147,30 +147,29 @@ def update_product_status(request, product_id):
     
     """Admin use this endpoint to update the status of a product. You can send either `verified` or  `unapproved` to mark the product as approved or unapproved"""
     
-    if request.method == "POST":
-        try:
-            product = Product.objects.get(id=product_id, is_deleted=False)
-            
-        except Product.DoesNotExist:
-            raise NotFound(detail={"message": "Product not found or does not exist"})
+    try:
+        product = Product.objects.get(id=product_id, is_deleted=False)
         
+    except Product.DoesNotExist:
+        raise NotFound(detail={"message": "Product not found or does not exist"})
+    
+    
+    if request.method == "PATCH":
+        serializer = UpdateStatusSerializer(data=request.data)
         
-        if request.method == "PATCH":
-            serializer = UpdateStatusSerializer(data=request.data)
-            
-            serializer.is_valid(raise_exception=True)
-            
-            new_status = serializer.validated_data.get("status")
-            
-            if new_status not in ("verified",  "unapproved"):
-                raise ValidationError({"message": "status must be 'verified' or 'unapproved'"})
-            
-            product.status = new_status
-            product.save()
-            
-            # TODO: send notice to vendor about status
-            
-            return Response({"message": "Status updated"}, status=status.HTTP_200_OK)
+        serializer.is_valid(raise_exception=True)
+        
+        new_status = serializer.validated_data.get("status")
+        
+        if new_status not in ("verified",  "unapproved"):
+            raise ValidationError({"message": "status must be 'verified' or 'unapproved'"})
+        
+        product.status = new_status
+        product.save()
+        
+        # TODO: send notice to vendor about status
+        
+        return Response({"message": "Status updated"}, status=status.HTTP_200_OK)
 
 
 
