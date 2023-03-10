@@ -15,6 +15,7 @@ class ProductSerializer(serializers.ModelSerializer):
     primary_img_url = serializers.ReadOnlyField()
     category_name = serializers.ReadOnlyField()
     locations_list = serializers.ReadOnlyField()
+    ships_from_list = serializers.ReadOnlyField()
     vendor_detail = serializers.SerializerMethodField()
     store_detail = serializers.SerializerMethodField()
     rating = serializers.ReadOnlyField()

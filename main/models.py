@@ -47,7 +47,7 @@ class Product(models.Model):
     desc = models.TextField()
     price = models.FloatField()
     product_sku = models.CharField(max_length=255, null=True)
-    # ships_from = models.CharField(max_length=255, null=True)
+    ships_from = models.ManyToManyField("main.Location", blank=True, related_name="product_ships_from")
     battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
                                                               ("lithium", "Lithium")),
                                     null=True, blank=True)
@@ -106,6 +106,9 @@ class Product(models.Model):
     def locations_list(self):
         return self.locations.values("name", "region")
     
+    @property
+    def ships_from_list(self):
+        return self.ships_from.values("name", "region")
     
     @property
     def store(self):
