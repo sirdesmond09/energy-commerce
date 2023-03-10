@@ -45,9 +45,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         
         products = vendor.products.filter(is_deleted=False)
         
-        ratings =  list(map(lambda product : product.rating, products))
+        if len(products) > 0:
+            ratings =  list(map(lambda product : product.rating, products))
 
-        return round(sum(ratings)/len(ratings), 2)
+            return round(sum(ratings)/len(ratings), 2)
+
+        return 0
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
