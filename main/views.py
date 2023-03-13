@@ -941,6 +941,9 @@ def permanently_delete_order(request, booking_id):
         raise ValidationError(detail={"message": "order was not found"})
 
     
+    if order.is_paid_for == True:
+        raise ValidationError(detail={"message":"order has been paid for"})
+    
     products = []
     
     for order_item in order.items.all():
