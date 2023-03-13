@@ -135,7 +135,7 @@ class CategorySerializer(serializers.ModelSerializer):
         
         
     def get_products(self, category):
-        return ProductSerializer(category.product_items.filter(is_deleted=False), many=True).data[:4]
+        return ProductSerializer(category.product_items.filter(is_deleted=False, status="verified"), many=True).data[:4]
     
     
     def get_product_count(self, category):
