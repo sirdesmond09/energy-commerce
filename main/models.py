@@ -278,7 +278,13 @@ class Order(models.Model):
     
     @property
     def payment_data(self):
-        return model_to_dict(self.payment.filter(is_deleted=False).first())
+        
+        payment = PaymentDetail.objects.filter(order__id = self.id, is_deleted=False)
+        
+        if payment.exists():
+            return model_to_dict(payment.first())
+        
+        return None
         
     
         
