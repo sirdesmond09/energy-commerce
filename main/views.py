@@ -1023,7 +1023,7 @@ class PaidOrdersView(ListAPIView):
     
     serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsUserOrVendor |  OrderItemTablePermissions  ]
+    permission_classes = [IsUserOrVendor |  OrderTablePermissions  ]
     
     
     def list(self, request, *args, **kwargs):
@@ -1032,7 +1032,7 @@ class PaidOrdersView(ListAPIView):
             
         
         if request.user.role == "user" or request.user.role == "vendor":
-            queryset = queryset.filter(order__user=request.user)
+            queryset = queryset.filter(user=request.user)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
