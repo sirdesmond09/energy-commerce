@@ -60,6 +60,7 @@ urlpatterns = [
     path("calculator-items/", views.CalculatorItemListView.as_view()),
     path("calculator-items/create/", views.CalculatorItemCreateView.as_view()),
     path("calculator-items/<int:id>/", views.CalculatorItemDetailView.as_view()),
+    path("user-inbox/", views.UserInboxListView.as_view()),
     
     
     

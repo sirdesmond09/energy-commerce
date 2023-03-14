@@ -466,3 +466,13 @@ class CalculatorItem(models.Model):
         
     def delete_permanently(self):
         super().delete()
+        
+        
+        
+class UserInbox(models.Model):
+    user = models.ForeignKey(User, models.CASCADE)
+    heading = models.CharField(max_length=255)
+    body = models.TextField()
+    image_url = models.URLField(null=True, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    

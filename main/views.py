@@ -2,8 +2,8 @@ from datetime import datetime
 import random
 from accounts.models import ActivityLog
 from main.helpers import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, UpdateStatusSerializer
-from .models import Address, CalculatorItem, Cart, Commission, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, ValidationOTP
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .models import Address, CalculatorItem, Cart, Commission, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -1599,6 +1599,8 @@ class CalculatorItemListView(ListAPIView):
     serializer_class =  CalculatorItemSerializer
 
 
+
+
     
     
     
@@ -1625,4 +1627,35 @@ class CalculatorItemDetailView(RetrieveUpdateDestroyAPIView):
     
     
     def delete(self, request, *args, **kwargs):
+
         return super().delete(request, *args, **kwargs)
+    
+    
+
+
+class UserInboxListView(ListAPIView):
+    
+    """get all inbox."""
+    
+    queryset = UserInbox.objects.all().order_by('-date_added')
+    serializer_class =  UserInboxSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    
+    def list(self, request, *args, **kwargs):
+        
+       
+        queryset = self.filter_queryset(self.get_queryset()).filter(user=self.request.user)
+        
+
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    
