@@ -196,6 +196,7 @@ class UpdateStatusSerializer(serializers.Serializer):
 class OrderSerializer(serializers.ModelSerializer):
     order_items = serializers.SerializerMethodField()
     address_data = serializers.ReadOnlyField()
+    payment_data  = serializers.ReadOnlyField()
         
     class Meta:
         fields = "__all__"

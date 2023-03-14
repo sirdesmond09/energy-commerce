@@ -274,6 +274,11 @@ class Order(models.Model):
     @property
     def address_data(self):
         return model_to_dict(self.address, exclude=["id", "user", "date_added", "is_deleted"])
+    
+    
+    @property
+    def payment_data(self):
+        return model_to_dict(self.payment.filter(is_deleted=False).first())
         
     
         
