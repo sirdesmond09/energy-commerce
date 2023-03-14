@@ -274,9 +274,9 @@ class AddOrderSerializer(serializers.Serializer):
         
 
 class EnergyCalculatorSerializer(serializers.Serializer ):
-    total_wattage = serializers.IntegerField()
-    total_watt_hour = serializers.IntegerField()
-    
+    total_wattage = serializers.FloatField()
+    total_watt_hour = serializers.FloatField()
+    battery_type = serializers.CharField()
     
     
 class MultipleProductSerializer(serializers.Serializer ):

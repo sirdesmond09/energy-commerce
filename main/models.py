@@ -49,7 +49,8 @@ class Product(models.Model):
     product_sku = models.CharField(max_length=255, null=True)
     ships_from = models.ManyToManyField("main.Location", blank=True, related_name="product_ships_from")
     battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
-                                                              ("lithium", "Lithium")),
+                                                              ("Lithium", "Lithium"),
+                                                              ("Dry cell (SMF)", "Dry cell (SMF)")),
                                     null=True, blank=True)
     battery_cap_AH = models.FloatField(null=True, blank=True)
     total_power_kva = models.FloatField(null=True, blank=True)

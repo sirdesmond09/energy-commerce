@@ -602,16 +602,19 @@ def validate_payment(request, payment_id):
 def energy_calculator(request):
     
     if request.method == "POST":
-        battery = request.GET.get('battery_type')
-        serializer = EnergyCalculatorSerializer(data=request.data, many=True)
+        
+        serializer = EnergyCalculatorSerializer(data=request.data)
         
         if serializer.is_valid():
-        
-            if battery == "tubular":
-                discharge_depth = 0.50
-            elif battery == "lithium":
-                discharge_depth = 0.92
             
+            battery = serializer.validated_data.get('battery_type')
+        
+            if battery == "Tubular":
+                discharge_depth = 0.50
+            elif battery == "Lithium":
+                discharge_depth = 0.92
+            elif battery == "Dry cell (SMF)":
+                discharge_depth = 0.3
             else:
                 raise ValidationError(detail={"message":"select battery type"})
             
@@ -635,11 +638,18 @@ def energy_calculator(request):
             
             batt_total = round(battery_cap/batt_unit, 2)
             
+            products = Product.objects.filter(category__name__icontains='complete solution', 
+                                   total_power_kva__gte=inverter_capacity,
+                                   battery_cap_AH__gte=battery_cap,
+                                   battery_type=battery,
+                                   is_deleted=False)[:4]
+            
             data = {"total_load": total_load,
                     "total_watt_hr": total_watt_hr,
                     "suggested_inverter_capacity":inverter_capacity,
                     "estimated_battery_cap": battery_cap,
-                    "suggested_unit_battery_total":batt_total}
+                    "suggested_unit_battery_total":batt_total,
+                    "recommendations": ProductSerializer(products, many=True).data}
             
             return Response(data)
         
