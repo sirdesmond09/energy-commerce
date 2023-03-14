@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id, generate_order_id
-from .models import Address, Cart, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating
+from .models import Address, CalculatorItem, Cart, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -363,4 +363,11 @@ class CancelResponseSerializer(serializers.Serializer):
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Rating
+        fields = "__all__"
+    
+    
+    
+class CalculatorItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = CalculatorItem
         fields = "__all__"

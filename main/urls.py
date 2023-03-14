@@ -56,7 +56,10 @@ urlpatterns = [
     path("payments/<int:id>/", views.PaymentDetailView.as_view()),
     path("ratings/", views.RatingListCreate.as_view()),
     path("ratings/<int:id>/", views.RatingDetailView.as_view()),
-    path("orders/by-batch/paid/", views.PaidOrdersView.as_view())
+    path("orders/by-batch/paid/", views.PaidOrdersView.as_view()),
+    path("calculator-items/", views.CalculatorItemListView.as_view()),
+    path("calculator-items/create/", views.CalculatorItemCreateView.as_view()),
+    path("calculator-items/<int:id>/", views.CalculatorItemDetailView.as_view()),
     
     
     

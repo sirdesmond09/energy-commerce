@@ -448,3 +448,20 @@ class Rating(models.Model):
     def delete_permanently(self):
         super().delete()
         
+        
+        
+class CalculatorItem(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    power_kw = models.FloatField()
+    avg_hr_per_day = models.FloatField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
