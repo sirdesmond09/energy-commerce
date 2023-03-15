@@ -1257,6 +1257,20 @@ def accept_order(request,  booking_id, item_id):
                     user=request.user,
                     action = f"Accepted order {order.booking_id}"
             )
+            
+            UserInbox.objects.create(
+                            user = order.user,
+                            heading = f"Order {item.unique_id} updated",
+                            body = "You order is now {item.status}"
+                            )
+            
+            
+            UserInbox.objects.create(
+                            user = item.item.vendor,
+                            heading = f"Yayyy! You made a sale!",
+                            body = "An order with OrderID {item.unique_id} has been placed"
+                            )
+            
                     
             return Response({"message" : "success"}, status=status.HTTP_200_OK)
         
@@ -1387,7 +1401,12 @@ def vendor_update_item_status(request, id):
                     action = f"Changed order {item.unique_id} status to {item.status}"
             )
             
-
+            UserInbox.objects.create(
+                            user =item.order.user,
+                            heading = f"Order {item.unique_id}",
+                            body = "You order is now {item.status}"
+                            )
+            
             return Response({"message":"success"}, status=status.HTTP_200_OK)
         
         else:

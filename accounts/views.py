@@ -21,7 +21,7 @@ from djoser.views import UserViewSet
 from rest_framework.views import APIView
 from .models import ActivityLog, ModuleAccess, StoreBankDetail, StoreProfile
 from django.contrib.auth.hashers import check_password
-from main.models import Product
+from main.models import Product, UserInbox
 from django.contrib.auth.models import Permission, Group
 from django.contrib.admin.models import LogEntry
 
@@ -169,6 +169,18 @@ def user_login(request):
                         "message":"success",
                         'data' : user_detail,
                         }
+                        
+                        fcm_token = serializer.validated_data.get("fcm_token")
+                        
+                        if fcm_token:
+                            user.fcm_token = fcm_token
+                            user.save()
+                        
+                        UserInbox.objects.create(
+                            user =user,
+                            heading = "New Login Alert",
+                            body = "You have just logged in")
+                        
                         return Response(data, status=status.HTTP_200_OK)
                     
 
