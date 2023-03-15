@@ -12,9 +12,17 @@ from pathlib import Path
 from django.utils.timezone import timedelta
 
 from configurations import Configuration, values
-
+import firebase_admin
+from firebase_admin import credentials
+import json
 
 class Common(Configuration):
+    
+    FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS")
+    
+    cred = credentials.Certificate(json.loads(FIREBASE_CREDENTIALS))
+    firebase_admin.initialize_app(cred)
+
     # Build paths inside the project like this: BASE_DIR / 'subdir'.
     BASE_DIR = Path(__file__).resolve().parent.parent
 

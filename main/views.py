@@ -1559,6 +1559,7 @@ class RatingDetailView(RetrieveUpdateAPIView):
     queryset =Rating.objects.filter(is_deleted=False)
     permission_classes = [IsUserOrVendor]
     authentication_classes = [JWTAuthentication]
+    lookup_field = "id"
     
     
     

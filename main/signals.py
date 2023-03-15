@@ -8,6 +8,7 @@ from .models import *
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from firebase_admin import messaging
 
 
 
@@ -51,38 +52,14 @@ def log_delete_delete(sender, instance:Product, created, **kwargs):
 
 
 
-@receiver(post_save, sender=ValidationOTP)
-def verification_otp(sender, instance:ValidationOTP, created, *args,**kwargs):
+@receiver(post_save, sender=UserInbox)
+def send_notification(sender, instance:UserInbox, created, *args,**kwargs):
     
     if created:
+        user = instance.user
         
-        item = instance.order_item
-        user = item.order.user
-        item:OrderItem
+        notification = messaging.Notification(title=instance.heading, body=instance.body, image=instance.image_url)
+        messaging.send(messaging.Message(notification=notification, token=user.fcm_token))
         
-        subject = f"OTP to validate your order"
-            
-        message = f"""Hi, {str(user.first_name).title()}.
-    Your order is on the way.
-    
-    Complete your verification with the OTP below:
-
-                    {instance.code}        
-
-    Expires in 5 minutes!
-
-    Cheers,
-    Imperium Team            
-    """   
-        msg_html = render_to_string('email/verification_otp.html', {
-                        'first_name': str(user.first_name).title(),
-                        'code':instance.code,
-                        'site_name':"Imperium",
-                        "url":"imperium.com.ng",
-                        "order_id" : item.unique_id})
-        
-        email_from = settings.Common.DEFAULT_FROM_EMAIL
-        recipient_list = [user.email]
-        send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
         
         return

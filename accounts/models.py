@@ -50,6 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_deleted    = models.BooleanField(_('deleted'), default=False)
     date_joined   = models.DateTimeField(_('date joined'), auto_now_add=True)
     sent_vendor_email = models.BooleanField(default=False)
+    fcm_token = models.TextField(null=True)
     
     
     objects = UserManager()
