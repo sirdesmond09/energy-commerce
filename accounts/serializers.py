@@ -43,7 +43,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         
     def get_vendor_rating(self, vendor):
         
-        products = vendor.products.filter(is_deleted=False)
+        products = vendor.products.filter(is_deleted=False, rating__gte=0)
         
         if len(products) > 0:
             ratings =  list(map(lambda product : product.rating, products))
