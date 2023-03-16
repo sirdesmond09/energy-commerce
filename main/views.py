@@ -1261,14 +1261,14 @@ def accept_order(request,  booking_id, item_id):
             UserInbox.objects.create(
                             user = order.user,
                             heading = f"Order {item.unique_id} updated",
-                            body = "You order is now {item.status}"
+                            body = f"You order is now {item.status}"
                             )
             
             
             UserInbox.objects.create(
                             user = item.item.vendor,
                             heading = f"Yayyy! You made a sale!",
-                            body = "An order with OrderID {item.unique_id} has been placed"
+                            body = f"An order with OrderID {item.unique_id} has been placed"
                             )
             
                     
@@ -1404,7 +1404,7 @@ def vendor_update_item_status(request, id):
             UserInbox.objects.create(
                             user =item.order.user,
                             heading = f"Order {item.unique_id}",
-                            body = "You order is now {item.status}"
+                            body = f"You order is now {item.status}"
                             )
             
             return Response({"message":"success"}, status=status.HTTP_200_OK)
