@@ -58,8 +58,10 @@ def send_notification(sender, instance:UserInbox, created, *args,**kwargs):
     if created:
         user = instance.user
         
-        notification = messaging.Notification(title=instance.heading, body=instance.body, image=instance.image_url)
-        messaging.send(messaging.Message(notification=notification, token=user.fcm_token))
+        if user.fcm_token:
+        
+            notification = messaging.Notification(title=instance.heading, body=instance.body, image=instance.image_url)
+            messaging.send(messaging.Message(notification=notification, token=user.fcm_token))
         
         
         return
