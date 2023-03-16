@@ -55,7 +55,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(max_length=300)
-    fcm_token = serializers.CharField(max_length=5000, required=False)
+    
+    
+class FirebaseSerializer(serializers.Serializer):
+    fcm_token = serializers.CharField(max_length=5000)
 
 
 class LogoutSerializer(serializers.Serializer):

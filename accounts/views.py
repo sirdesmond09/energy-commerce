@@ -1,6 +1,6 @@
 from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, UserTablePermissions
 from main.serializers import ProductSerializer
-from .serializers import AddVendorSerializer, AssignRoleSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
+from .serializers import AddVendorSerializer, AssignRoleSerializer, FirebaseSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -169,18 +169,7 @@ def user_login(request):
                         "message":"success",
                         'data' : user_detail,
                         }
-                        
-                        fcm_token = serializer.validated_data.get("fcm_token")
-                        
-                        if fcm_token:
-                            user.fcm_token = fcm_token
-                            user.save()
-                        
-                        UserInbox.objects.create(
-                            user =user,
-                            heading = "New Login Alert",
-                            body = "You have just logged in")
-                        
+             
                         return Response(data, status=status.HTTP_200_OK)
                     
 
@@ -234,6 +223,29 @@ def logout_view(request):
         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
     except TokenError:
         return Response({"message": "failed", "error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(method="patch",request_body=LogoutSerializer())
+@api_view(["PATCH"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_firebase_token(request):
+    """Update the FCM token for a logged in use to enable push notifications
+
+    Returns:
+        Json response with message of success and status code of 200.
+    """
+    
+    serializer = FirebaseSerializer(data=request.data)
+    
+    serializer.is_valid(raise_exception=True)
+    
+    fcm_token = serializer.validated_data.get("fcm_token")
+
+    request.user.fcm_token = fcm_token
+    request.user.save()
+        
+    return Response({"message": "success"}, status=status.HTTP_200_OK)
     
 
 @swagger_auto_schema(methods=['POST'],  request_body=NewOtpSerializer())
