@@ -43,15 +43,19 @@ class CustomUserSerializer(serializers.ModelSerializer):
         
     def get_vendor_rating(self, vendor):
         
-        products = vendor.products.filter(is_deleted=False)
+        if vendor.role == "vendor":
         
-        if len(products) > 0:
-            non_zero = list(filter(lambda x: x.rating != 0, products))
-            ratings =  list(map(lambda product : product.rating, non_zero))
+            products = vendor.products.filter(is_deleted=False)
+            
+            if len(products) > 0:
+                non_zero = list(filter(lambda x: x.rating != 0, products))
+                ratings =  list(map(lambda product : product.rating, non_zero))
 
-            return round(sum(ratings)/len(ratings), 2)
+                return round(sum(ratings)/len(ratings), 2)
 
-        return 0
+            return 0
+        
+        return 
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
