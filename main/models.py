@@ -112,11 +112,11 @@ class Product(models.Model):
     
     @property
     def locations_list(self):
-        return self.locations.values("name", "region")
+        return self.locations.values("id", "name", "region")
     
     @property
     def ships_from_list(self):
-        return self.ships_from.values("name", "region")
+        return self.ships_from.values("id","name", "region")
     
     @property
     def store(self):
