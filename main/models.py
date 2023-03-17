@@ -79,7 +79,7 @@ class Product(models.Model):
                 allowed_extensions=['png', "jpg", "jpeg"])
         ], blank=True)
     key_features = ArrayField(base_field=models.CharField(max_length=255), blank=True, null=True)
-    # warranty = models.PositiveIntegerField(blank=True, null=True)
+    warranty = models.PositiveIntegerField(blank=True, null=True)
     disclaimer = models.TextField(blank=True, null=True)
     vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE, null=True, related_name="products")
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
