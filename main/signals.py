@@ -65,3 +65,4 @@ def send_notification(sender, instance:UserInbox, created, *args,**kwargs):
         
         
         return
+    
