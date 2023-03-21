@@ -18,6 +18,8 @@ from django.conf import settings
 from rest_framework.pagination import LimitOffsetPagination
 import calendar
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
+
 
 User = get_user_model()
 
@@ -1501,37 +1503,38 @@ class PayOutDetail(RetrieveUpdateDestroyAPIView):
 def admin_dashboard_graph(request):
     """
     Give ADMIN a graph analytics.
-    Can add url query `start_date` with the date to start from in the format `YY-MM-DD` e.g `start_date=2022-01-11` to see data from 11th to 17th of january.
+    Can add url query `start_date` and `end_date` with the date to start from in the format `YY-MM-DD` e.g `?start_date=2022-01-11&start_date=2022-01-17` to see data from 11th to 17th of january.
     If no query is provided, it gives data for last 7 days
     """
     
     startDate = request.GET.get('start_date')
-    
+    endDate = request.GET.get('end_date')
    
-    if startDate:
+    if startDate and endDate:
         start_date = datetime.strptime(startDate, "%Y-%m-%d").date()
-    else:
-        start_date = timezone.now().date() - timezone.timedelta(days=7)
+        end_date = datetime.strptime(endDate, "%Y-%m-%d").date()
+
         
         
     all_orders = OrderItem.objects.filter(is_deleted=False)
-    signups = User.objects.filter(is_deleted=False, role="user")
+    sign_ups = User.objects.filter(is_deleted=False, role="user")
+    revenues = Order.objects.filter(is_deleted=False, is_paid_for=True)
     
     
     
-    date_list = [start_date +  timezone.timedelta(days=x) for x in range(7)]
+    date_list = [start_date +  timezone.timedelta(days=x) for x in range((end_date-start_date).days)]
     
     array = []
     
     for date in date_list:
         data = {}
         orders = all_orders.filter(date_added__date = date)
-        signup = signups.filter(date_joined__date = date)
-        
-        data["day"] = calendar.day_name[date.weekday()][:3]
+        signup = sign_ups.filter(date_joined__date = date)
+        revenue = revenues.filter(date_added__date = date)
         data["date"] = date 
         data["num_of_orders"] = orders.count()
-        data["signedup_users"] =signup.count()
+        data["total_signup"] =signup.count()
+        data['revenue']   = revenue.aggregate(Sum('total_price')).get("total_price__sum")
         
         # total_weight = orders.aggregate(total_weight=Sum('weight')).get("total_weight")
         # data["total_weight"] = total_weight
