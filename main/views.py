@@ -1516,11 +1516,12 @@ def admin_dashboard_graph(request):
 
     else:
         start_date = timezone.now() - timezone.timedelta(days=7)
-        end_date= timezone.now() - timezone.timedelta(days=1) 
+        end_date= timezone.now() 
         
-    all_orders = OrderItem.objects.filter(is_deleted=False)
-    sign_ups = User.objects.filter(is_deleted=False, role="user")
-    revenues = Order.objects.filter(is_deleted=False, is_paid_for=True)
+    
+    all_orders = OrderItem.objects.filter(is_deleted=False, date_added__date__range=[start_date, end_date])
+    sign_ups = User.objects.filter(is_deleted=False, role="user", date_joined__date__range=[start_date, end_date])
+    revenues = Order.objects.filter(is_deleted=False, is_paid_for=True, date_added__date__range=[start_date, end_date])
     
     
     
@@ -1536,7 +1537,7 @@ def admin_dashboard_graph(request):
         data["date"] = date 
         data["num_of_orders"] = orders.count()
         data["total_signup"] =signup.count()
-        data['revenue']   = revenue.aggregate(Sum('total_price')).get("total_price__sum")
+        data['revenue']   = revenue.aggregate(Sum('total_price')).get("total_price__sum", 0)
     
         
         array.append(data)
