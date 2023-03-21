@@ -1514,7 +1514,9 @@ def admin_dashboard_graph(request):
         start_date = datetime.strptime(startDate, "%Y-%m-%d").date()
         end_date = datetime.strptime(endDate, "%Y-%m-%d").date()
 
-        
+    else:
+        start_date = timezone.now() - timezone.timedelta(days=7)
+        end_date= timezone.now() - timezone.timedelta(days=1) 
         
     all_orders = OrderItem.objects.filter(is_deleted=False)
     sign_ups = User.objects.filter(is_deleted=False, role="user")
@@ -1535,18 +1537,7 @@ def admin_dashboard_graph(request):
         data["num_of_orders"] = orders.count()
         data["total_signup"] =signup.count()
         data['revenue']   = revenue.aggregate(Sum('total_price')).get("total_price__sum")
-        
-        # total_weight = orders.aggregate(total_weight=Sum('weight')).get("total_weight")
-        # data["total_weight"] = total_weight
-        # if total_weight is None:
-        #     data["total_weight"] = 0
-            
-        
-        # total_amount =  orders.aggregate(total_cost=Sum('approximate_cost')).get("total_cost")
-        
-        # data["total_amount"] = total_amount
-        # if total_amount is None:
-        #     data["total_amount"] = 0
+    
         
         array.append(data)
         
