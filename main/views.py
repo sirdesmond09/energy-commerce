@@ -979,6 +979,9 @@ class OrderList(ListAPIView):
     
     def list(self, request, *args, **kwargs):
         filterBy = request.GET.get('filterBy')
+        status = self.request.GET.get('status')
+        startDate = request.GET.get('start_date')
+        endDate = request.GET.get('end_date')
         
         queryset = self.filter_queryset(self.get_queryset())
         
@@ -989,6 +992,14 @@ class OrderList(ListAPIView):
         
         if  filterBy == "cancellations":
                 queryset = queryset.filter(status__in=["cancel-requested","user-canceled"])   
+                        
+        if status:
+            queryset = queryset.filter(status=status)
+            
+        if startDate and endDate:
+            startDate = datetime.strptime(startDate, "%Y-%m-%d").date()
+            endDate = datetime.strptime(endDate, "%Y-%m-%d").date()
+            queryset = queryset.filter(date_added__range=[startDate, endDate])
             
         
         if request.user.role == "user" or request.user.role == "vendor":

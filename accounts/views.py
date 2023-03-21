@@ -316,6 +316,25 @@ class VendorListView(ListAPIView):
     authentication_classes([JWTAuthentication])
     permission_classes([IsAdminUser])
     
+    
+    def list(self, request, *args, **kwargs):
+        
+        status = self.request.GET.get('status')
+      
+        if status:
+            queryset = queryset.filter(vendor_status=status)
+            
+        
+       
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
   
 class StoreListView(ListAPIView):
     
