@@ -32,10 +32,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
     bank_detail = serializers.ReadOnlyField()
     favourite_detail = serializers.ReadOnlyField()
     vendor_rating = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
     
     class Meta():
         model = User
-        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "date_joined"]
+        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "roles", "date_joined"]
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -56,6 +57,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
             return 0
         
         return 
+    
+    def get_roles(self, admin):
+        return GroupSerializer(admin.groups.all(), many=True).data
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
