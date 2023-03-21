@@ -2,15 +2,15 @@ from datetime import datetime
 import random
 from accounts.models import ActivityLog
 from main.helpers import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, UpdateStatusSerializer, UserInboxSerializer
-from .models import Address, CalculatorItem, Cart, Commission, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, UserInbox, ValidationOTP
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from accounts.permissions import CalculatorItemTablePermissions, CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductTablePermissions
+from accounts.permissions import CalculatorItemTablePermissions, CustomDjangoModelPermissions, DashboardPermission, FAQTablePermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductTablePermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
@@ -1713,3 +1713,70 @@ class UserInboxListView(ListAPIView):
         return Response(serializer.data)
     
     
+    
+    
+
+
+class FAQCreateView(CreateAPIView):
+    
+    """create a new calculator items."""
+    
+    queryset = FrequentlyAskedQuestion.objects.filter(is_deleted=False).order_by('-date_added')
+    serializer_class =  FAQSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [FAQTablePermissions]
+    
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        
+        self.perform_create(serializer)
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"Created FAQ"
+            )
+            
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    
+    
+class FAQListView(ListAPIView):
+    
+    """get all calculator items."""
+    
+    queryset = FrequentlyAskedQuestion.objects.filter(is_deleted=False).order_by('-date_added')
+    serializer_class =  FAQSerializer
+
+
+
+
+    
+    
+    
+class FAQDetailView(RetrieveUpdateDestroyAPIView):
+    
+    """Edit, retrieve, and delete a calculator item"""
+
+    queryset = FrequentlyAskedQuestion.objects.filter(is_deleted=False).order_by('-date_added')
+    serializer_class =  FAQSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [FAQTablePermissions]
+    
+    
+    @swagger_auto_schema(method="put", request_body=FAQSerializer())
+    @action(methods=["put"], detail=True)
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+    
+    
+    @swagger_auto_schema(method="patch", request_body=FAQSerializer())
+    @action(methods=["patch"], detail=True)
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+    
+    
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)

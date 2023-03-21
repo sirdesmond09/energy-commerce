@@ -61,6 +61,9 @@ urlpatterns = [
     path("calculator-items/create/", views.CalculatorItemCreateView.as_view()),
     path("calculator-items/<int:id>/", views.CalculatorItemDetailView.as_view()),
     path("user-inbox/", views.UserInboxListView.as_view()),
+    path("faqs/", views.FAQListView.as_view()),
+    path("faqs/create/", views.FAQCreateView.as_view()),
+    path("faq/<int:id>/", views.FAQDetailView.as_view()),
     
     
     

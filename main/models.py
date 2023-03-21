@@ -474,6 +474,21 @@ class CalculatorItem(models.Model):
         
     def delete_permanently(self):
         super().delete()
+
+class FrequentlyAskedQuestion(models.Model):
+    question = models.CharField(max_length=255, unique=True)
+    answer = models.FloatField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
         
         
         
