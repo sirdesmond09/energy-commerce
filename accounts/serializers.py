@@ -67,7 +67,7 @@ class FirebaseSerializer(serializers.Serializer):
 
 
 class LogoutSerializer(serializers.Serializer):
-    refresh_token = serializers.CharField(max_length=700)
+    refresh_token = serializers.CharField(max_length=700) 
     
 
 class OTPVerifySerializer(serializers.Serializer):
@@ -152,6 +152,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
     logo_url = serializers.ReadOnlyField()
     cac_doc_url = serializers.ReadOnlyField()
     bank_data = serializers.ReadOnlyField()
+    vendor_data = serializers.SerializerMethodField()
     
     class Meta:
         fields = '__all__'
@@ -160,8 +161,18 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             'logo': {'write_only': True},
             'cac_doc': {'write_only': True}
         }
+        
 
-
+    def get_vendor_data(self, obj):
+        data = CustomUserSerializer(obj.vendor).data
+        data.pop("user_permissions")
+        data.pop("store_profile")
+        data.pop("bank_details")
+        data.pop("groups")
+        
+        return data
+    
+    
 class BankDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
