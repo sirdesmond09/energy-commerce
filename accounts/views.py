@@ -320,6 +320,7 @@ class VendorListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         
         status = self.request.GET.get('status')
+        queryset = self.filter_queryset(self.get_queryset())
       
         if status:
             queryset = queryset.filter(vendor_status=status)
