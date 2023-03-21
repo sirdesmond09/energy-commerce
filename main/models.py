@@ -408,7 +408,8 @@ class PayOuts(models.Model):
     commission = models.FloatField()
     commission_percent = models.FloatField()
     status = models.CharField(max_length=255, choices=(("pending", "pending"),
-                                                       ("paid", "paid"),), default="pending")
+                                                       ("paid", "paid"),
+                                                       ("processing", "processing"),), default="pending")
     date_added = models.DateTimeField(auto_now_add=True)
     date_paid = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
