@@ -226,7 +226,7 @@ def logout_view(request):
         return Response({"message": "failed", "error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method="patch",request_body=LogoutSerializer())
+@swagger_auto_schema(method="patch",request_body=FirebaseSerializer())
 @api_view(["PATCH"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -248,6 +248,8 @@ def update_firebase_token(request):
         
     return Response({"message": "success"}, status=status.HTTP_200_OK)
     
+
+
 
 @swagger_auto_schema(methods=['POST'],  request_body=NewOtpSerializer())
 @api_view(['POST'])
