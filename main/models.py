@@ -411,7 +411,7 @@ class Commission(models.Model):
     
     
 class PayOuts(models.Model):
-    vendor = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL)
+    vendor = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL, related_name="payouts")
     item = models.ForeignKey(OrderItem, on_delete=models.CASCADE, null=True)
     amount = models.FloatField()
     order_booking_id = models.CharField(max_length=255)

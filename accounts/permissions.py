@@ -2,6 +2,7 @@ from rest_framework.permissions import (DjangoModelPermissions)
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework import exceptions
 from django.contrib.auth import get_user_model
+from accounts.models import StoreBankDetail, StoreProfile
 
 from main.models import CalculatorItem, FrequentlyAskedQuestion, Order, OrderItem, PaymentDetail, Product
 
@@ -101,6 +102,14 @@ class CalculatorItemTablePermissions(CustomBasePermissions):
 class FAQTablePermissions(CustomBasePermissions):
     def __init__(self):
         self.model = FrequentlyAskedQuestion
+
+class StoreProfileTablePermissions(CustomBasePermissions):
+    def __init__(self):
+        self.model = StoreProfile
+
+class StoreBankDetailTablePermissions(CustomBasePermissions):
+    def __init__(self):
+        self.model = StoreBankDetail
     
 
 
@@ -143,3 +152,37 @@ class DashboardPermission(BasePermission):
         return bool(
             request.user.is_authenticated and request.user.has_perm("accounts.view_dashboard") 
         )
+        
+        
+
+class VendorPermissions(BasePermission):
+    
+    
+    perms_map = {
+        'GET': ['%(app_label)s.view_%(model_name)s'],
+        'OPTIONS': [],
+        'HEAD': [],
+        'POST': ['%(app_label)s.add_%(model_name)s'],
+        'PUT': ['%(app_label)s.change_%(model_name)s'],
+        'PATCH': ['%(app_label)s.change_%(model_name)s'],
+        'DELETE': ['%(app_label)s.delete_%(model_name)s'],
+    }
+    
+    authenticated_users_only = True
+    
+    def get_required_permissions(self, method, model_cls):
+        """
+        Given a model and an HTTP method, return the list of permission
+        codes that the user is required to have.
+        """
+        
+        kwargs = {
+            'app_label': "accounts",
+            'model_name': "vendor"
+        }
+
+
+        if method not in self.perms_map:
+            raise exceptions.MethodNotAllowed(method)
+        
+        return [perm % kwargs for perm in self.perms_map[method]]

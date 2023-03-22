@@ -1,4 +1,4 @@
-from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, UserTablePermissions
+from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, StoreBankDetailTablePermissions, StoreProfileTablePermissions, UserTablePermissions, VendorPermissions
 from main.serializers import ProductSerializer
 from .serializers import AddVendorSerializer, AssignRoleSerializer, FirebaseSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
@@ -15,7 +15,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView 
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView , RetrieveUpdateAPIView
 from rest_framework.decorators import action
 from djoser.views import UserViewSet
 from rest_framework.views import APIView
@@ -314,8 +314,8 @@ class VendorListView(ListAPIView):
     
     queryset = User.objects.filter(is_deleted=False, role="vendor").order_by('-date_joined')
     serializer_class =  CustomUserSerializer
-    authentication_classes([JWTAuthentication])
-    permission_classes([IsAdminUser])
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [VendorPermissions]
     
     
     def list(self, request, *args, **kwargs):
@@ -343,16 +343,38 @@ class StoreListView(ListAPIView):
     
     queryset = StoreProfile.objects.filter(is_deleted=False).order_by('-date_joined')
     serializer_class =  StoreProfileSerializer
-    authentication_classes([JWTAuthentication])
-    permission_classes([IsAdminUser])  
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [StoreProfileTablePermissions]
     
 
-class StoreDetailView(RetrieveUpdateDestroyAPIView):
+class StoreDetailView(RetrieveUpdateAPIView):
     queryset = StoreProfile.objects.filter(is_deleted=False).order_by('-date_joined')
     serializer_class =  StoreProfileSerializer
     lookup_field = "id"
-    authentication_classes([JWTAuthentication])
-    permission_classes([IsAdminUser])
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsVendor | StoreProfileTablePermissions ]
+    
+
+class BankDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = StoreBankDetail.objects.filter(is_deleted=False).order_by('-date_joined')
+    serializer_class =  BankDetailSerializer
+    lookup_field = "id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [StoreBankDetailTablePermissions]
+    
+    
+    def put(self, request, *args, **kwargs):
+        
+        if request.user.payouts.filter(is_deleted=False, status="processing").exists():
+            raise PermissionDenied(detail={"your bank details cannot be updated at this time. Please contact support"})
+        return self.update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        
+        if request.user.payouts.filter(is_deleted=False, status="processing").exists():
+            raise PermissionDenied(detail={"your bank details cannot be updated at this time. Please contact support"})
+        
+        return self.partial_update(request, *args, **kwargs)
     
     
     
