@@ -113,12 +113,15 @@ class VendorProductList(ListAPIView):
     def list(self, request, *args, **kwargs):
         
         category = request.GET.get('category', None)
-        
+        status = request.GET.get('status', None)
         
         queryset = self.filter_queryset(self.get_queryset())
         
         if category:
             queryset = queryset.filter(category__name=category)
+            
+        if status:
+            queryset = queryset.filter(status=status)
             
         if request.user.role == "vendor":
             queryset = queryset.filter(vendor=request.user)
