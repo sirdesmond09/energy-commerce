@@ -141,3 +141,31 @@ def send_vendor_details(sender, instance, created, **kwargs):
         instance.save()
                 
         return
+    
+    
+    
+@receiver(post_save, sender=User)
+def send_vendor_details(sender, instance, created, **kwargs):
+    if (instance.role =="vendor" and instance.vendor_status=="unapproved") and instance.sent_vendor_email is False:
+        # print(instance.password)
+        subject = "Oops! Something went wrong with your account"
+            
+        message = f"""Hi, {str(instance.first_name).title()}.
+Your vendor account was not approved on imperium. Please contact the administrator on our contact us page.
+
+Cheers,
+{site_name} Team            
+    """   
+        # msg_html = render_to_string('email/vendor_confirm.html', {
+        #                 'first_name': str(instance.first_name).title(),
+        #                 'site_name':site_name,
+        #                 "url":url})
+        
+        email_from = settings.Common.DEFAULT_FROM_EMAIL
+        recipient_list = [instance.email]
+        send_mail( subject, message, email_from, recipient_list)
+        
+        instance.sent_vendor_email =True
+        instance.save()
+                
+        return

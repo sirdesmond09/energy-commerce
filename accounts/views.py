@@ -307,7 +307,31 @@ class AddVendorView(APIView):
     
     
 
+@swagger_auto_schema(methods=['PATCH'], request_body=VendorStatusSerializer())
+@api_view(['PATCH'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([VendorPermissions])
+def update_vendor_status(request, vendor_id):
+    
+    """Api view for marking a vendor as approved, blocked or unapproved"""
 
+    if request.method == 'POST':
+        
+        try:
+            user = User.objects.get(id=vendor_id, role="vendor", is_deleted=False)
+        except User.DoesNotExist:
+            raise NotFound(detail={"message": "vendor not found"})
+
+        serializer = VendorStatusSerializer(data = request.data)
+
+        serializer.is_valid(raise_exception=True)
+        
+        user.vendor_status = serializer.validated_data.get("status")
+        user.sent_vendor_email = False
+        user.save()
+        
+        return Response({"message":"success"}, status=status.HTTP_200_OK)
+        
 
 class VendorListView(ListAPIView):
     
@@ -473,22 +497,6 @@ def dashboard_vendor_stat(request):
 
 
 
-
-# @api_view(["POST", "DELETE"])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
-# def update_vendor_status(request, id):
-    
-#     try:
-#        user= User.objects.get(id=id, is_deleted=False, role="vendor")
-#     except User.DoesNotExist:
-#         raise NotFound(detail={"message":"vendor not found"})
-    
-#     if request.method == "POST":
-#         serializer = VendorStatusSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-        
-#         user.vendor_
 
 
 
