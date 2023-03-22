@@ -1486,6 +1486,35 @@ def dashboard_stat(request):
 class PayOutList(ListAPIView):
     serializer_class = PayOutSerializer
     queryset = PayOuts.objects.all()
+    
+    
+    def list(self, request, *args, **kwargs):
+        
+        status = self.request.GET.get('status')
+        startDate = request.GET.get('start_date')
+        endDate = request.GET.get('end_date')
+        
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        if status:
+            queryset = queryset.filter(status=status)
+    
+            
+        
+        if startDate and endDate:
+            startDate = datetime.strptime(startDate, "%Y-%m-%d").date()
+            endDate = datetime.strptime(endDate, "%Y-%m-%d").date()
+            queryset = queryset.filter(date_added__range=[startDate, endDate])
+
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        
+        return Response(serializer.data)
 
 
 
