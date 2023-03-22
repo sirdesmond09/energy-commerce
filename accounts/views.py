@@ -156,6 +156,7 @@ def user_login(request):
                         user_detail['phone'] = user.phone
                         user_detail['role'] = user.role
                         user_detail['is_admin'] = user.is_admin
+                        user_detail['is_superuser'] = user.is_superuser
                         user_detail['access'] = str(refresh.access_token)
                         user_detail['refresh'] = str(refresh)
                         user_logged_in.send(sender=user.__class__,

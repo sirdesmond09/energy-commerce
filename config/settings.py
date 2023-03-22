@@ -49,6 +49,7 @@ class Common(Configuration):
 
         'accounts.apps.AccountsConfig',
         'main.apps.MainConfig',
+        "social_auth",
         
         'rest_framework',
         'djoser',

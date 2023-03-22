@@ -51,6 +51,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined   = models.DateTimeField(_('date joined'), auto_now_add=True)
     sent_vendor_email = models.BooleanField(default=False)
     fcm_token = models.TextField(null=True)
+    provider = models.CharField(_('provider'), max_length=255, default="email", choices=(('email',"email"),
+                                                                                         ('google',"google")))
     
     
     objects = UserManager()
