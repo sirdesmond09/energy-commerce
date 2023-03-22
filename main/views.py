@@ -1548,7 +1548,7 @@ def admin_dashboard_graph(request):
 
 class PaymentListView(ListAPIView):
     
-    """Get a list of payments"""
+    """Get a list of payments. You can filter by: `status`, `start_date`, `end_date`, `payment_type`"""
     
     queryset = PaymentDetail.objects.filter(is_deleted=False).order_by('-date_added')
     serializer_class =  PaymentSerializer
@@ -1562,11 +1562,15 @@ class PaymentListView(ListAPIView):
         status = self.request.GET.get('status')
         startDate = request.GET.get('start_date')
         endDate = request.GET.get('end_date')
+        payment_type = request.GET.get('payment_type')
         
         queryset = self.filter_queryset(self.get_queryset())
         
         if status:
             queryset = queryset.filter(status=status)
+        
+        if payment_type:
+            queryset = queryset.filter(payment_type=payment_type)
             
         
         if startDate and endDate:
