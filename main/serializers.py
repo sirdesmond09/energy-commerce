@@ -297,6 +297,7 @@ class CartSerializer(serializers.ModelSerializer):
         
 class PaymentSerializer(serializers.ModelSerializer):
     order_detail = serializers.SerializerMethodField()
+    user_detail = serializers.ReadOnlyField()
     
     class Meta:
         fields = "__all__"

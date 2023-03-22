@@ -382,6 +382,16 @@ class PaymentDetail(models.Model):
         
     def delete_permanently(self):
         super().delete()
+        
+        
+    @property
+    def user_detail(self):
+        return {
+            "first_name": self.user.first_name,
+            "last_name": self.user.last_name,
+            "phone": self.user.phone,
+            "email": self.user.email,
+        }
     
     
     
