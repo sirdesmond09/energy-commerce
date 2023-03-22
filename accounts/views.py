@@ -1,6 +1,6 @@
 from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, StoreBankDetailTablePermissions, StoreProfileTablePermissions, UserTablePermissions, VendorPermissions
 from main.serializers import ProductSerializer
-from .serializers import AddVendorSerializer, AssignRoleSerializer, FirebaseSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
+from .serializers import AddVendorSerializer, AssignRoleSerializer, FirebaseSerializer, GroupSerializer, ImageUploadSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -547,3 +547,24 @@ def activity_logs(request):
     
     
     return Response(logs, status=status.HTTP_200_OK)
+
+
+
+@swagger_auto_schema(method="post", request_body=ImageUploadSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def image_upload(request):
+    
+    if request.method == "POST":
+        serializer = ImageUploadSerializer(data=request.data)
+        
+        serializer.is_valid(raise_exception=True)
+        
+        user = request.user
+        
+        user.image = serializer.validated_data.get("image")
+        
+        user.save()
+        
+        return Response({"message": "upload successful"}, status=status.HTTP_200_OK)

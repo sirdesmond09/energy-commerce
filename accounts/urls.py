@@ -49,6 +49,7 @@ urlpatterns = [
     path("roles/", views.GroupListCreate.as_view(), name="roles"),
     path("roles/<int:id>", views.GroupDetail.as_view(), ),
     path("admin/vendors-stat", views.dashboard_vendor_stat,),
-    path("activity-logs/", views.activity_logs)
+    path("activity-logs/", views.activity_logs),
+    path("auth/image-upload", views.image_upload, name="image-upload"),
     
 ]

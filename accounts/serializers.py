@@ -10,6 +10,7 @@ from .models import ActivationOtp, ModuleAccess, StoreBankDetail, StoreProfile
 from .signals import generate_otp, site_name,url
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import Permission, Group
+from drf_extra_fields.fields import Base64ImageField
 
 from config import settings
  
@@ -282,3 +283,7 @@ class AssignRoleSerializer(serializers.Serializer):
             raise ValidationError(detail={"message": f"roles with ids {missing_ids} not found"})
         
         return [role.id for role in roles]
+    
+    
+class ImageUploadSerializer(serializers.Serializer):
+    image = Base64ImageField()

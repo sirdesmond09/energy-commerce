@@ -43,6 +43,13 @@ class User(AbstractBaseUser, PermissionsMixin):
                                      blank=True, 
                                      null=True, 
                                      choices=VENDOR_STATUS)
+    image = models.ImageField(
+        upload_to='profile_photos/', 
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['png', "jpg", "jpeg"])
+        ], 
+        blank=True, null=True)
     password      = models.CharField(_('password'), max_length=300)
     is_staff      = models.BooleanField(_('staff'), default=False)
     is_admin      = models.BooleanField(_('admin'), default= False)
