@@ -825,7 +825,7 @@ def request_order_cancel(request, booking_id):
 @permission_classes([IsAuthenticated])
 def request_order_item_cancel(request, booking_id, item_id):
     
-    """Use this endpoint to request cancel  for an item in the order"""
+    """Use this endpoint to request cancel  for an item in the order or admin can use this endpoint to cancel directly."""
     
     try:
         order = Order.objects.get(booking_id=booking_id, is_deleted=False)
@@ -837,27 +837,60 @@ def request_order_item_cancel(request, booking_id, item_id):
     except OrderItem.DoesNotExist:
         raise ValidationError(detail={"message": "item was not found"})
     
-    if order_item.status == "cancel-requested":
-        raise PermissionDenied(detail={"message":"cancel already requested"})
-    if order_item.status == "user-canceled":
-        raise PermissionDenied(detail={"message":"item is already canceled"})
     
-    if request.method == "DELETE":
-        serializer = CancelSerializer(data=request.data)
-        
-        serializer.is_valid(raise_exception=True)
-        
-        order_item.prev_status = order_item.status
-        order_item.status = "cancel-requested"
-        order_item.cancellation_reason = serializer.validated_data.get("reason")
-        order_item.cancel_requested_at = timezone.now()
+    if request.user.role == "admin":
+        order_item.status = "user-canceled"
+        order_item.cancellation_response_reason = serializer.validated_data.get("reason")
+        order_item.cancel_responded_at = timezone.now()
         order_item.save()
         
-        ActivityLog.objects.create(
-                user=request.user,
-                action = f"Requested to cancel order item ID {item_id} from order {booking_id}"
-                )
+        order_item.item.qty_available += order_item.qty
+        order_item.item.save()
         
+        ##check if all other items are canceled, then mark order as canceled
+        order = order_item.order
+        if all(i.status == "user-canceled" for i in order.items.filter(is_deleted=True)):
+            order.status="user-canceled"
+            order.cancellation_response_reason = "all items were cancelled"
+            order.cancel_responded_at = timezone.now()
+            order.save()
+        
+        ActivityLog.objects.create(
+                    user=request.user,
+                    action = f"Cancel order item ID {item_id} from order {booking_id}"
+                    )
+        
+        
+        UserInbox.objects.create(
+            user = order.user,
+            heading = f"Order {order_item.unique_id} canceled",
+            body = f"Your order has been disapproved by an administrator"
+            )
+            
+        
+    else:
+        if order_item.status == "cancel-requested":
+            raise PermissionDenied(detail={"message":"cancel already requested"})
+        if order_item.status == "user-canceled":
+            raise PermissionDenied(detail={"message":"item is already canceled"})
+        
+        if request.method == "DELETE":
+            serializer = CancelSerializer(data=request.data)
+            
+            serializer.is_valid(raise_exception=True)
+            
+            order_item.prev_status = order_item.status
+            order_item.status = "cancel-requested"
+            order_item.cancellation_reason = serializer.validated_data.get("reason")
+            order_item.cancel_requested_at = timezone.now()
+            order_item.save()
+            
+            ActivityLog.objects.create(
+                    user=request.user,
+                    action = f"Requested to cancel order item ID {item_id} from order {booking_id}"
+                    )
+        
+            
         return Response({"message":"success"},status=status.HTTP_202_ACCEPTED)
     
     
@@ -931,7 +964,20 @@ def respond_to_cancel_request(request, booking_id, item_id):
         user=request.user,
         action = f"Accepted to cancel order {obj.unique_id}"
         )
-    
+        
+        UserInbox.objects.create(
+            user = order.user,
+            heading = f"Order {obj.unique_id} updated",
+            body = f"You request to cancel order {obj.unique_id} was accepted"
+            )
+        
+        UserInbox.objects.create(
+            user = obj.item.vendor,
+            heading = f"Order {obj.unique_id} canceled",
+            body = f"Admin has approved Order {obj.unique_id} to be cancelled."
+            )
+        
+        
                 
     elif response == "rejected":  
                 
@@ -943,7 +989,13 @@ def respond_to_cancel_request(request, booking_id, item_id):
                 user=request.user,
                 action = f"Declined a cancel item request"
         )
-    
+
+        UserInbox.objects.create(
+                            user = order.user,
+                            heading = f"Order {obj.unique_id} updated",
+                            body = f"You request to cancel order {obj.unique_id} was declined"
+                            )
+        
     return Response({"message": "{} successfully".format(response)}, status=status.HTTP_200_OK)
                 
     
@@ -1075,7 +1127,7 @@ class PaidOrdersView(ListAPIView):
             
         
         if request.user.role == "user" or request.user.role == "vendor":
-            queryset = queryset.filter(user=request.user)
+            queryset = queryset.filter(user=request.user, is_paid_for=True)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -1085,80 +1137,7 @@ class PaidOrdersView(ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
     
-    
-# class DeliveryDetailListCreateView(ListCreateAPIView):
-    
-    
-    
-#     queryset = DeliveryDetail.objects.all()
-#     serializer_class =  DeliveryDetailSerializer
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-    
-    
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-        
-#         serializer.validated_data["vendor"] = request.user    
-#         self.perform_create(serializer)
-            
-#         headers = self.get_success_headers(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
-    
-#     def list(self, request, *args, **kwargs):
-#         queryset = self.filter_queryset(self.get_queryset()).filter(vendor=request.user)
 
-#         page = self.paginate_queryset(queryset)
-#         if page is not None:
-#             serializer = self.get_serializer(page, many=True)
-#             return self.get_paginated_response(serializer.data)
-
-#         serializer = self.get_serializer(queryset, many=True)
-#         return Response(serializer.data)
-    
-    
-    
-    
-# class DeliveryDetailView(RetrieveUpdateDestroyAPIView):
-    
-#     """Edit, retrieve, and delete an address"""
-
-#     queryset = DeliveryDetail.objects.all()
-#     serializer_class =  DeliveryDetailSerializer
-#     lookup_field = "id"
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-    
-    
-#     @swagger_auto_schema(method="put", request_body=DeliveryDetailSerializer())
-#     @action(methods=["put"], detail=True)
-#     def put(self, request, *args, **kwargs):
-#         instance = self.get_object()
-        
-#         if instance.vendor != request.user:
-#             raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})
-#         return super().put(request, *args, **kwargs)
-    
-#     @swagger_auto_schema(method="patch", request_body=DeliveryDetailSerializer())
-#     @action(methods=["patch"], detail=True)
-#     def patch(self, request, *args, **kwargs):
-#         instance = self.get_object()
-        
-#         if instance.vendor != request.user:
-#             raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})
-#         return super().patch(request, *args, **kwargs)
-    
-    
-#     def delete(self, request, *args, **kwargs):
-#         instance = self.get_object()
-        
-#         if instance.vendor != request.user:
-#             raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})
-#         return super().delete(request, *args, **kwargs)
-    
-    
     
 
 @api_view(["GET", "PUT"])
