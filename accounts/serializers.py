@@ -264,6 +264,8 @@ class VendorStatusSerializer(serializers.Serializer):
         if value not in ('approved','unapproved','blocked'):
             raise ValidationError(detail={"message": "status must be either ('approved','unapproved','blocked')" })
         
+        return value
+        
         
 class AssignRoleSerializer(serializers.Serializer):
     roles = serializers.ListField()
