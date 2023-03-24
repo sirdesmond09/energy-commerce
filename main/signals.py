@@ -65,4 +65,8 @@ def send_notification(sender, instance:UserInbox, created, *args,**kwargs):
         
         
         return
-    
+
+
+def send_message(token):
+    notification = messaging.Notification(title="New Product", body="A new product is here! Check it out.", image="https://res.cloudinary.com/univel/image/upload/v1/media/products/primary_imgs/Placeholder-18_gdbubg")
+    messaging.send(messaging.Message(notification=notification, token=token))

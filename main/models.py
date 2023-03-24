@@ -119,8 +119,11 @@ class Product(models.Model):
         return self.ships_from.values("id","name", "region")
     
     @property
-    def store(self):
-        return self.vendor.store_profile
+    def store_detail(self):
+        try:
+            return self.vendor.store_profile
+        except Exception as e:
+            return {"data": str(e)}
     
     
     @property

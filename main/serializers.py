@@ -17,7 +17,7 @@ class ProductSerializer(serializers.ModelSerializer):
     locations_list = serializers.ReadOnlyField()
     ships_from_list = serializers.ReadOnlyField()
     vendor_detail = serializers.SerializerMethodField()
-    store_detail = serializers.SerializerMethodField()
+    store_detail = serializers.ReadOnlyField()
     rating = serializers.ReadOnlyField()
     class Meta:
         fields = '__all__'
@@ -31,14 +31,9 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_vendor_detail(self, obj):
         return UserSerializer(obj.vendor).data
     
-    def get_store_detail(self, obj):
+
         
-        try:
-            
-            return StoreProfileSerializer(obj.store).data
         
-        except Exception as e:
-            return {"data": str(e)}
         
         
     
