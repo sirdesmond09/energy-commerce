@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from accounts.permissions import CalculatorItemTablePermissions, CustomDjangoModelPermissions, DashboardPermission, FAQTablePermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductTablePermissions
+from accounts.permissions import CalculatorItemTablePermissions, CustomDjangoModelPermissions, DashboardPermission, FAQTablePermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductTablePermissions, RatingTablePermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
@@ -114,17 +114,27 @@ class VendorProductList(ListAPIView):
         
         category = request.GET.get('category', None)
         status = request.GET.get('status', None)
+        vendor = request.GET.get('vendor', None)
         
         queryset = self.filter_queryset(self.get_queryset())
         
+        if request.user.role == "vendor":
+            queryset = queryset.filter(vendor=request.user)
+            
         if category:
             queryset = queryset.filter(category__name=category)
             
         if status:
             queryset = queryset.filter(status=status)
             
-        if request.user.role == "vendor":
-            queryset = queryset.filter(vendor=request.user)
+        if vendor:
+            if request.user.role=="admin":
+                queryset = queryset.filter(vendor__id=vendor)
+            else:
+                raise PermissionDenied(detail={"message": "Permission denied"})
+            
+            
+            
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -987,9 +997,13 @@ class OrderList(ListAPIView):
         status = self.request.GET.get('status')
         startDate = request.GET.get('start_date')
         endDate = request.GET.get('end_date')
+        user_id = request.GET.get('user')
         
         queryset = self.filter_queryset(self.get_queryset())
         
+        if request.user.role == "user" or request.user.role == "vendor":
+            queryset = queryset.filter(order__user=request.user)
+            
         if filterBy == "open":
             queryset = queryset.filter(status__in=["pending",  "confirmed","processing", "in-transit"])
         if  filterBy == "completed":
@@ -1005,10 +1019,13 @@ class OrderList(ListAPIView):
             startDate = datetime.strptime(startDate, "%Y-%m-%d").date()
             endDate = datetime.strptime(endDate, "%Y-%m-%d").date()
             queryset = queryset.filter(date_added__range=[startDate, endDate])
-            
         
-        if request.user.role == "user" or request.user.role == "vendor":
-            queryset = queryset.filter(order__user=request.user)
+        if user_id:
+            if request.user.role=="admin":
+                queryset = queryset.filter(order__user__id=user_id)
+            else:
+                raise PermissionDenied(detail={"message": "Permission denied"})
+        
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -1634,11 +1651,48 @@ class PaymentDetailView(RetrieveAPIView):
     lookup_field = "id"
     
 
-class RatingListCreate(CreateAPIView):
+class RatingCreate(CreateAPIView):
     serializer_class = RatingSerializer
     queryset =Rating.objects.filter(is_deleted=False)
     permission_classes = [IsUserOrVendor]
     authentication_classes = [JWTAuthentication]
+    
+    
+    
+
+class RatingList(ListAPIView):
+    serializer_class = RatingSerializer
+    queryset =Rating.objects.filter(is_deleted=False)
+    permission_classes = [IsVendor | RatingTablePermissions]
+    authentication_classes = [JWTAuthentication]
+    
+    
+    def list(self, request, *args, **kwargs):
+        
+        product = self.request.GET.get('product', None)
+        startDate = request.GET.get('start_date')
+        endDate = request.GET.get('end_date')
+        
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        
+        if product:
+            queryset = queryset.filter(product__id=product)
+            
+        
+        if startDate and endDate:
+            startDate = datetime.strptime(startDate, "%Y-%m-%d").date()
+            endDate = datetime.strptime(endDate, "%Y-%m-%d").date()
+            queryset = queryset.filter(date_added__range=[startDate, endDate])
+
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
     
     
     

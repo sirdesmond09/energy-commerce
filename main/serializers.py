@@ -30,16 +30,7 @@ class ProductSerializer(serializers.ModelSerializer):
         
     def get_vendor_detail(self, obj):
         return UserSerializer(obj.vendor).data
-    
-
-        
-        
-        
-        
-    
-        
-
-        
+   
 class GallerySerializer(serializers.ModelSerializer):
 
     image = Base64ImageField()

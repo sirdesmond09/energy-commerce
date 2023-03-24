@@ -120,10 +120,8 @@ class Product(models.Model):
     
     @property
     def store_detail(self):
-        try:
-            return self.vendor.store_profile
-        except Exception as e:
-            return {"data": str(e)}
+        return self.vendor.store_profile
+    
     
     
     @property
@@ -349,7 +347,7 @@ class OrderItem(models.Model):
     
     @property
     def store(self):
-        return self.item.store
+        return self.item.store_detail
     
     def delete(self):
         self.is_deleted = True
