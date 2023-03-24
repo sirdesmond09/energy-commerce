@@ -1415,10 +1415,10 @@ def vendor_update_item_status(request, id):
             )
             
             UserInbox.objects.create(
-                            user =item.order.user,
-                            heading = f"Order {item.unique_id}",
-                            body = f"You order is now {item.status}"
-                            )
+                    user =item.order.user,
+                    heading = f"Order {item.unique_id}",
+                    body = f"You order is now {item.status}"
+                    )
             
             return Response({"message":"success"}, status=status.HTTP_200_OK)
         
