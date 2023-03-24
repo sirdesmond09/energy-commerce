@@ -328,6 +328,7 @@ def update_vendor_status(request, vendor_id):
 
         serializer.is_valid(raise_exception=True)
         
+        print(serializer.validated_data)
         user.vendor_status = serializer.validated_data.get("status")
         user.sent_vendor_email = False
         user.save()
