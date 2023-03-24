@@ -317,7 +317,7 @@ def update_vendor_status(request, vendor_id):
     
     """Api view for marking a vendor as approved, blocked or unapproved"""
 
-    if request.method == 'POST':
+    if request.method == 'PATCH':
         
         try:
             user = User.objects.get(id=vendor_id, role="vendor", is_deleted=False)
