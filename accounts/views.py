@@ -142,7 +142,7 @@ def user_login(request):
                 if user.is_active==True:
                 
                     if user.role == "vendor" and user.vendor_status != "approved":
-                        raise PermissionDenied(detail={'cannot login as vendor. your current status is {}'.format(user.vendor_status)})
+                        raise PermissionDenied(detail='cannot login as vendor. your current status is {}'.format(user.vendor_status))
                     
                     try:
                         
