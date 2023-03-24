@@ -71,7 +71,7 @@ class ProductList(ListAPIView):
     def list(self, request, *args, **kwargs):
         
         category = request.GET.get('category', None)
-        vendor = request.GET.get('vendor', None)
+        store = request.GET.get('store', None)
         min_price = request.GET.get("min_price", None)
         max_price = request.GET.get("max_price", None)
         location = request.GET.get("location", None)
@@ -84,8 +84,8 @@ class ProductList(ListAPIView):
         if category:
             queryset = queryset.filter(category__name=category)
             
-        if vendor:
-            queryset = queryset.filter(vendor__id=vendor)
+        if store:
+            queryset = queryset.filter(vendor__store__id=store)
             
         if min_price and max_price:
             queryset = queryset.filter(price__gte=min_price).filter(price__lte=max_price)

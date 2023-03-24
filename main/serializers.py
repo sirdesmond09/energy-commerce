@@ -38,7 +38,7 @@ class ProductSerializer(serializers.ModelSerializer):
             return StoreProfileSerializer(obj.store).data
         
         except Exception as e:
-            return {}
+            return {"data": str(e)}
         
         
     
