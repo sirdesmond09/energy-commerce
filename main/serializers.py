@@ -320,8 +320,8 @@ class UpdateStatusSerializer(serializers.Serializer):
     
     
     def validate_status(self, value):
-        if value not in ("processing","in-transit", "delivered"):
-            raise ValidationError(detail="status can only be 'processing' or 'in-transit' or 'delivered'")
+        if value not in ("processing","in-transit", "delivered", "installed"):
+            raise ValidationError(detail="status can only be 'processing' or 'in-transit' or 'delivered' or 'installed'")
     
         return value
     
