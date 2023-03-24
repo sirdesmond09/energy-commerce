@@ -837,48 +837,48 @@ def request_order_item_cancel(request, booking_id, item_id):
     except OrderItem.DoesNotExist:
         raise ValidationError(detail={"message": "item was not found"})
     
-    
-    if request.user.role == "admin":
-        order_item.status = "user-canceled"
-        order_item.cancellation_response_reason = serializer.validated_data.get("reason")
-        order_item.cancel_responded_at = timezone.now()
-        order_item.save()
+    if request.method == "DELETE":
+        serializer = CancelSerializer(data=request.data)
         
-        order_item.item.qty_available += order_item.qty
-        order_item.item.save()
-        
-        ##check if all other items are canceled, then mark order as canceled
-        order = order_item.order
-        if all(i.status == "user-canceled" for i in order.items.filter(is_deleted=True)):
-            order.status="user-canceled"
-            order.cancellation_response_reason = "all items were cancelled"
-            order.cancel_responded_at = timezone.now()
-            order.save()
-        
-        ActivityLog.objects.create(
-                    user=request.user,
-                    action = f"Cancel order item ID {item_id} from order {booking_id}"
-                    )
-        
-        
-        UserInbox.objects.create(
-            user = order.user,
-            heading = f"Order {order_item.unique_id} canceled",
-            body = f"Your order has been disapproved by an administrator"
-            )
+        serializer.is_valid(raise_exception=True)
             
-        
-    else:
-        if order_item.status == "cancel-requested":
-            raise PermissionDenied(detail={"message":"cancel already requested"})
-        if order_item.status == "user-canceled":
-            raise PermissionDenied(detail={"message":"item is already canceled"})
-        
-        if request.method == "DELETE":
-            serializer = CancelSerializer(data=request.data)
+        if request.user.role == "admin":
+            order_item.status = "user-canceled"
+            order_item.cancellation_response_reason = serializer.validated_data.get("reason")
+            order_item.cancel_responded_at = timezone.now()
+            order_item.save()
             
-            serializer.is_valid(raise_exception=True)
+            order_item.item.qty_available += order_item.qty
+            order_item.item.save()
             
+            ##check if all other items are canceled, then mark order as canceled
+            order = order_item.order
+            if all(i.status == "user-canceled" for i in order.items.filter(is_deleted=False)):
+                order.status="user-canceled"
+                order.cancellation_response_reason = "all items were cancelled"
+                order.cancel_responded_at = timezone.now()
+                order.save()
+            
+            ActivityLog.objects.create(
+                        user=request.user,
+                        action = f"Cancel order item ID {item_id} from order {booking_id}"
+                        )
+            
+            
+            UserInbox.objects.create(
+                user = order.user,
+                heading = f"Order {order_item.unique_id} canceled",
+                body = f"Your order has been disapproved by an administrator"
+                )
+                
+            
+        else:
+            if order_item.status == "cancel-requested":
+                raise PermissionDenied(detail={"message":"cancel already requested"})
+            if order_item.status == "user-canceled":
+                raise PermissionDenied(detail={"message":"item is already canceled"})
+            
+                
             order_item.prev_status = order_item.status
             order_item.status = "cancel-requested"
             order_item.cancellation_reason = serializer.validated_data.get("reason")
@@ -889,9 +889,9 @@ def request_order_item_cancel(request, booking_id, item_id):
                     user=request.user,
                     action = f"Requested to cancel order item ID {item_id} from order {booking_id}"
                     )
-        
             
-        return Response({"message":"success"},status=status.HTTP_202_ACCEPTED)
+                
+            return Response({"message":"success"},status=status.HTTP_202_ACCEPTED)
     
     
 @swagger_auto_schema(method="patch", request_body=CancelResponseSerializer())
