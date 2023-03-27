@@ -21,7 +21,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('admin', 'Admin'),
         ('user', 'User'),
         ('vendor', 'Vendor'),
-    )    
+    )   
+    
+    VENDOR_STATUS = (
+        ('applied', 'applied'),
+        ('approved', 'approved'),
+        ('unapproved', 'unapproved'),
+        ('blocked', 'blocked'),
+    )  
     
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+2341234567890'. Up to 15 digits allowed.")
     
@@ -31,13 +38,28 @@ class User(AbstractBaseUser, PermissionsMixin):
     role          = models.CharField(_('role'), max_length = 255, choices=ROLE_CHOICES)
     email         = models.EmailField(_('email'), unique=True)
     phone         = models.CharField(_('phone'), max_length = 20, unique = True, validators=[phone_regex])
-    favourite    = models.ManyToManyField("main.Product")
+    favourite    = models.ManyToManyField("main.Product", blank=True)
+    vendor_status = models.CharField(max_length=250, 
+                                     blank=True, 
+                                     null=True, 
+                                     choices=VENDOR_STATUS)
+    image = models.ImageField(
+        upload_to='profile_photos/', 
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['png', "jpg", "jpeg"])
+        ], 
+        blank=True, null=True)
     password      = models.CharField(_('password'), max_length=300)
     is_staff      = models.BooleanField(_('staff'), default=False)
     is_admin      = models.BooleanField(_('admin'), default= False)
     is_active     = models.BooleanField(_('active'), default=True)
     is_deleted    = models.BooleanField(_('deleted'), default=False)
     date_joined   = models.DateTimeField(_('date joined'), auto_now_add=True)
+    sent_vendor_email = models.BooleanField(default=False)
+    fcm_token = models.TextField(null=True)
+    provider = models.CharField(_('provider'), max_length=255, default="email", choices=(('email',"email"),
+                                                                                         ('google',"google")))
     
     
     objects = UserManager()
@@ -51,6 +73,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.email} -- {self.role}"
+    
+    @property
+    def module_access(self):
+        unique_modules = ModuleAccess.objects.filter(group__user=self.id).distinct().values()
+        
+        return unique_modules
     
     
     def delete(self):
@@ -70,7 +98,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.role == "vendor":
             profile = model_to_dict(self.store, exclude=["logo", "cac_doc", "is_deleted", "vendor" ])
             profile["id"] = self.store.id
-            profile['logo_url'] = self.store.logo.url
+            
+            if bool(self.store.logo) != False:
+                profile['logo_url'] = self.store.logo.url
+            else:
+                profile['logo_url'] = ""
             profile['cac_doc_url'] = self.store.cac_doc.url
             
             return profile    
@@ -87,6 +119,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             return detail    
         else:
             return None   
+        
+        
+    class Meta:
+        permissions = [
+            ("view_dashboard", "Can view all dashboards"),
+        ]
         
     
     
@@ -131,7 +169,9 @@ class StoreProfile(models.Model):
     
     @property
     def logo_url(self):
-        return self.logo.url
+        if self.logo:
+            return self.logo.url
+        return ""
     
     @property
     def cac_doc_url(self):
@@ -190,4 +230,25 @@ class ModuleAccess(models.Model):
     def __str__(self):
         return self.name
 
-DjangoGroup.add_to_class('module_access', models.ManyToManyField(ModuleAccess))
+DjangoGroup.add_to_class('module_access', models.ManyToManyField(ModuleAccess,  blank=True))
+
+
+class ActivityLog(models.Model):
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    action = models.CharField(max_length=255)
+    date_created = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+        
+        
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} {self.action}"
+    
