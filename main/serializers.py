@@ -111,6 +111,8 @@ class AddProductSerializer(serializers.Serializer):
             
         return instance
     
+    
+    
 class CategorySerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField()
     product_count = serializers.SerializerMethodField()

@@ -7,7 +7,7 @@ from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQu
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
-from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView, UpdateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
 from accounts.permissions import CalculatorItemTablePermissions, CustomDjangoModelPermissions, DashboardPermission, FAQTablePermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductCategoryPermissions, ProductTablePermissions, RatingTablePermissions
@@ -146,13 +146,21 @@ class VendorProductList(ListAPIView):
     
     
 
-class ProductDetail(RetrieveUpdateDestroyAPIView):
+class ProductDetail(RetrieveDestroyAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.filter(is_deleted=False)
     lookup_field="id"
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsVendorOrReadOnly]
+    
 
+class ProductEditView(UpdateAPIView):
+    serializer_class = AddProductSerializer
+    queryset = Product.objects.filter(is_deleted=False)
+    lookup_field="id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsVendor]
+    
 
 @swagger_auto_schema(method="patch", request_body=StatusSerializer())
 @api_view(["PATCH"])
@@ -188,7 +196,7 @@ def update_product_status(request, product_id):
 
 
 
-@swagger_auto_schema(method="delete", request_body=GallerySerializer())
+@swagger_auto_schema(method="delete", request_body=GallerySerializer(many=True))
 @api_view(["POST", "DELETE"])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsVendor])
