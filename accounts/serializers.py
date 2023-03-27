@@ -10,6 +10,7 @@ from .models import ActivationOtp, ModuleAccess, StoreBankDetail, StoreProfile
 from .signals import generate_otp, site_name,url
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import Permission, Group
+from drf_extra_fields.fields import Base64ImageField
 
 from config import settings
  
@@ -31,22 +32,47 @@ class CustomUserSerializer(serializers.ModelSerializer):
     store_profile = serializers.ReadOnlyField()
     bank_detail = serializers.ReadOnlyField()
     favourite_detail = serializers.ReadOnlyField()
+    vendor_rating = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
     
     class Meta():
         model = User
-        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions"]
+        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "roles", "is_superuser", "date_joined"]
         extra_kwargs = {
             'password': {'write_only': True}
         }
         
+        
+    def get_vendor_rating(self, vendor):
+        
+        if vendor.role == "vendor":
+        
+            products = vendor.products.filter(is_deleted=False)
+            
+            if len(products) > 0:
+                non_zero = list(filter(lambda x: x.rating != 0, products))
+                ratings =  list(map(lambda product : product.rating, non_zero))
+
+                return round(sum(ratings)/len(ratings), 2)
+
+            return 0
+        
+        return 
+    
+    def get_roles(self, admin):
+        return GroupSerializer(admin.groups.all(), many=True).data
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(max_length=300)
+    
+    
+class FirebaseSerializer(serializers.Serializer):
+    fcm_token = serializers.CharField(max_length=5000)
 
 
 class LogoutSerializer(serializers.Serializer):
-    refresh_token = serializers.CharField(max_length=700)
+    refresh_token = serializers.CharField(max_length=700) 
     
 
 class OTPVerifySerializer(serializers.Serializer):
@@ -131,6 +157,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
     logo_url = serializers.ReadOnlyField()
     cac_doc_url = serializers.ReadOnlyField()
     bank_data = serializers.ReadOnlyField()
+    vendor_data = serializers.SerializerMethodField()
     
     class Meta:
         fields = '__all__'
@@ -139,8 +166,18 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             'logo': {'write_only': True},
             'cac_doc': {'write_only': True}
         }
+        
 
-
+    def get_vendor_data(self, obj):
+        data = CustomUserSerializer(obj.vendor).data
+        data.pop("user_permissions")
+        data.pop("store_profile")
+        data.pop("bank_details")
+        data.pop("groups")
+        
+        return data
+    
+    
 class BankDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -227,6 +264,8 @@ class VendorStatusSerializer(serializers.Serializer):
         if value not in ('approved','unapproved','blocked'):
             raise ValidationError(detail={"message": "status must be either ('approved','unapproved','blocked')" })
         
+        return value
+        
         
 class AssignRoleSerializer(serializers.Serializer):
     roles = serializers.ListField()
@@ -245,5 +284,8 @@ class AssignRoleSerializer(serializers.Serializer):
             missing_ids = group_ids - set(g.id for g in roles)
             raise ValidationError(detail={"message": f"roles with ids {missing_ids} not found"})
         
-        print([role.id for role in roles])
         return [role.id for role in roles]
+    
+    
+class ImageUploadSerializer(serializers.Serializer):
+    image = Base64ImageField()

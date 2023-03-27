@@ -1,6 +1,6 @@
-from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, UserTablePermissions
+from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, StoreBankDetailTablePermissions, StoreProfileTablePermissions, UserTablePermissions, VendorPermissions
 from main.serializers import ProductSerializer
-from .serializers import AddVendorSerializer, AssignRoleSerializer, GroupSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
+from .serializers import AddVendorSerializer, AssignRoleSerializer, FirebaseSerializer, GroupSerializer, ImageUploadSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -15,13 +15,13 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.signals import user_logged_in, user_logged_out
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, CreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView , RetrieveUpdateAPIView
 from rest_framework.decorators import action
 from djoser.views import UserViewSet
 from rest_framework.views import APIView
 from .models import ActivityLog, ModuleAccess, StoreBankDetail, StoreProfile
 from django.contrib.auth.hashers import check_password
-from main.models import Product
+from main.models import Product, UserInbox
 from django.contrib.auth.models import Permission, Group
 from django.contrib.admin.models import LogEntry
 
@@ -142,7 +142,7 @@ def user_login(request):
                 if user.is_active==True:
                 
                     if user.role == "vendor" and user.vendor_status != "approved":
-                        raise PermissionDenied(detail={'cannot login as vendor. your current status is {}'.format(user.vendor_status)})
+                        raise PermissionDenied(detail='cannot login as vendor. your current status is {}'.format(user.vendor_status))
                     
                     try:
                         
@@ -156,16 +156,21 @@ def user_login(request):
                         user_detail['phone'] = user.phone
                         user_detail['role'] = user.role
                         user_detail['is_admin'] = user.is_admin
+                        user_detail['is_superuser'] = user.is_superuser
                         user_detail['access'] = str(refresh.access_token)
                         user_detail['refresh'] = str(refresh)
                         user_logged_in.send(sender=user.__class__,
                                             request=request, user=user)
 
+                        if user.role == 'admin':
+                            user_detail["modules"] = user.module_access
+                            
                         data = {
     
                         "message":"success",
                         'data' : user_detail,
                         }
+             
                         return Response(data, status=status.HTTP_200_OK)
                     
 
@@ -219,7 +224,32 @@ def logout_view(request):
         return Response({"message": "success"}, status=status.HTTP_204_NO_CONTENT)
     except TokenError:
         return Response({"message": "failed", "error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(method="patch",request_body=FirebaseSerializer())
+@api_view(["PATCH"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_firebase_token(request):
+    """Update the FCM token for a logged in use to enable push notifications
+
+    Returns:
+        Json response with message of success and status code of 200.
+    """
     
+    serializer = FirebaseSerializer(data=request.data)
+    
+    serializer.is_valid(raise_exception=True)
+    
+    fcm_token = serializer.validated_data.get("fcm_token")
+
+    request.user.fcm_token = fcm_token
+    request.user.save()
+        
+    return Response({"message": "success"}, status=status.HTTP_200_OK)
+    
+
+
 
 @swagger_auto_schema(methods=['POST'],  request_body=NewOtpSerializer())
 @api_view(['POST'])
@@ -279,15 +309,60 @@ class AddVendorView(APIView):
     
     
 
+@swagger_auto_schema(methods=['PATCH'], request_body=VendorStatusSerializer())
+@api_view(['PATCH'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([VendorPermissions])
+def update_vendor_status(request, vendor_id):
+    
+    """Api view for marking a vendor as approved, blocked or unapproved"""
 
+    if request.method == 'PATCH':
+        
+        try:
+            user = User.objects.get(id=vendor_id, role="vendor", is_deleted=False)
+        except User.DoesNotExist:
+            raise NotFound(detail={"message": "vendor not found"})
+
+        serializer = VendorStatusSerializer(data = request.data)
+
+        serializer.is_valid(raise_exception=True)
+        
+        print(serializer.validated_data)
+        user.vendor_status = serializer.validated_data.get("status")
+        user.sent_vendor_email = False
+        user.save()
+        
+        return Response({"message":"success"}, status=status.HTTP_200_OK)
+        
 
 class VendorListView(ListAPIView):
     
     
     queryset = User.objects.filter(is_deleted=False, role="vendor").order_by('-date_joined')
     serializer_class =  CustomUserSerializer
-    authentication_classes([JWTAuthentication])
-    permission_classes([IsAdminUser])
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [VendorPermissions]
+    
+    
+    def list(self, request, *args, **kwargs):
+        
+        status = self.request.GET.get('status')
+        queryset = self.filter_queryset(self.get_queryset())
+      
+        if status:
+            queryset = queryset.filter(vendor_status=status)
+            
+        
+       
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
     
   
 class StoreListView(ListAPIView):
@@ -295,16 +370,38 @@ class StoreListView(ListAPIView):
     
     queryset = StoreProfile.objects.filter(is_deleted=False).order_by('-date_joined')
     serializer_class =  StoreProfileSerializer
-    authentication_classes([JWTAuthentication])
-    permission_classes([IsAdminUser])  
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [StoreProfileTablePermissions]
     
 
-class StoreDetailView(RetrieveUpdateDestroyAPIView):
+class StoreDetailView(RetrieveUpdateAPIView):
     queryset = StoreProfile.objects.filter(is_deleted=False).order_by('-date_joined')
     serializer_class =  StoreProfileSerializer
     lookup_field = "id"
-    authentication_classes([JWTAuthentication])
-    permission_classes([IsAdminUser])
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsVendor | StoreProfileTablePermissions ]
+    
+
+class BankDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = StoreBankDetail.objects.filter(is_deleted=False).order_by('-date_joined')
+    serializer_class =  BankDetailSerializer
+    lookup_field = "id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [StoreBankDetailTablePermissions]
+    
+    
+    def put(self, request, *args, **kwargs):
+        
+        if request.user.payouts.filter(is_deleted=False, status="processing").exists():
+            raise PermissionDenied(detail={"your bank details cannot be updated at this time. Please contact support"})
+        return self.update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        
+        if request.user.payouts.filter(is_deleted=False, status="processing").exists():
+            raise PermissionDenied(detail={"your bank details cannot be updated at this time. Please contact support"})
+        
+        return self.partial_update(request, *args, **kwargs)
     
     
     
@@ -404,22 +501,6 @@ def dashboard_vendor_stat(request):
 
 
 
-# @api_view(["POST", "DELETE"])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
-# def update_vendor_status(request, id):
-    
-#     try:
-#        user= User.objects.get(id=id, is_deleted=False, role="vendor")
-#     except User.DoesNotExist:
-#         raise NotFound(detail={"message":"vendor not found"})
-    
-#     if request.method == "POST":
-#         serializer = VendorStatusSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-        
-#         user.vendor_
-
 
 
 @swagger_auto_schema(method="patch", request_body=AssignRoleSerializer())
@@ -467,3 +548,24 @@ def activity_logs(request):
     
     
     return Response(logs, status=status.HTTP_200_OK)
+
+
+
+@swagger_auto_schema(method="post", request_body=ImageUploadSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def image_upload(request):
+    
+    if request.method == "POST":
+        serializer = ImageUploadSerializer(data=request.data)
+        
+        serializer.is_valid(raise_exception=True)
+        
+        user = request.user
+        
+        user.image = serializer.validated_data.get("image")
+        
+        user.save()
+        
+        return Response({"message": "upload successful"}, status=status.HTTP_200_OK)

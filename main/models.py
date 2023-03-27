@@ -5,6 +5,8 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
 from django.contrib.postgres.fields import ArrayField
+from django.db.models import Sum
+
 
 User = get_user_model()
 
@@ -45,16 +47,24 @@ class Product(models.Model):
     desc = models.TextField()
     price = models.FloatField()
     product_sku = models.CharField(max_length=255, null=True)
-    ships_from = models.CharField(max_length=255, null=True)
+    ships_from = models.ManyToManyField("main.Location", blank=True, related_name="product_ships_from")
     battery_type = models.CharField(max_length=255, choices= (("Tubular", "Tubular"),
-                                                              ("lithium", "Lithium")),
+                                                              ("Lithium", "Lithium"),
+                                                              ("Dry cell (SMF)", "Dry cell (SMF)")),
                                     null=True, blank=True)
     battery_cap_AH = models.FloatField(null=True, blank=True)
     total_power_kva = models.FloatField(null=True, blank=True)
     battery_voltage = models.FloatField(null=True, blank=True)
     qty_available = models.PositiveIntegerField(default=0)
     max_order_qty = models.PositiveIntegerField(null=True)
-    dimensions = models.CharField(max_length=255, null=True)
+    dimension_measurement = models.CharField(max_length=255, null=True,
+                                             choices=(("cmxcmxcm","cmxcmxcm"),
+                                                      ("mmxmmxmm","mmxmmxmm")))
+    panel_type = models.CharField(max_length=255, null=True)
+    length  = models.FloatField(default=0)
+    breadth  = models.FloatField(default=0)
+    height  = models.FloatField(default=0)
+    weight  = models.FloatField(default=0)
     locations = models.ManyToManyField("main.Location", blank=True)
     SE_delivery_fee  = models.FloatField(default=0)
     SW_delivery_fee  = models.FloatField(default=0)
@@ -69,12 +79,17 @@ class Product(models.Model):
                 allowed_extensions=['png', "jpg", "jpeg"])
         ], blank=True)
     key_features = ArrayField(base_field=models.CharField(max_length=255), blank=True, null=True)
-    warranty = models.TextField(blank=True, null=True)
+    warranty = models.PositiveIntegerField(blank=True, null=True)
     disclaimer = models.TextField(blank=True, null=True)
-    vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE)
+    vendor  = models.ForeignKey("accounts.User", on_delete=models.CASCADE, null=True, related_name="products")
     category = models.ForeignKey("main.ProductCategory", related_name="product_items",on_delete=models.CASCADE)
     installation_fee = models.FloatField(default=0)
     date_added = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=100, 
+                              choices= [("pending", "pending"),
+                                        ("verified", "verified"),
+                                        ("unapproved", "unapproved")],
+                              default="pending")
     is_deleted = models.BooleanField(default=False)
     
     @property
@@ -88,7 +103,7 @@ class Product(models.Model):
     @property
     def gallery(self):
         
-        return [i.image.url for i in self.images.all()]
+        return [{"id" : i.id,"image_url":i.image.url} for i in self.images.all()]
         
     
     @property
@@ -97,12 +112,35 @@ class Product(models.Model):
     
     @property
     def locations_list(self):
-        return self.locations.values("name", "region")
+        return self.locations.values("id", "name", "region")
+    
+    @property
+    def ships_from_list(self):
+        return self.ships_from.values("id","name", "region")
+    
+    @property
+    def store_detail(self):
+        return self.vendor.store_profile
+    
     
     
     @property
-    def store(self):
-        return self.vendor.store_profile
+    def total_order(self):
+        
+        items = self.order_items.filter(is_deleted=True).exclude(status__in=["pending","cancel-requested","user-canceled"])
+        return items.count()
+    
+
+    @property
+    def rating(self):
+        all_ratings = self.ratings.filter(is_deleted=False)
+        
+        if all_ratings.count() > 0:
+            total = all_ratings.aggregate(Sum("rating"))["rating__sum"]
+            rating = total/all_ratings.count()
+            return round(rating, 2)
+        return 0
+    
     
     def delete(self):
         self.is_deleted = True
@@ -245,13 +283,25 @@ class Order(models.Model):
     @property
     def address_data(self):
         return model_to_dict(self.address, exclude=["id", "user", "date_added", "is_deleted"])
+    
+    
+    @property
+    def payment_data(self):
+        
+        payment = PaymentDetail.objects.filter(order__id = self.id, is_deleted=False)
+        
+        if payment.exists():
+            return model_to_dict(payment.first())
+        
+        return None
         
     
         
         
 class OrderItem(models.Model):
+    unique_id = models.CharField(max_length=20, null=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, related_name="items")
-    item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING, related_name="items")
+    item = models.ForeignKey("main.Product", on_delete=models.DO_NOTHING, related_name="order_items")
     unit_price = models.FloatField(default=0)
     installation_fee = models.FloatField(default=0)
     qty = models.PositiveIntegerField()
@@ -261,6 +311,7 @@ class OrderItem(models.Model):
                                        ("processing", "processing"),
                                        ("in-transit", "in-transit"),
                                        ("delivered", "delivered"),
+                                       ("installed", "installed"),
                                        ("cancel-requested", "cancel-requested"),
                                        ("user-canceled", "user-canceled"),
                                     ), default="pending")
@@ -273,6 +324,7 @@ class OrderItem(models.Model):
     delivered_at = models.DateTimeField(null=True, blank=True)
     in_transit_at = models.DateTimeField(null=True, blank=True)
     processed_at = models.DateTimeField(null=True, blank=True)
+    installed_at = models.DateTimeField(null=True, blank=True)
     cancel_requested_at = models.DateTimeField(null=True, blank=True)
     cancel_responded_at = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
@@ -295,7 +347,7 @@ class OrderItem(models.Model):
     
     @property
     def store(self):
-        return self.item.store
+        return self.item.store_detail
     
     def delete(self):
         self.is_deleted = True
@@ -316,6 +368,11 @@ class PaymentDetail(models.Model):
                                               ("lease", "Lease To Own"),
                                               ("power-as-a-service", "Power as a service")),
                                     null=True, blank=True)
+    note = models.TextField(null=True)
+    status = models.CharField(max_length=20,choices=(
+        ("pending", "pending"),
+        ("approved", "approved"),
+        ("declined", "declined")), default="pending")
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
@@ -326,6 +383,16 @@ class PaymentDetail(models.Model):
         
     def delete_permanently(self):
         super().delete()
+        
+        
+    @property
+    def user_detail(self):
+        return {
+            "first_name": self.user.first_name,
+            "last_name": self.user.last_name,
+            "phone": self.user.phone,
+            "email": self.user.email,
+        }
     
     
     
@@ -345,14 +412,15 @@ class Commission(models.Model):
     
     
 class PayOuts(models.Model):
-    vendor = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL)
+    vendor = models.ForeignKey("accounts.User", null=True, on_delete=models.SET_NULL, related_name="payouts")
     item = models.ForeignKey(OrderItem, on_delete=models.CASCADE, null=True)
     amount = models.FloatField()
     order_booking_id = models.CharField(max_length=255)
     commission = models.FloatField()
     commission_percent = models.FloatField()
     status = models.CharField(max_length=255, choices=(("pending", "pending"),
-                                                       ("paid", "paid"),), default="pending")
+                                                       ("paid", "paid"),
+                                                       ("processing", "processing"),), default="pending")
     date_added = models.DateTimeField(auto_now_add=True)
     date_paid = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
@@ -376,4 +444,69 @@ class PayOuts(models.Model):
         return self.vendor.bank_detail
         
         
+class ValidationOTP(models.Model):
+    order_item = models.ForeignKey(OrderItem, related_name="validation_otp", on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    vendor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    is_verified = models.BooleanField(default=False)
+    
+    
+class Rating(models.Model):
+    product = models.ForeignKey("main.Product", null=True, on_delete=models.SET_NULL, related_name="ratings")
+    order_item = models.OneToOneField("main.OrderItem", null=True, on_delete=models.SET_NULL, related_name="rating")
+    review = models.TextField(blank=True, null=True)
+    rating = models.PositiveIntegerField()
+    date_created = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+        
+        
+        
+class CalculatorItem(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    power_kw = models.FloatField()
+    avg_hr_per_day = models.FloatField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+
+class FrequentlyAskedQuestion(models.Model):
+    question = models.CharField(max_length=255, unique=True)
+    answer = models.FloatField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+        
+        
+        
+class UserInbox(models.Model):
+    user = models.ForeignKey(User, models.CASCADE)
+    heading = models.CharField(max_length=255)
+    body = models.TextField()
+    image_url = models.URLField(null=True, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
     

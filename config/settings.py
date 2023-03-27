@@ -12,9 +12,17 @@ from pathlib import Path
 from django.utils.timezone import timedelta
 
 from configurations import Configuration, values
-
+import firebase_admin
+from firebase_admin import credentials
+import json
 
 class Common(Configuration):
+    
+    FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS")
+    
+    cred = credentials.Certificate(json.loads(FIREBASE_CREDENTIALS))
+    firebase_admin.initialize_app(cred)
+
     # Build paths inside the project like this: BASE_DIR / 'subdir'.
     BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -41,6 +49,7 @@ class Common(Configuration):
 
         'accounts.apps.AccountsConfig',
         'main.apps.MainConfig',
+        "social_auth",
         
         'rest_framework',
         'djoser',
@@ -84,6 +93,8 @@ class Common(Configuration):
     ]
 
     WSGI_APPLICATION = 'config.wsgi.application'
+    
+    APPEND_SLASH=False
 
     # Database
     # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -145,7 +156,7 @@ class Common(Configuration):
         'SEND_ACTIVATION_EMAIL':False,
         'SEND_CONFIRMATION_EMAIL':False,
         'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
-        'USERNAME_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+        'USERNAME_RESET_CONFIRM_URL': 'username/reset/confirm/{uid}/{token}',
         "PASSWORD_RESET_CONFIRM_RETYPE" : True,
         "SET_PASSWORD_RETYPE" : True,
         "PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND":True,
@@ -155,7 +166,10 @@ class Common(Configuration):
             'user': 'accounts.serializers.CustomUserSerializer',
             'user_delete': 'accounts.serializers.UserDeleteSerializer',
             "current_user" : 'accounts.serializers.CustomUserSerializer',
-        }        
+        },
+        "EMAIL" : {
+            'password_reset': 'accounts.emails.CustomPasswordResetEmail',  
+        }      
         
     }
 
@@ -204,7 +218,6 @@ class Common(Configuration):
     LOGIN_URL = '/admin/login/'
     
     SITE_NAME = "Imperium"
-    DOMAIN = "#"
     
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': os.getenv('CLOUD_NAME'),

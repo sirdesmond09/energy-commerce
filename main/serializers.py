@@ -1,21 +1,24 @@
 from rest_framework import serializers
 
-from main.generators import generate_booking_id
-from .models import Address, Cart, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product
+from main.generators import generate_booking_id, generate_order_id
+from .models import Address, CalculatorItem, Cart, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, UserInbox
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    primary_img = Base64ImageField()
     gallery = serializers.ReadOnlyField()
     product_components = serializers.ReadOnlyField()
     primary_img_url = serializers.ReadOnlyField()
     category_name = serializers.ReadOnlyField()
     locations_list = serializers.ReadOnlyField()
+    ships_from_list = serializers.ReadOnlyField()
     vendor_detail = serializers.SerializerMethodField()
-    store_detail = serializers.SerializerMethodField()
-    
+    store_detail = serializers.ReadOnlyField()
+    rating = serializers.ReadOnlyField()
     class Meta:
         fields = '__all__'
         model = Product
@@ -27,20 +30,10 @@ class ProductSerializer(serializers.ModelSerializer):
         
     def get_vendor_detail(self, obj):
         return UserSerializer(obj.vendor).data
-    
-    def get_store_detail(self, obj):
-        
-        try:
-            
-            return StoreProfileSerializer(obj.vendor.store).data
-        
-        except Exception as e:
-            return {}
-        
-        
-
-        
+   
 class GallerySerializer(serializers.ModelSerializer):
+
+    image = Base64ImageField()
     class Meta:
         fields = "__all__"
         model = ProductGallery
@@ -62,23 +55,61 @@ class AddProductSerializer(serializers.Serializer):
     
     
     def create(self, validated_data):
-        product = Product.objects.create(**validated_data['product'])
+        locations = validated_data['product'].pop("locations")
+        primary_img = validated_data['product'].pop('primary_img')
+        product = Product.objects.create(**validated_data['product'], primary_img=primary_img)
+        product.locations.set(locations)
+        product.save() 
         
         try:
-            gallery = []
-            components = []
-            for data in validated_data.get("gallery"):
-                gallery.append(ProductGallery(**data, product=product))
-            for data in validated_data.get("components"):
-                components.append(ProductComponent(**data, product=product))
+            if  "gallery" in validated_data.keys():
+                gallery = []
+            
+                for data in validated_data.get("gallery"):
+                    image = data.pop("image")
+                    gallery.append(ProductGallery(**data, product=product, image=image))
+                    
+                ProductGallery.objects.bulk_create(gallery)
+                
+            if  "components" in validated_data.keys():
+                components = []
+                for data in validated_data.get("components"):
+                    components.append(ProductComponent(**data, product=product))
 
-            ProductGallery.objects.bulk_create(gallery)
-            ProductComponent.objects.bulk_create(components)
+                ProductComponent.objects.bulk_create(components)
+            
         except Exception as e:
+            product.delete_permanently()
             raise ValidationError(str(e))
         
         return product
     
+    
+    def update(self, instance, validated_data):
+        fields = self.fields.keys()
+
+        # update locations
+        locations = validated_data.get('product', {}).pop('locations')
+        if locations:
+            instance.product.locations.set(locations)
+        
+        # update product fields
+        for field in fields:
+            if field in validated_data.get('product', {}):
+                setattr(instance.product, field, validated_data['product'][field])
+
+        
+        instance.product.save()
+            
+        # Updating components
+        if 'components' in validated_data:
+            instance.components.all().delete()
+            components = []
+            for data in validated_data['components']:
+                components.append(ProductComponent(**data, product=instance.product))
+            ProductComponent.objects.bulk_create(components)
+            
+        return instance
     
 class CategorySerializer(serializers.ModelSerializer):
     products = serializers.SerializerMethodField()
@@ -90,7 +121,7 @@ class CategorySerializer(serializers.ModelSerializer):
         
         
     def get_products(self, category):
-        return ProductSerializer(category.product_items.filter(is_deleted=False), many=True).data[:4]
+        return ProductSerializer(category.product_items.filter(is_deleted=False, status="verified"), many=True).data[:4]
     
     
     def get_product_count(self, category):
@@ -117,7 +148,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
     address_data = serializers.ReadOnlyField()
     store = serializers.ReadOnlyField()
     product_sku = serializers.SerializerMethodField()
-    
+    booking_id = serializers.SerializerMethodField()
+    total_order = serializers.ReadOnlyField() 
+    rating_made = serializers.SerializerMethodField()
     class Meta:
         fields = "__all__"
         model = OrderItem
@@ -125,7 +158,22 @@ class OrderItemSerializer(serializers.ModelSerializer):
         
     def get_product_sku(self, obj):
         return obj.item.product_sku
-
+    
+    def get_booking_id(self,obj):
+        return obj.order.booking_id
+    
+    def get_rating_made(self,obj):
+        rating = Rating.objects.filter(order_item=obj, is_deleted=False)
+        
+        if rating.exists():
+            rating = rating.first()
+            return {
+                "id" : rating.id,
+                "rating": rating.rating,
+                "review" : rating.review
+            }
+            
+        return None
 
 class UpdateStatusSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=200)
@@ -134,6 +182,7 @@ class UpdateStatusSerializer(serializers.Serializer):
 class OrderSerializer(serializers.ModelSerializer):
     order_items = serializers.SerializerMethodField()
     address_data = serializers.ReadOnlyField()
+    payment_data  = serializers.ReadOnlyField()
         
     class Meta:
         fields = "__all__"
@@ -182,6 +231,7 @@ class AddOrderSerializer(serializers.Serializer):
                 qty = item.get('qty')
                 
                 if product.qty_available >= qty:
+                    item["unique_id"] = generate_order_id()
                     item["unit_price"] = product.price
                     item["installation_fee"] = product.installation_fee
                     product.qty_available  -= qty
@@ -210,9 +260,9 @@ class AddOrderSerializer(serializers.Serializer):
         
 
 class EnergyCalculatorSerializer(serializers.Serializer ):
-    total_wattage = serializers.IntegerField()
-    total_watt_hour = serializers.IntegerField()
-    
+    total_wattage = serializers.FloatField()
+    total_watt_hour = serializers.FloatField()
+    battery_type = serializers.CharField()
     
     
 class MultipleProductSerializer(serializers.Serializer ):
@@ -232,9 +282,16 @@ class CartSerializer(serializers.ModelSerializer):
         
         
 class PaymentSerializer(serializers.ModelSerializer):
+    order_detail = serializers.SerializerMethodField()
+    user_detail = serializers.ReadOnlyField()
+    
     class Meta:
         fields = "__all__"
         model = PaymentDetail
+        
+        
+    def get_order_detail(self, payment):
+        return OrderSerializer(payment.order).data
         
         
 
@@ -259,14 +316,20 @@ class PayOutSerializer(serializers.ModelSerializer):
 class UpdateStatusSerializer(serializers.Serializer):
     
     status = serializers.CharField(max_length=50)
+    verification_code = serializers.CharField(max_length=6, required=False)
     
     
     def validate_status(self, value):
-        if value not in ("processing","in-transit", "delivered"):
-            raise ValidationError(detail={"status can only be 'processing' or 'in-transit' or 'delivered'"})
+        if value not in ("processing","in-transit", "delivered", "installed"):
+            raise ValidationError(detail="status can only be 'processing' or 'in-transit' or 'delivered' or 'installed'")
     
         return value
     
+    
+class StatusSerializer(serializers.Serializer):
+    
+    status = serializers.CharField(max_length=50)
+
 class CancelSerializer(serializers.Serializer):
     
     reason = serializers.CharField(max_length=50000)
@@ -283,3 +346,28 @@ class CancelResponseSerializer(serializers.Serializer):
             raise ValidationError(detail={"status can only be 'accepted' or 'rejected'"})
         
         return value
+    
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Rating
+        fields = "__all__"
+    
+    
+    
+class CalculatorItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = CalculatorItem
+        fields = "__all__"
+
+
+
+class UserInboxSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = UserInbox
+        fields = "__all__"
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = FrequentlyAskedQuestion
+        fields = "__all__"

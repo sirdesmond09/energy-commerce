@@ -43,6 +43,13 @@ class User(AbstractBaseUser, PermissionsMixin):
                                      blank=True, 
                                      null=True, 
                                      choices=VENDOR_STATUS)
+    image = models.ImageField(
+        upload_to='profile_photos/', 
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['png', "jpg", "jpeg"])
+        ], 
+        blank=True, null=True)
     password      = models.CharField(_('password'), max_length=300)
     is_staff      = models.BooleanField(_('staff'), default=False)
     is_admin      = models.BooleanField(_('admin'), default= False)
@@ -50,6 +57,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_deleted    = models.BooleanField(_('deleted'), default=False)
     date_joined   = models.DateTimeField(_('date joined'), auto_now_add=True)
     sent_vendor_email = models.BooleanField(default=False)
+    fcm_token = models.TextField(null=True)
+    provider = models.CharField(_('provider'), max_length=255, default="email", choices=(('email',"email"),
+                                                                                         ('google',"google")))
     
     
     objects = UserManager()
@@ -63,6 +73,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.email} -- {self.role}"
+    
+    @property
+    def module_access(self):
+        unique_modules = ModuleAccess.objects.filter(group__user=self.id).distinct().values()
+        
+        return unique_modules
     
     
     def delete(self):

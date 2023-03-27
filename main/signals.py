@@ -8,6 +8,7 @@ from .models import *
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from firebase_admin import messaging
 
 
 
@@ -49,3 +50,20 @@ def log_delete_delete(sender, instance:Product, created, **kwargs):
     )
     
 
+
+
+@receiver(post_save, sender=UserInbox)
+def send_notification(sender, instance:UserInbox, created, *args,**kwargs):
+    
+    if created:        
+        if instance.user.fcm_token:
+        
+            notification = messaging.Notification(title=instance.heading, body=instance.body, image=instance.image_url)
+            messaging.send(messaging.Message(notification=notification, token=instance.user.fcm_token))
+        
+        return
+
+
+def send_message(token):
+    notification = messaging.Notification(title="New Product", body="A new product is here! Check it out.", image="https://res.cloudinary.com/univel/image/upload/v1/media/products/primary_imgs/Placeholder-18_gdbubg")
+    messaging.send(messaging.Message(notification=notification, token=token))
