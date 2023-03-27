@@ -166,7 +166,10 @@ class Common(Configuration):
             'user': 'accounts.serializers.CustomUserSerializer',
             'user_delete': 'accounts.serializers.UserDeleteSerializer',
             "current_user" : 'accounts.serializers.CustomUserSerializer',
-        }        
+        },
+        "EMAIL" : {
+            'password_reset': 'accounts.email.CustomPasswordResetEmail',  
+        }      
         
     }
 
