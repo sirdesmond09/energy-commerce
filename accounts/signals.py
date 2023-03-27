@@ -14,7 +14,7 @@ from django.template.loader import render_to_string
 
 User = get_user_model()
 site_name = "Imperium"
-url=""
+url="https://imperium-market-place.vercel.app/"
 
 def generate_otp(n):
     return "".join([str(random.choice(range(10))) for _ in range(n)])
