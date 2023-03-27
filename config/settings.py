@@ -168,7 +168,7 @@ class Common(Configuration):
             "current_user" : 'accounts.serializers.CustomUserSerializer',
         },
         "EMAIL" : {
-            'password_reset': 'accounts.email.CustomPasswordResetEmail',  
+            'password_reset': 'accounts.emails.CustomPasswordResetEmail',  
         }      
         
     }
