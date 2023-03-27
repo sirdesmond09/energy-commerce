@@ -161,6 +161,29 @@ class ProductEditView(UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsVendor]
     
+    
+@swagger_auto_schema(method="patch", request_body=AddProductSerializer())
+@api_view(["PATCH"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsVendor])
+def edit_product(request, product_id):
+    
+    """Allows only vendors to edit their products"""
+    
+    try:
+        product  = Product.objects.filter(id=product_id, is_deleted=False)
+    except  Product.DoesNotExist:
+        raise NotFound(detail={"message": "Product not found"})
+    
+    serializer = AddProductSerializer(product, data=request.data, patch=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    
+    product.status = "pending"
+    product.save()
+    
+    return Response({"message": "successful"}, status=status.HTTP_201_CREATED)
+    
 
 @swagger_auto_schema(method="patch", request_body=StatusSerializer())
 @api_view(["PATCH"])
