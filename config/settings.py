@@ -218,7 +218,6 @@ class Common(Configuration):
     LOGIN_URL = '/admin/login/'
     
     SITE_NAME = "Imperium"
-    DOMAIN = "#"
     
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': os.getenv('CLOUD_NAME'),

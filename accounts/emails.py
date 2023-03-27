@@ -11,7 +11,8 @@ class CustomPasswordResetEmail(PasswordResetEmail):
 
         user = context.get("user")
         
-        print(self.request.META.get('HTTP_REFERER'))
+            
+        context["domain"] = self.request.META.get('HTTP_REFERER')
             
         
         return context
