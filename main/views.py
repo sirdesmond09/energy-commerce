@@ -629,7 +629,7 @@ def validate_payment(request, payment_id):
         else:
             
             order.status = "canceled"
-            order.cancellation_response_reason = "payment method was declined"
+            order.cancellation_response_reason = f"{action} was declined"
             order.cancel_responded_at = timezone.now()
             order.save()
             
@@ -639,7 +639,7 @@ def validate_payment(request, payment_id):
             order = order_item.order
             for order_item in order.items.filter(is_deleted=False):
                 order_item.status="canceled"
-                order_item.cancellation_response_reason = "payment method was declined"
+                order_item.cancellation_response_reason = f"{action} was declined"
                 order_item.cancel_responded_at = timezone.now()
                 order.save()
                 
