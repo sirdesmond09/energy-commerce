@@ -80,6 +80,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         
         return unique_modules
     
+    @property
+    def image_url(self):
+        if self.logo:
+            return self.image.url
+        return ""
     
     def delete(self):
         self.is_deleted = True
