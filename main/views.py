@@ -591,11 +591,17 @@ def validate_payment(request, payment_id):
     data = serializer.validated_data.get("status", None)
     
     if data and data in ("approved", "declined"):
-        serializer.save()
+                
+        order = payment.order
+        action = ""
+        
+        if payment.payment_type == "lease":
+            action = "lease to own"
+        
+        elif payment.payment_type == "power-as-a-service":
+            action = "power as a service"
         
         if data == "approved":
-            
-            order = payment.order
             
             #mark order as paid
             order.is_paid_for =True
@@ -614,18 +620,40 @@ def validate_payment(request, payment_id):
             
             PayOuts.objects.bulk_create(payouts)
             
+            UserInbox.objects.create(
+                user = order.user,
+                heading = f"Order {order_item.unique_id} update",
+                body = f"Your {action} has been approved"
+                )
+            
         else:
             
-            # TODO: what happend when payment is declined?
-            pass
+            order.status = "canceled"
+            order.cancellation_response_reason = "payment method was declined"
+            order.cancel_responded_at = timezone.now()
+            order.save()
+            
+            
+            
+            ##check if all other items are canceled, then mark order as canceled
+            order = order_item.order
+            for order_item in order.items.filter(is_deleted=False):
+                order_item.status="canceled"
+                order_item.cancellation_response_reason = "payment method was declined"
+                order_item.cancel_responded_at = timezone.now()
+                order.save()
+                
+                order_item.item.qty_available += order_item.qty
+                order_item.item.save()
+                
+                
+            UserInbox.objects.create(
+                user = order.user,
+                heading = f"Order {order_item.unique_id} update",
+                body = f"Your {action} has been declined"
+                )
         
-        action = ""
         
-        if payment.payment_type == "lease":
-            action = "lease to own"
-        
-        elif payment.payment_type == "power-as-a-service":
-            action = "power as a service"
         
         ActivityLog.objects.create(
             user=request.user,
@@ -825,7 +853,7 @@ def request_order_cancel(request, booking_id):
     if order.status == "cancel-requested":
         raise PermissionDenied(detail={"message":"cancel already requested"})
     
-    if order.status == "user-canceled":
+    if order.status == "canceled":
         raise PermissionDenied(detail={"message":"order is already canceled"})
     
     if request.method == "DELETE":
@@ -874,7 +902,7 @@ def request_order_item_cancel(request, booking_id, item_id):
         serializer.is_valid(raise_exception=True)
             
         if request.user.role == "admin":
-            order_item.status = "user-canceled"
+            order_item.status = "canceled"
             order_item.cancellation_response_reason = serializer.validated_data.get("reason")
             order_item.cancel_responded_at = timezone.now()
             order_item.save()
@@ -884,8 +912,8 @@ def request_order_item_cancel(request, booking_id, item_id):
             
             ##check if all other items are canceled, then mark order as canceled
             order = order_item.order
-            if all(i.status == "user-canceled" for i in order.items.filter(is_deleted=False)):
-                order.status="user-canceled"
+            if all(i.status == "canceled" for i in order.items.filter(is_deleted=False)):
+                order.status="canceled"
                 order.cancellation_response_reason = "all items were cancelled"
                 order.cancel_responded_at = timezone.now()
                 order.save()
@@ -906,7 +934,7 @@ def request_order_item_cancel(request, booking_id, item_id):
         else:
             if order_item.status == "cancel-requested":
                 raise PermissionDenied(detail={"message":"cancel already requested"})
-            if order_item.status == "user-canceled":
+            if order_item.status == "canceled":
                 raise PermissionDenied(detail={"message":"item is already canceled"})
             
                 
@@ -953,7 +981,7 @@ def respond_to_cancel_request(request, booking_id, item_id):
     
     
     if response == "accepted":
-        obj.status = "user-canceled"
+        obj.status = "canceled"
         obj.cancellation_response_reason = serializer.validated_data.get("reason")
         obj.cancel_responded_at = timezone.now()
         obj.save()
@@ -965,7 +993,7 @@ def respond_to_cancel_request(request, booking_id, item_id):
         #     for order_item in obj.items.all():
         #         order_item.item.qty_available += order_item.qty
         #         order_item.prev_status = order_item.status
-        #         order_item.status = "user-canceled"
+        #         order_item.status = "canceled"
         #         order_item.cancel_responded_at = timezone.now()
         #         order_item.cancellation_response_reason = "order was canceled"
         #         order_item.save()
@@ -986,8 +1014,8 @@ def respond_to_cancel_request(request, booking_id, item_id):
         
         ##check if all other items are canceled, then mark order as canceled
         order = obj.order
-        if all(i.status == "user-canceled" for i in order.items.filter(is_deleted=True)):
-            order.status="user-canceled"
+        if all(i.status == "canceled" for i in order.items.filter(is_deleted=True)):
+            order.status="canceled"
             order.cancellation_response_reason = "all items were cancelled"
             order.cancel_responded_at = timezone.now()
             order.save()
@@ -1094,7 +1122,7 @@ class OrderList(ListAPIView):
             queryset = queryset.filter(status__in=["installed",  "delivered"])
         
         if  filterBy == "cancellations":
-                queryset = queryset.filter(status__in=["cancel-requested","user-canceled"])   
+                queryset = queryset.filter(status__in=["cancel-requested","canceled"])   
                         
         if status:
             queryset = queryset.filter(status=status)
@@ -1328,7 +1356,7 @@ def accept_order(request,  booking_id, item_id):
 class VendorItemListView(ListAPIView):
     """Returns a list of order items for vendor to attend to"""
     
-    queryset = OrderItem.objects.filter(is_deleted=False).exclude(status="user-canceled").exclude(status="pending").exclude(status="cancel-requested").order_by("-date_added")
+    queryset = OrderItem.objects.filter(is_deleted=False).exclude(status="canceled").exclude(status="pending").exclude(status="cancel-requested").order_by("-date_added")
     
    
     serializer_class = OrderItemSerializer
@@ -1383,7 +1411,7 @@ def vendor_update_item_status(request, id):
     if (item.item.vendor != request.user) and (user_role != "admin"):
         raise PermissionDenied(detail={"message":"you do not have permission to perform this action"})
    
-    if item.status == "user-canceled":
+    if item.status == "canceled":
         raise ValidationError(detail={"message":"item has been canceled from the order"})
     
     if item.status == "cancel-requested":
