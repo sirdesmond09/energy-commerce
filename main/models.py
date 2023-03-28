@@ -127,7 +127,7 @@ class Product(models.Model):
     @property
     def total_order(self):
         
-        items = self.order_items.filter(is_deleted=True).exclude(status__in=["pending","cancel-requested","user-canceled"])
+        items = self.order_items.filter(is_deleted=True).exclude(status__in=["pending","cancel-requested","canceled"])
         return items.count()
     
 
@@ -263,7 +263,7 @@ class Order(models.Model):
                                        ("processing", "processing"),
                                        ("completed", "completed"),
                                        ("cancel-requested", "cancel-requested"),
-                                       ("user-canceled", "user-canceled"),
+                                       ("canceled", "canceled"),
                                     ), null=True,blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
@@ -313,7 +313,7 @@ class OrderItem(models.Model):
                                        ("delivered", "delivered"),
                                        ("installed", "installed"),
                                        ("cancel-requested", "cancel-requested"),
-                                       ("user-canceled", "user-canceled"),
+                                       ("canceled", "canceled"),
                                     ), default="pending")
     cancellation_reason = models.TextField(blank=True, null=True)
     cancellation_response_reason = models.TextField(blank=True, null=True)
