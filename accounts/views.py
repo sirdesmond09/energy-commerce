@@ -6,13 +6,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.permissions import IsAdminUser
 from django.contrib.auth import get_user_model
 from .helpers.generators import generate_password
 from rest_framework.exceptions import PermissionDenied, AuthenticationFailed, NotFound, ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView , RetrieveUpdateAPIView
@@ -23,8 +22,8 @@ from .models import ActivityLog, ModuleAccess, StoreBankDetail, StoreProfile
 from django.contrib.auth.hashers import check_password
 from main.models import Product, UserInbox
 from django.contrib.auth.models import Permission, Group
-from django.contrib.admin.models import LogEntry
 from django.db.models import Q
+
 
 
  
@@ -36,7 +35,7 @@ def get_query():
     
     """returns query to be used to in the permissions view"""
     
-    exclude_words = [ "activationotp", "activitylog", "moduleaccess", "logentry","group", "permission" "contenttype", "userinbox", "validationotp", "session", "blacklistedtoken", "outstandingtoken",]
+    exclude_words = [ "activationotp", "activitylog", "moduleaccess", "logentry","group", "permission", "contenttype", "userinbox", "validationotp", "session", "blacklistedtoken", "outstandingtoken", "cart", ]
     
     query = Q()
     for word in exclude_words:
@@ -472,22 +471,30 @@ def update_favorite(request, product_id=None):
 class PermissionList(ListAPIView):
     serializer_class = PermissionSerializer
     queryset = Permission.objects.exclude(get_query())
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
     
     
 class ModuleAccessList(ListAPIView):
     serializer_class = ModuleAccessSerializer
     queryset = ModuleAccess.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
 
 
 class GroupListCreate(ListCreateAPIView):
     serializer_class = GroupSerializer
     queryset = Group.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
 
 
 class GroupDetail(RetrieveUpdateDestroyAPIView):
     serializer_class = GroupSerializer
     queryset = Group.objects.all()
     lookup_field = "id"
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
     
     
 
