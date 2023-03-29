@@ -82,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     @property
     def image_url(self):
-        if self.logo:
+        if self.image:
             return self.image.url
         return ""
     
