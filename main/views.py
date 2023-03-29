@@ -642,7 +642,6 @@ def validate_payment(request, payment_id):
             
             
             ##check if all other items are canceled, then mark order as canceled
-            order = order_item.order
             for order_item in order.items.filter(is_deleted=False):
                 order_item.status="canceled"
                 order_item.cancellation_response_reason = f"{action} was declined"
