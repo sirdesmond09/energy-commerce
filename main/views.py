@@ -602,6 +602,8 @@ def validate_payment(request, payment_id):
             action = "power as a service"
         
         if data == "approved":
+            payment.status = data
+            payment.save()
             
             #mark order as paid
             order.is_paid_for =True
@@ -629,6 +631,8 @@ def validate_payment(request, payment_id):
                 )
             
         else:
+            payment.status = data
+            payment.save()
             
             order.status = "canceled"
             order.cancellation_response_reason = f"{action} was declined"
