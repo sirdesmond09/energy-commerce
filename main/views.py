@@ -620,9 +620,11 @@ def validate_payment(request, payment_id):
             
             PayOuts.objects.bulk_create(payouts)
             
+
+            
             UserInbox.objects.create(
                 user = order.user,
-                heading = f"Order {order_item.unique_id} update",
+                heading = f"Order {order.booking_id} update",
                 body = f"Your {action} has been approved"
                 )
             
@@ -649,7 +651,7 @@ def validate_payment(request, payment_id):
                 
             UserInbox.objects.create(
                 user = order.user,
-                heading = f"Order {order_item.unique_id} update",
+                heading = f"Order {order.booking_id} update",
                 body = f"Your {action} has been declined"
                 )
         
