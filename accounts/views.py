@@ -24,12 +24,27 @@ from django.contrib.auth.hashers import check_password
 from main.models import Product, UserInbox
 from django.contrib.auth.models import Permission, Group
 from django.contrib.admin.models import LogEntry
-
+from django.db.models import Q
 
 
  
  
 User = get_user_model()
+
+
+def get_query():
+    
+    """returns query to be used to in the permissions view"""
+    
+    exclude_words = [ "activationotp", "activitylog", "moduleaccess", "logentry","group", "permission" "contenttype", "userinbox", "validationotp", "session", "blacklistedtoken", "outstandingtoken",]
+    
+    query = Q()
+    for word in exclude_words:
+        query |= Q(codename__icontains=word)
+        
+    return query
+    
+   
 
 
 
@@ -456,7 +471,7 @@ def update_favorite(request, product_id=None):
 
 class PermissionList(ListAPIView):
     serializer_class = PermissionSerializer
-    queryset = Permission.objects.all()
+    queryset = Permission.objects.exclude(get_query())
     
     
 class ModuleAccessList(ListAPIView):
