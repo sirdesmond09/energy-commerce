@@ -34,10 +34,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
     favourite_detail = serializers.ReadOnlyField()
     vendor_rating = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
+    image_url = serializers.ReadOnlyField()
     
     class Meta():
         model = User
-        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "roles", "is_superuser", "date_joined"]
+        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "roles", "is_superuser", "image_url", "date_joined"]
+
         extra_kwargs = {
             'password': {'write_only': True}
         }

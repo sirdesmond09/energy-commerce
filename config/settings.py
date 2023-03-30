@@ -256,8 +256,12 @@ class Development(Common):
         'debug_toolbar.middleware.DebugToolbarMiddleware'
     ]
     
+    # DATABASES = values.DatabaseURLValue(
+    #     'sqlite:///{}'.format(os.path.join(Common.BASE_DIR, 'db.sqlite3'))
+    # )
+    
     DATABASES = values.DatabaseURLValue(
-        'sqlite:///{}'.format(os.path.join(Common.BASE_DIR, 'db.sqlite3'))
+        os.getenv("DATABASE_URL")
     )
     
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
