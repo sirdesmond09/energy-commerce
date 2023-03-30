@@ -108,13 +108,13 @@ class AdminListCreateView(ListCreateAPIView):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
             
-            if serializer.validated_data['is_superuser'] == True and request.user.is_superuser == True:
+            if serializer.validated_data.get('is_superuser') == True and request.user.is_superuser == True:
                 
                 serializer.validated_data['is_superuser'] == True
                 serializer.validated_data['is_staff'] == True
                 
                 
-            elif serializer.validated_data['is_superuser'] != True  :
+            elif serializer.validated_data.get('is_superuser', None) != True  :
                 serializer.validated_data['is_superuser'] == False
                 serializer.validated_data['is_staff'] == False
             
