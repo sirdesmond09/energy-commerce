@@ -37,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name     = models.CharField(_('last name'),max_length = 250)
     role          = models.CharField(_('role'), max_length = 255, choices=ROLE_CHOICES)
     email         = models.EmailField(_('email'), unique=True)
-    phone         = models.CharField(_('phone'), max_length = 20, unique = True, validators=[phone_regex])
+    phone         = models.CharField(_('phone'), max_length = 100, unique = True, validators=[phone_regex])
     favourite    = models.ManyToManyField("main.Product", blank=True)
     vendor_status = models.CharField(max_length=250, 
                                      blank=True, 
@@ -89,7 +89,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     def delete(self):
         self.is_deleted = True
         self.email = f"{random.randint}-deleted-{self.email}"
-        self.phone = f"{self.phone}-del-{random.randint}"
+        self.phone = f"{self.phone}-deleted-{random.randint}"
         self.save()
         
         

@@ -107,25 +107,37 @@ class AdminListCreateView(ListCreateAPIView):
         
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
+            
+            if serializer.validated_data['is_superuser'] == True and request.user.is_superuser == True:
                 
-                serializer.validated_data['password'] = generate_password()
-                serializer.validated_data['is_superuser'] = False
-                serializer.validated_data['is_active'] = True
-                serializer.validated_data['is_admin'] = True
-                serializer.validated_data['role'] = "admin"
-                instance = serializer.save()
+                serializer.validated_data['is_superuser'] == True
+                serializer.validated_data['is_staff'] == True
                 
-                data = {
-                    'message' : "success",
-                    'data' : serializer.data,
-                }
                 
-                ActivityLog.objects.create(
-                user=request.user,
-                action = f"Created admin with email {instance.email}"
-                )
+            elif serializer.validated_data['is_superuser'] != True  :
+                serializer.validated_data['is_superuser'] == False
+                serializer.validated_data['is_staff'] == False
+            
+            else:
+                raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})
+            
+            serializer.validated_data['password'] = generate_password()
+            serializer.validated_data['is_active'] = True
+            serializer.validated_data['is_admin'] = True
+            serializer.validated_data['role'] = "admin"
+            instance = serializer.save()
+            
+            data = {
+                'message' : "success",
+                'data' : serializer.data,
+            }
+            
+            ActivityLog.objects.create(
+            user=request.user,
+            action = f"Created admin with email {instance.email}"
+            )
 
-                return Response(data, status = status.HTTP_201_CREATED)
+            return Response(data, status = status.HTTP_201_CREATED)
 
         else:
             data = {
