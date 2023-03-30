@@ -20,6 +20,7 @@ import calendar
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.db.utils import ProgrammingError
+from django.db.models import Case, F, Value, When
 
 
 User = get_user_model()
@@ -72,7 +73,7 @@ def add_product(request):
 
 class ProductList(ListAPIView):
     serializer_class = ProductSerializer
-    queryset = Product.objects.filter(is_deleted=False, status="verified")
+    queryset = Product.objects.filter(is_deleted=False, status="verified",  vendor__vendor_status="approved",)
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly]
     
@@ -161,13 +162,6 @@ class ProductDetail(RetrieveDestroyAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsVendorOrReadOnly]
     
-
-class ProductEditView(UpdateAPIView):
-    serializer_class = AddProductSerializer
-    queryset = Product.objects.filter(is_deleted=False)
-    lookup_field="id"
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsVendor]
     
     
 @swagger_auto_schema(method="patch", request_body=AddProductSerializer())
@@ -694,48 +688,68 @@ def energy_calculator(request):
         
         if serializer.is_valid():
             
-            battery = serializer.validated_data.get('battery_type')
+            # battery = serializer.validated_data.get('battery_type')
         
-            if battery == "Tubular":
-                discharge_depth = 0.50
-            elif battery == "Lithium":
-                discharge_depth = 0.92
-            elif battery == "Dry cell (SMF)":
-                discharge_depth = 0.3
-            else:
-                raise ValidationError(detail={"message":"select battery type"})
+            # if battery == "Tubular":
+            #     discharge_depth = 0.50
+            # elif battery == "Lithium":
+            #     discharge_depth = 0.92
+            # elif battery == "Dry cell (SMF)":
+            #     discharge_depth = 0.3
+            # else:
+            #     raise ValidationError(detail={"message":"select battery type"})
             
             energy_loss = 0.3
             power_factor = 0.8
         
             sys_cap_limit = 0.7
-            volt = 24
-            batt_unit = 150
+            # volt = 24
+            # batt_unit = 150
             
-            total_load = round(sum([data["wattage"] for data in serializer.validated_data])/(1-energy_loss), 2)
+            # total_load = round(sum([data["wattage"] for data in serializer.validated_data])/(1-energy_loss), 2)
             
-            watt_hr = [data["wattage"] * data["hours"] for data in serializer.validated_data]
+            # watt_hr = [data["wattage"] * data["hours"] for data in serializer.validated_data]
             
-            total_watt_hr = round(sum(watt_hr)/(1-energy_loss), 2)
+            total_load = serializer.validated_data.get("total_wattage")
+            # watt_hr = serializer.validated_data.get("total_watt_hour")
+            # total_watt_hr = round(sum(watt_hr)/(1-energy_loss), 2)
             
             
             inverter_capacity = round(total_load/(sys_cap_limit*power_factor*1000), 2)
             
-            battery_cap = round((total_watt_hr/volt)/discharge_depth, 2)
             
-            batt_total = round(battery_cap/batt_unit, 2)
+            # battery_cap = round((total_watt_hr/volt)/discharge_depth, 2)
+            
+            # batt_total = round(battery_cap/batt_unit, 2)
             
             products = Product.objects.filter(category__name__icontains='complete solution', 
-                                   total_power_kva__gte=inverter_capacity,
-                                   battery_cap_AH__gte=battery_cap,
-                                   battery_type=battery,
-                                   is_deleted=False)[:4]
+                                   total_power_kva__range=[inverter_capacity, inverter_capacity+1],
+                                   status="verified",
+                                   vendor__vendor_status="approved",
+                                   is_deleted=False)
+            
+            
+            # products = Product.objects.filter(category__name='Complete Solution').annotate(
+            #     effective_capacity=Case(
+            #         When(battery_type='Tubular', then=F('battery_capacity') * 0.5),
+            #         When(battery_type='Lithium', then=F('battery_capacity') * 0.92),
+            #         When(battery_type='SMF', then=F('battery_capacity') * 0.3),
+            #         default=F('battery_capacity')
+                
+            # ).annotate(
+            #     effective_power=F('output_power') * 1000,  # convert from KVA to VA (volt-ampere)
+            #     effective_WH=F('effective_capacity') * F('voltage') * F('effective_power') * 0.8 / 1000,  # convert from VA to Wh (watt-hour)
+            #     limit_WH=F('effective_WH') * 0.7  # assuming product limit of 70%
+            # ).filter(effective_WH_gte=WH, effective_power_gte=W).order_by('-effective_WH')[:4]
+            
+            
+            
             
             data = {"total_load": total_load,
-                    "total_watt_hr": total_watt_hr,
+                    #"total_watt_hr": total_watt_hr,
                     "suggested_inverter_capacity":inverter_capacity,
-                    "estimated_battery_cap": battery_cap,
-                    "suggested_unit_battery_total":batt_total,
+                    # "estimated_battery_cap": battery_cap,
+                    # "suggested_unit_battery_total":batt_total,
                     "recommendations": ProductSerializer(products, many=True).data}
             
             return Response(data)
