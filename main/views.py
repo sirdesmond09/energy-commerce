@@ -19,14 +19,22 @@ from rest_framework.pagination import LimitOffsetPagination
 import calendar
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
+from django.db.utils import ProgrammingError
 
 
 User = get_user_model()
 
 pagination_class = LimitOffsetPagination()
 
-COMMISSION = round(Commission.objects.first().percent / 100, 2)
+try:
+    commission = Commission.objects.all()
 
+    if commission.count() == 0:
+        Commission.objects.create(percent=12)
+        
+    COMMISSION = round(Commission.objects.first().percent / 100, 2)
+except ProgrammingError:
+    COMMISSION = 0.12
 
 class CategoryView(ListCreateAPIView):
     serializer_class = CategorySerializer
