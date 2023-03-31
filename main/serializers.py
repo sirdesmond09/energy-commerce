@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id, generate_order_id
-from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, UserInbox
+from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, TermAndCondition, UserInbox
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -315,6 +315,13 @@ class CommissionSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Commission
+        
+
+
+class TermAndConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = TermAndCondition
         
         
 
