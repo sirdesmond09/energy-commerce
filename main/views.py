@@ -2,7 +2,7 @@ from datetime import datetime
 import random
 from accounts.models import ActivityLog
 from main.helpers import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CommissionSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, UpdateStatusSerializer, UserInboxSerializer
 from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView, UpdateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from accounts.permissions import CalculatorItemTablePermissions, CustomDjangoModelPermissions, DashboardPermission, FAQTablePermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductCategoryPermissions, ProductTablePermissions, RatingTablePermissions
+from accounts.permissions import CalculatorItemTablePermissions, CommissionTablePermissions, CustomDjangoModelPermissions, DashboardPermission, FAQTablePermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductCategoryPermissions, ProductTablePermissions, RatingTablePermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
@@ -216,6 +216,11 @@ def update_product_status(request, product_id):
         product.save()
         
         # TODO: send notice to vendor about status
+        UserInbox.objects.create(
+                user = product.vendor,
+                heading = f"Product '{product.name}' update",
+                body = f"Your product has been {new_status}"
+                )
         
         return Response({"message": "Status updated"}, status=status.HTTP_200_OK)
 
@@ -1936,3 +1941,20 @@ class FAQDetailView(RetrieveUpdateDestroyAPIView):
     
     def delete(self, request, *args, **kwargs):
         return super().delete(request, *args, **kwargs)
+    
+    
+    
+
+class CommissionList(ListAPIView):
+    serializer_class = CommissionSerializer
+    queryset =Commission.objects.all()
+    permission_classes = [CommissionTablePermissions]
+    authentication_classes = [JWTAuthentication]
+    
+    
+class CommissionUpdate(RetrieveUpdateAPIView):
+    serializer_class = CommissionSerializer
+    queryset =Commission.objects.all()
+    permission_classes = [CommissionTablePermissions]
+    authentication_classes = [JWTAuthentication]
+    lookup_field = "id"

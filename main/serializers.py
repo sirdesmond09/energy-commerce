@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id, generate_order_id
-from .models import Address, CalculatorItem, Cart, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, UserInbox
+from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, UserInbox
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -308,10 +308,10 @@ class PayOutSerializer(serializers.ModelSerializer):
         
         
 
-# class DeliveryDetailSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         fields = "__all__"
-#         model = DeliveryDetail
+class CommissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = Commission
         
         
 

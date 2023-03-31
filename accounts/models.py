@@ -109,6 +109,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             else:
                 profile['logo_url'] = ""
             profile['cac_doc_url'] = self.store.cac_doc.url
+            profile['date_joined'] = self.store.date_joined
             
             return profile    
         else:
