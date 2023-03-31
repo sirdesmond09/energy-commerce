@@ -87,7 +87,7 @@ class AddProductSerializer(serializers.Serializer):
     
     def update(self, instance, validated_data):
         print(instance)
-        fields = ProductSerializer.fields()
+        fields = instance.__dict__
         
         print(fields)
 
