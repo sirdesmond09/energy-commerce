@@ -93,10 +93,13 @@ class AddProductSerializer(serializers.Serializer):
         products = validated_data.get('product', {})
         
         
+        
         if "locations" in products.keys():
             locations = products.pop('locations')
             instance.locations.set(locations)
         
+        
+        print(validated_data.get("product"))
         # update product fields
         for field in fields:
             if field in validated_data.get('product', {}):
