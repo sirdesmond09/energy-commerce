@@ -94,22 +94,22 @@ class AddProductSerializer(serializers.Serializer):
         
         if "locations" in products.keys():
             locations = products.pop('locations')
-            instance.product.locations.set(locations)
+            instance.locations.set(locations)
         
         # update product fields
         for field in fields:
             if field in validated_data.get('product', {}):
-                setattr(instance.product, field, validated_data['product'][field])
+                setattr(instance, field, validated_data['product'][field])
 
         
-        instance.product.save()
+        instance.save()
             
         # Updating components
         if 'components' in validated_data:
             instance.components.all().delete()
             components = []
             for data in validated_data['components']:
-                components.append(ProductComponent(**data, product=instance.product))
+                components.append(ProductComponent(**data, product=instance))
             ProductComponent.objects.bulk_create(components)
             
         return instance
