@@ -173,8 +173,8 @@ def edit_product(request, product_id):
     """Allows only vendors to edit their products"""
     
     try:
-        product  = Product.objects.filter(id=product_id, is_deleted=False)
-    except  Product.DoesNotExist:
+        product  = Product.objects.get(id=product_id, is_deleted=False)
+    except Product.DoesNotExist:
         raise NotFound(detail={"message": "Product not found"})
     
     serializer = AddProductSerializer(product, data=request.data, partial=True)
