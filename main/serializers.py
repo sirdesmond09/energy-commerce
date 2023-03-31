@@ -86,6 +86,7 @@ class AddProductSerializer(serializers.Serializer):
     
     
     def update(self, instance, validated_data):
+        print(instance)
         fields = self.fields.keys()
 
         # update locations
