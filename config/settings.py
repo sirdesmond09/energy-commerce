@@ -16,6 +16,8 @@ import firebase_admin
 from firebase_admin import credentials
 import json
 
+
+
 class Common(Configuration):
     
     FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS")
@@ -57,8 +59,7 @@ class Common(Configuration):
         'coreapi',
         'corsheaders',
         'rest_framework_simplejwt.token_blacklist',
-        'cloudinary_storage',
-        'cloudinary',
+        'storages',
 
     ]
 
@@ -219,14 +220,18 @@ class Common(Configuration):
     SITE_NAME = "Imperium"
     DOMAIN = "#"
     
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.getenv('CLOUD_NAME'),
-        'API_KEY': os.getenv('API_KEY'),
-        'API_SECRET': os.getenv('API_SECRET'),
-    }
-    
-    MEDIA_URL = '/media/'
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    # Azure Blob Storage settings
+    AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
+    AZURE_CONTAINER = os.getenv("AZURE_CONTAINER")
+    AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
+    AZURE_CONNECTION_TIMEOUT_SECS = 60
+
+
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+
+    MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/'
+    # MEDIA_ROOT = ''
     
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = "smtp.mailgun.org"
