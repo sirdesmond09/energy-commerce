@@ -177,7 +177,7 @@ def edit_product(request, product_id):
     except  Product.DoesNotExist:
         raise NotFound(detail={"message": "Product not found"})
     
-    serializer = AddProductSerializer(product, data=request.data, patch=True)
+    serializer = AddProductSerializer(product, data=request.data, partial=True)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     
