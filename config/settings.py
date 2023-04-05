@@ -249,9 +249,9 @@ class Development(Common):
     """
     The in-development settings and the default configuration.
     """
-    DEBUG = True
+    DEBUG = False
 
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
 
     INTERNAL_IPS = [
         '127.0.0.1'
@@ -304,4 +304,4 @@ class Production(Staging):
     """
     The in-production settings.
     """
-    pass
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
