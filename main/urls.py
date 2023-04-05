@@ -66,6 +66,10 @@ urlpatterns = [
     path("faqs/", views.FAQListView.as_view()),
     path("faqs/create/", views.FAQCreateView.as_view()),
     path("faq/<int:id>/", views.FAQDetailView.as_view()),
+    path("commissions/", views.CommissionList.as_view()),
+    path("commissions/<int:id>/", views.CommissionUpdate.as_view()),
+    path("terms/", views.TermAndConditionList.as_view()),
+    path("terms/<int:id>/", views.TermAndConditionUpdate.as_view()),
     
     
     

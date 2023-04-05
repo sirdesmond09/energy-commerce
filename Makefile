@@ -26,22 +26,22 @@ config:
 	docker compose  config
 
 migrate:
-	docker compose run app python3 manage.py migrate
+	docker compose run web python3 manage.py migrate
 
 shell:
-	docker compose run app python3 manage.py shell
+	docker compose run web python3 manage.py shell
 
 test:
-	docker compose run app python3 manage.py test
+	docker compose run web python3 manage.py test
 
 makemigrations:
-	docker compose run app python3 manage.py makemigrations
+	docker compose run web python3 manage.py makemigrations
 
 collectstatic:
-	docker compose run app python3 manage.py collectstatic --no-input --clear
+	docker compose run web python3 manage.py collectstatic --no-input --clear
 
 superuser:
-	docker compose run app python3 manage.py createsuperuser
+	docker compose run web python3 manage.py add_superuser
 
 down-v:
 	docker compose down -v

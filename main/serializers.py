@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id, generate_order_id
-from .models import Address, CalculatorItem, Cart, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, UserInbox
+from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, TermAndCondition, UserInbox
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -86,27 +86,30 @@ class AddProductSerializer(serializers.Serializer):
     
     
     def update(self, instance, validated_data):
-        fields = self.fields.keys()
-
+        fields = instance.__dict__
         # update locations
-        locations = validated_data.get('product', {}).pop('locations')
-        if locations:
-            instance.product.locations.set(locations)
+        products = validated_data.get('product', {})
+        
+        
+        
+        if "locations" in products.keys():
+            locations = products.pop('locations')
+            instance.locations.set(locations)
         
         # update product fields
         for field in fields:
             if field in validated_data.get('product', {}):
-                setattr(instance.product, field, validated_data['product'][field])
+                setattr(instance, field, validated_data['product'][field])
 
         
-        instance.product.save()
+        instance.save()
             
         # Updating components
         if 'components' in validated_data:
             instance.components.all().delete()
             components = []
             for data in validated_data['components']:
-                components.append(ProductComponent(**data, product=instance.product))
+                components.append(ProductComponent(**data, product=instance))
             ProductComponent.objects.bulk_create(components)
             
         return instance
@@ -308,10 +311,17 @@ class PayOutSerializer(serializers.ModelSerializer):
         
         
 
-# class DeliveryDetailSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         fields = "__all__"
-#         model = DeliveryDetail
+class CommissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = Commission
+        
+
+
+class TermAndConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = TermAndCondition
         
         
 

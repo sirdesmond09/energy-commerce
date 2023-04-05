@@ -408,6 +408,10 @@ class Cart(models.Model):
 
 class Commission(models.Model):
     percent = models.PositiveIntegerField(default=12)
+    
+    
+class TermAndCondition(models.Model):
+    data = models.TextField()
    
     
     

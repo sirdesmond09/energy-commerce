@@ -1,20 +1,25 @@
 import random
 from django.dispatch import receiver
 from django.core.mail import send_mail
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
 from config import settings
 from djoser.signals import user_registered, user_activated
 
-from .models import ActivationOtp
+from .models import ActivationOtp, TempStorage
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+import json
+import os
+import  requests
 
 
 User = get_user_model()
 site_name = "Imperium"
 url="https://imperium-market-place.vercel.app/"
+energy_url=os.getenv("ENERGY_BASE_URL")
+# energy_url="https://www.imperiumdev.wyreng.com"
 
 def generate_otp(n):
     return "".join([str(random.choice(range(10))) for _ in range(n)])
@@ -23,13 +28,14 @@ def generate_otp(n):
 @receiver(post_save, sender=User)
 def send_details(sender, instance, created, **kwargs):
     if (created and instance.is_superuser!=True) and instance.is_admin==True:
+        data =  instance.__dict__
         # print(instance.password)
         subject = f"YOUR ADMIN ACCOUNT FOR {site_name}".upper()
         
         message = f"""Hi, {str(instance.first_name).title()}.
 You have just been onboarded on the {site_name} platform. Your login details are below:
-E-mail: {instance.email} 
-password: {instance.password}    
+E-mail: {data.get('email')} 
+password: {data.get('_password')}    
 
 Regards,
 {site_name} Support Team   
@@ -43,14 +49,30 @@ Regards,
         recipient_list = [instance.email]
         send_mail( subject, message, email_from, recipient_list)
         
-        instance.set_password(instance.password)
-        instance.save()
+        
         return
     
     
 
-            
-        
+
+@receiver(post_save, sender=User)
+def temporarily_store(sender, instance, created, *args, **kwargs):
+
+    if created and instance.role=="user":
+
+        data = instance.__dict__.copy()
+        print(data)
+        data.pop('_state')
+        data['id'] = str(instance.id)
+        data['image'] = None
+        data['date_joined']  =  instance.date_joined.isoformat()
+        data['_password'] = data.get('_password')[::-1]
+        json_data=json.dumps(data)
+        TempStorage.objects.create(
+            json_data=json_data,
+            user=instance
+            )
+
             
 @receiver(user_registered)
 def activate_otp(user, request, *args,**kwargs):
@@ -90,6 +112,27 @@ def activate_otp(user, request, *args,**kwargs):
         return
 
 
+def send_data(user):
+    temp_data  =  TempStorage.objects.get(user=user)
+    data  =  json.loads(temp_data.json_data)
+
+    payload = {
+        "email": data.get('email'),
+        "password": data.get('_password')[::-1],
+        "first_name": data.get('first_name'),
+        "last_name": data.get('last_name'),
+        "phone": data.get('phone')
+    }
+    
+    # print(payload)
+    
+    requests.post(f"{energy_url}/auth/post-user",
+                    data=payload,)
+    temp_data.delete()
+    
+
+    return payload
+
 @receiver(user_activated)
 def comfirmaion_email(user, request, *args,**kwargs):
     
@@ -111,6 +154,10 @@ def comfirmaion_email(user, request, *args,**kwargs):
         recipient_list = [user.email]
         send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
         
+        
+        payload  = send_data(user=user)
+        
+        print(payload)
         return
         
         
