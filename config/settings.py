@@ -297,7 +297,7 @@ class Staging(Common):
     )
     
 
-    ALLOWED_HOSTS = ["*"]
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
 
 
 class Production(Staging):
