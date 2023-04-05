@@ -18,8 +18,8 @@ import  requests
 User = get_user_model()
 site_name = "Imperium"
 url="https://imperium-market-place.vercel.app/"
-# energy_url=os.getenv("ENERGY_BASE_URL")
-energy_url="https://www.imperiumdev.wyreng.com"
+energy_url=os.getenv("ENERGY_BASE_URL")
+# energy_url="https://www.imperiumdev.wyreng.com"
 
 def generate_otp(n):
     return "".join([str(random.choice(range(10))) for _ in range(n)])
