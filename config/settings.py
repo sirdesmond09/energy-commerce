@@ -242,6 +242,25 @@ class Common(Configuration):
     EMAIL_USE_TLS = False 
     DEFAULT_FROM_EMAIL = "Ope from Imperium <noreply@getmobile.tech>" # TODO: Change to imperium email
     
+    
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(BASE_DIR, 'imperium.log'),
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+        },
+    }
 
 
 
