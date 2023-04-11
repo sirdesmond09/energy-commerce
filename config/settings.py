@@ -220,6 +220,9 @@ class Common(Configuration):
     SITE_NAME = "Imperium"
     DOMAIN = "#"
     
+    #OAuth credentials
+    GOOGLE_CLIENT_ID= os.getenv("GOOGLE_CLIENT_ID")
+    
     # Azure Blob Storage settings
     AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
     AZURE_CONTAINER = os.getenv("AZURE_CONTAINER")
