@@ -139,5 +139,5 @@ workflows:
     jobs:
       - create_infrastructure
       - deploy
-        requires:
-          -  create_infrastructure
+          requires:
+            -  create_infrastructure
