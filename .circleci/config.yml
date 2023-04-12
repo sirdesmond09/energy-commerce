@@ -101,8 +101,8 @@ jobs:
             [Service]
             User=root
             Group=www-data
-            WorkingDirectory=/home/root/${PROJECT_FOLDER}
-            ExecStart=/home/root/${PROJECT_FOLDER}/myenv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/root/${PROJECT_FOLDER}/${PROJECT_FOLDER}.sock config.wsgi:application
+            WorkingDirectory=/home/${SSH_USERNAME}/${PROJECT_FOLDER}
+            ExecStart=/home/${SSH_USERNAME}/${PROJECT_FOLDER}/myenv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/root/${PROJECT_FOLDER}/${PROJECT_FOLDER}.sock config.wsgi:application
 
             [Install]
             WantedBy=multi-user.target
