@@ -46,51 +46,6 @@ jobs:
       #       echo "export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}" >> $BASH_ENV
       #       source $BASH_ENV
 
-      # Set up database
-      - run:
-          - name: SSH to server and set up database
-            hosts: localhost
-            gather_facts: no
-            tasks:
-              - name: SSH to server
-                become: yes
-                become_user: "{{ SSH_USERNAME }}"
-                ansible_become_password: "{{ SSH_PASSWORD }}"
-                hosts: all
-                tasks:
-                  - name: Install PostgreSQL
-                    apt:
-                      name: postgresql postgresql-contrib
-                      state: present
-                    become: yes
-                    become_user: root
-
-                  - name: Start PostgreSQL service
-                    service:
-                      name: postgresql
-                      state: started
-                    become: yes
-                    become_user: root
-
-                  - name: Create database
-                    shell: |
-                      sudo su - postgres -c "psql -c 'CREATE DATABASE {{ DB_NAME }};'"
-                    become: yes
-                    become_user: root
-
-                  - name: Create database user
-                    shell: |
-                      sudo su - postgres -c "psql -c 'CREATE USER {{ DB_USER }} WITH PASSWORD '\''{{ DB_PASSWORD }}'\'';'"
-                    become: yes
-                    become_user: root
-
-                  - name: Grant privileges to database user
-                    shell: |
-                      sudo su - postgres -c "psql -c 'GRANT ALL PRIVILEGES ON DATABASE {{ DB_NAME }} TO {{ DB_USER }};'"
-                    become: yes
-                    become_user: root
-
-
       # Deploy the application
       - run:
           name: Deploy application
@@ -160,10 +115,29 @@ jobs:
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart nginx'
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart gunicorn'
 
+  setup-postgres:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            # install the dependencies needed for your playbook
+            apk add --update ansible 
+      - run:
+          name: Configure DB
+          command: |
+            ansible-playbook -i inventory.txt playbook.yml --tags "setup_postgresql"
+
+
 
 # Sequential workflow
 workflows:
   # Name the workflow
   myWorkflow:
     jobs:
+      - create_infrastructure
       - deploy
+        requires:
+          -  create_infrastructure

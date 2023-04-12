@@ -1,0 +1,45 @@
+- name: Set up PostgreSQL
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install PostgreSQL
+      apt:
+        name: postgresql postgresql-contrib
+        state: present
+      become: yes
+
+    - name: Start PostgreSQL service
+      service:
+        name: postgresql
+        state: started
+      become: yes
+
+    - name: Create PostgreSQL database
+      postgresql_db:
+        name: "{{ DB_NAME }}"
+        login_user: postgres
+        login_password: "{{ DB_PASSWORD }}"
+        login_host: localhost
+        login_unix_socket: /var/run/postgresql
+        state: present
+
+    - name: Create PostgreSQL user
+      postgresql_user:
+        name: "{{ DB_USER }}"
+        password: "{{ DB_PASSWORD }}"
+        login_user: postgres
+        login_password: "{{ DB_PASSWORD }}"
+        login_host: localhost
+        login_unix_socket: /var/run/postgresql
+        state: present
+
+    - name: Grant privileges on PostgreSQL database
+      postgresql_privs:
+        name: "{{ DB_NAME }}"
+        user: "{{ DB_USER }}"
+        role_attr_flags: CREATEDB,CREATEROLE,SUPERUSER
+        login_user: postgres
+        login_password: "{{ DB_PASSWORD }}"
+        login_host: localhost
+        login_unix_socket: /var/run/postgresql
+        state: present
