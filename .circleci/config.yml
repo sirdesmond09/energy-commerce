@@ -120,8 +120,10 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints: ['14:0e:a4:8a:eb:d2:55:1d:26:b7:37:32:b8:fb:e8:6e']
+      - run:
+          if [ -z "$(ssh-keygen -F ${SERVER_IP})" ]; then
+            ssh-keyscan -H $IP >> ~/.ssh/known_hosts
+          fi
       - run:
           name: Install dependencies
           command: |
