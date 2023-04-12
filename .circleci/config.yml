@@ -22,39 +22,74 @@ jobs:
             pip install -r requirements.txt
 
       # Create and load environment variables
-      - run:
-          name: Set environment variables
-          command: |
-            echo "export DB_NAME=${DB_NAME}" >> $BASH_ENV
-            echo "export DB_USER=${DB_USER}" >> $BASH_ENV
-            echo "export DB_PASSWORD=${DB_PASSWORD}" >> $BASH_ENV
-            echo "export DB_HOST=${DB_HOST}" >> $BASH_ENV
-            echo "export DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> $BASH_ENV
-            echo "export DJANGO_DEBUG=${DJANGO_DEBUG}" >> $BASH_ENV
-            echo "export DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}" >> $BASH_ENV
-            echo "export ALLOWED_HOSTS=${ALLOWED_HOSTS}" >> $BASH_ENV
-            echo "export ENVIRONMENT=${ENVIRONMENT}" >> $BASH_ENV
-            echo "export FLW_SECRET_KEY=${FLW_SECRET_KEY}" >> $BASH_ENV
-            echo "export EMAIL_HOST_USER=${EMAIL_HOST_USER}" >> $BASH_ENV
-            echo "export EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" >> $BASH_ENV
-            echo "export FLUTTER_VERIFICATION_URL=${FLUTTER_VERIFICATION_URL}" >> $BASH_ENV
-            echo "export AZURE_ACCOUNT_NAME=${AZURE_ACCOUNT_NAME}" >> $BASH_ENV
-            echo "export AZURE_CONTAINER=${AZURE_CONTAINER}" >> $BASH_ENV
-            echo "export AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}" >> $BASH_ENV
-            echo "export ENERGY_BASE_URL=${ENERGY_BASE_URL}" >> $BASH_ENV
-            echo "export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" >> $BASH_ENV
-            echo "export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}" >> $BASH_ENV
-            source $BASH_ENV
+      # - run:
+      #     name: Set environment variables
+      #     command: |
+      #       echo "export DB_NAME=${DB_NAME}" >> $BASH_ENV
+      #       echo "export DB_USER=${DB_USER}" >> $BASH_ENV
+      #       echo "export DB_PASSWORD=${DB_PASSWORD}" >> $BASH_ENV
+      #       echo "export DB_HOST=${DB_HOST}" >> $BASH_ENV
+      #       echo "export DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> $BASH_ENV
+      #       echo "export DJANGO_DEBUG=${DJANGO_DEBUG}" >> $BASH_ENV
+      #       echo "export DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}" >> $BASH_ENV
+      #       echo "export ALLOWED_HOSTS=${ALLOWED_HOSTS}" >> $BASH_ENV
+      #       echo "export ENVIRONMENT=${ENVIRONMENT}" >> $BASH_ENV
+      #       echo "export FLW_SECRET_KEY=${FLW_SECRET_KEY}" >> $BASH_ENV
+      #       echo "export EMAIL_HOST_USER=${EMAIL_HOST_USER}" >> $BASH_ENV
+      #       echo "export EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" >> $BASH_ENV
+      #       echo "export FLUTTER_VERIFICATION_URL=${FLUTTER_VERIFICATION_URL}" >> $BASH_ENV
+      #       echo "export AZURE_ACCOUNT_NAME=${AZURE_ACCOUNT_NAME}" >> $BASH_ENV
+      #       echo "export AZURE_CONTAINER=${AZURE_CONTAINER}" >> $BASH_ENV
+      #       echo "export AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}" >> $BASH_ENV
+      #       echo "export ENERGY_BASE_URL=${ENERGY_BASE_URL}" >> $BASH_ENV
+      #       echo "export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" >> $BASH_ENV
+      #       echo "export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}" >> $BASH_ENV
+      #       source $BASH_ENV
 
       # Set up database
       - run:
-          name: Set up database
-          command: |
-            sudo apt-get install -y postgresql postgresql-contrib
-            sudo service postgresql start
-            sudo su postgres -c "psql -c 'CREATE DATABASE ${DB_NAME};'"
-            sudo su postgres -c "psql -c 'CREATE USER ${DB_USER} WITH PASSWORD '"'"'${DB_PASSWORD}'"'"';'"
-            sudo su postgres -c "psql -c 'GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};'"
+          - name: SSH to server and set up database
+            hosts: localhost
+            gather_facts: no
+            tasks:
+              - name: SSH to server
+                become: yes
+                become_user: "{{ SSH_USERNAME }}"
+                ansible_become_password: "{{ SSH_PASSWORD }}"
+                hosts: all
+                tasks:
+                  - name: Install PostgreSQL
+                    apt:
+                      name: postgresql postgresql-contrib
+                      state: present
+                    become: yes
+                    become_user: root
+
+                  - name: Start PostgreSQL service
+                    service:
+                      name: postgresql
+                      state: started
+                    become: yes
+                    become_user: root
+
+                  - name: Create database
+                    shell: |
+                      sudo su - postgres -c "psql -c 'CREATE DATABASE {{ DB_NAME }};'"
+                    become: yes
+                    become_user: root
+
+                  - name: Create database user
+                    shell: |
+                      sudo su - postgres -c "psql -c 'CREATE USER {{ DB_USER }} WITH PASSWORD '\''{{ DB_PASSWORD }}'\'';'"
+                    become: yes
+                    become_user: root
+
+                  - name: Grant privileges to database user
+                    shell: |
+                      sudo su - postgres -c "psql -c 'GRANT ALL PRIVILEGES ON DATABASE {{ DB_NAME }} TO {{ DB_USER }};'"
+                    become: yes
+                    become_user: root
+
 
       # Deploy the application
       - run:
