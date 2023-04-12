@@ -30,7 +30,8 @@ jobs:
             echo "export DB_PASSWORD=${DB_PASSWORD}" >> $BASH_ENV
             echo "export DB_HOST=${DB_HOST}" >> $BASH_ENV
             echo "export DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> $BASH_ENV
-            echo "export DEBUG=${DEBUG}" >> $BASH_ENV
+            echo "export DJANGO_DEBUG=${DJANGO_DEBUG}" >> $BASH_ENV
+            echo "export DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}" >> $BASH_ENV
             echo "export ALLOWED_HOSTS=${ALLOWED_HOSTS}" >> $BASH_ENV
             echo "export ENVIRONMENT=${ENVIRONMENT}" >> $BASH_ENV
             echo "export FLW_SECRET_KEY=${FLW_SECRET_KEY}" >> $BASH_ENV
@@ -42,6 +43,7 @@ jobs:
             echo "export AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}" >> $BASH_ENV
             echo "export ENERGY_BASE_URL=${ENERGY_BASE_URL}" >> $BASH_ENV
             echo "export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" >> $BASH_ENV
+            echo "export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}" >> $BASH_ENV
             source $BASH_ENV
 
       # Set up database
