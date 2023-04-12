@@ -60,25 +60,40 @@ jobs:
       - run:
           name: Deploy application
           command: |
+            # # create folder
+            # ssh root@${SERVER_IP} 'mkdir ${PROJECT_FOLDER}'
+
             # Copy the application to the server
-            ssh root@${SERVER_IP} 'mkdir ${PROJECT_FOLDER}'
-            rsync -r . root@${SERVER_IP}:~/${PROJECT_FOLDER}
+            sshpass -p "${SSH_PASSWORD}" rsync -r . ${SSH_USERNAME}@${SERVER_IP}:~/${PROJECT_FOLDER}
 
             # Set up virtual environment on the server
-            ssh root@${SERVER_IP} 'cd ~/${PROJECT_FOLDER} && python3 -m venv myenv'
-            ssh root@${SERVER_IP} 'cd ~/${PROJECT_FOLDER} && source myenv/bin/activate && pip install -r requirements.txt'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && python3 -m venv myenv"
+
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'cd ~/${PROJECT_FOLDER} && source myenv/bin/activate && pip install -r requirements.txt'
 
             # Set up environment variables on the server
-            ssh root@${SERVER_IP} 'echo "export DB_NAME=${DB_NAME}" >> ~/.bashrc'
-            ssh root@${SERVER_IP} 'echo "export DB_USER=${DB_USER}" >> ~/.bashrc'
-            ssh root@${SERVER_IP} 'echo "export DB_PASSWORD=${DB_PASSWORD}" >> ~/.bashrc'
-            ssh root@${SERVER_IP} 'echo "export DB_HOST=${DB_HOST}" >> ~/.bashrc'
-            ssh root@${SERVER_IP} 'echo "export SECRET_KEY=${SECRET_KEY}" >> ~/.bashrc'
-            ssh root@${SERVER_IP} 'echo "export DEBUG=${DEBUG}" >> ~/.bashrc'
-            ssh root@${SERVER_IP} 'echo "export ALLOWED_HOSTS=${ALLOWED_HOSTS}" >> ~/.bashrc'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DB_NAME=${DB_NAME}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DB_USER=${DB_USER}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DB_PASSWORD=${DB_PASSWORD}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DB_HOST=${DB_HOST}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DJANGO_DEBUG=${DJANGO_DEBUG}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export ALLOWED_HOSTS=${ALLOWED_HOSTS}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export ENVIRONMENT=${ENVIRONMENT}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export FLW_SECRET_KEY=${FLW_SECRET_KEY}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export EMAIL_HOST_USER=${EMAIL_HOST_USER}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export FLUTTER_VERIFICATION_URL=${FLUTTER_VERIFICATION_URL}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export AZURE_ACCOUNT_NAME=${AZURE_ACCOUNT_NAME}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export AZURE_CONTAINER=${AZURE_CONTAINER}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export ENERGY_BASE_URL=${ENERGY_BASE_URL}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}' >> ./.env"
 
             # Create systemd service file for Gunicorn
-            ssh root@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/${PROJECT_FOLDER}-gunicorn.service <<EOF
+           sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/${PROJECT_FOLDER}-gunicorn.service <<EOF
             [Unit]
             Description=Gunicorn
             After=network.target
@@ -94,15 +109,20 @@ jobs:
             EOF"'
 
             # Start and enable the Gunicorn service
-            ssh root@${SERVER_IP} 'sudo systemctl daemon-reload'
-            ssh root@${SERVER_IP} 'sudo systemctl start ${PROJECT_FOLDER}-gunicorn'
-            ssh root@${SERVER_IP} 'sudo systemctl enable ${PROJECT_FOLDER}-gunicorn'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl daemon-reload'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl start ${PROJECT_FOLDER}-gunicorn'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl enable ${PROJECT_FOLDER}-gunicorn'
 
             # Configure Nginx to serve the application
-            ssh root@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/${PROJECT_FOLDER} <<EOF
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/${PROJECT_FOLDER} <<EOF
             server {
                 listen 80;
-                server_name ${SERVER_NAME};
+                server_name ${SERVER_NAME} ${SERVER_IP};
+
+                location = /favicon.ico { access_log off; log_not_found off; }
+                location /static/ {
+                    root /home/projectdir/tiwa_proj;
+                }
 
                 location / {
                     include proxy_params;
@@ -111,11 +131,12 @@ jobs:
             }
             EOF"'
 
-            ssh root@${SERVER_IP} 'sudo ln -s /etc/nginx/sites-available/${PROJECT_FOLDER} /etc/nginx/sites-enabled/'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo ln -s /etc/nginx/sites-available/${PROJECT_FOLDER} /etc/nginx/sites-enabled/'
 
             # Test Nginx configuration and restart service
-            ssh root@${SERVER_IP} 'sudo nginx -t'
-            ssh root@${SERVER_IP} 'sudo systemctl restart nginx'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo nginx -t'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart nginx'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart gunicorn'
 
 
 # Sequential workflow
