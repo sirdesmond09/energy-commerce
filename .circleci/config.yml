@@ -135,7 +135,7 @@ jobs:
       - run:
           name: Configure DB
           command: |
-            ansible-playbook -i inventory.txt playbook.yml --tags "setup_postgresql"
+            ansible-playbook -i inventory.txt playbook.yml --tags "setup_postgresql" -e "ansible_host=${SERVER_IP}ansible_ssh_pass=${SSH_PASSWORD}"
 
 
 
