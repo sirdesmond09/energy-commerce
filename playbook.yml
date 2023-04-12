@@ -1,8 +1,6 @@
 - name: Set up PostgreSQL
   hosts: all
   become: yes
-  vars:
-    ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
   tasks:
     - name: Install PostgreSQL
       apt:
