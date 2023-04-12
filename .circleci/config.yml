@@ -121,9 +121,8 @@ jobs:
     steps:
       - checkout
       - run:
-          if [ -z "$(ssh-keygen -F ${SERVER_IP})" ]; then
-            ssh-keyscan -H $IP >> ~/.ssh/known_hosts
-          fi
+        name: Update known hosts
+        command: ssh-keyscan -H ssh.{SERVER_IP} >> ~/.ssh/known_hosts
       - run:
           name: Install dependencies
           command: |
