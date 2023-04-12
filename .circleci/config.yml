@@ -83,7 +83,7 @@ jobs:
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' >> ./.env"
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}' >> ./.env"
 
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/${PROJECT_FOLDER}-gunicorn.service <<EOF
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/${PROJECT_FOLDER}-gunicorn.service \<<EOF
             [Unit]
             Description=Gunicorn
             After=network.target
@@ -102,7 +102,7 @@ jobs:
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl start ${PROJECT_FOLDER}-gunicorn'
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl enable ${PROJECT_FOLDER}-gunicorn'
 
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/${PROJECT_FOLDER} <<EOF
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/${PROJECT_FOLDER} \<<EOF
             server {
                 listen 80;
                 server_name ${SERVER_NAME} ${SERVER_IP};
