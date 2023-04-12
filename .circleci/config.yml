@@ -123,7 +123,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update openssh && echo ${SERVER_IP}
+            apk add --update --no-cache openssh sshpass
       - run:
           name: Update known hosts
           command: ssh-keyscan -H ${SERVER_IP} >> ~/.ssh/known_hosts
