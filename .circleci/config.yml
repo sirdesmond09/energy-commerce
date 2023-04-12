@@ -93,7 +93,7 @@ jobs:
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}' >> ./.env"
 
             # Create systemd service file for Gunicorn
-           sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/${PROJECT_FOLDER}-gunicorn.service <<EOF
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/${PROJECT_FOLDER}-gunicorn.service <<EOF
             [Unit]
             Description=Gunicorn
             After=network.target
