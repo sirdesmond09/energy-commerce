@@ -121,6 +121,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install dependencies
+          command: |
+            apt-get -yq update && \ 
+            apt-get -yqq install ssh
+      - run:
           name: Update known hosts
           command: ssh-keyscan -H ssh.{SERVER_IP} >> ~/.ssh/known_hosts
       - run:
