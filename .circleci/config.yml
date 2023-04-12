@@ -126,7 +126,7 @@ jobs:
             apk add --update openssh
       - run:
           name: Update known hosts
-          command: ssh-keyscan -H ssh.{SERVER_IP} >> ~/.ssh/known_hosts
+          command: ssh-keyscan -H ssh.${SERVER_IP} >> ~/.ssh/known_hosts
       - run:
           name: Install dependencies
           command: |
