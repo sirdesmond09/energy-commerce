@@ -16,30 +16,6 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt install -y sshpass 
-
-      # Create and load environment variables
-      - run:
-          name: Set environment variables
-          command: |
-            echo "DB_NAME=${DB_NAME}" >> $BASH_ENV
-            echo "DB_USER=${DB_USER}" >> $BASH_ENV
-            echo "DB_PASSWORD=${DB_PASSWORD}" >> $BASH_ENV
-            echo "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> $BASH_ENV
-            echo "DJANGO_DEBUG=${DJANGO_DEBUG}" >> $BASH_ENV
-            echo "DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}" >> $BASH_ENV
-            echo "ALLOWED_HOSTS=${ALLOWED_HOSTS}" >> $BASH_ENV
-            echo "ENVIRONMENT=${ENVIRONMENT}" >> $BASH_ENV
-            echo "FLW_SECRET_KEY=${FLW_SECRET_KEY}" >> $BASH_ENV
-            echo "EMAIL_HOST_USER=${EMAIL_HOST_USER}" >> $BASH_ENV
-            echo "EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}" >> $BASH_ENV
-            echo "FLUTTER_VERIFICATION_URL=${FLUTTER_VERIFICATION_URL}" >> $BASH_ENV
-            echo "AZURE_ACCOUNT_NAME=${AZURE_ACCOUNT_NAME}" >> $BASH_ENV
-            echo "AZURE_CONTAINER=${AZURE_CONTAINER}" >> $BASH_ENV
-            echo "AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}" >> $BASH_ENV
-            echo "ENERGY_BASE_URL=${ENERGY_BASE_URL}" >> $BASH_ENV
-            echo "GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" >> $BASH_ENV
-            echo "FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}" >> $BASH_ENV
-            source $BASH_ENV
             
 
       # # Deploy the application
@@ -108,27 +84,21 @@ jobs:
       - run:
           name: Setup Nginx
           command: |
-            export SSH_PASSWORD="${SSH_PASSWORD}"
-            export SSH_USERNAME="${SSH_USERNAME}"
-            export SERVER_IP="${SERVER_IP}"
-            export PROJECT_FOLDER="${PROJECT_FOLDER}"
-            export SERVER_NAME="${SERVER_NAME}"
-
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/nginx_config \<<EOF
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/$PROJECT_FOLDER \<<EOF
             server {
                 listen 80;
-                server_name ${SERVER_IP};
+                server_name $SERVER_IP;
 
                 location = /favicon.ico { access_log off; log_not_found off; }
                 location /static/ {
-                    root /home/${PROJECT_FOLDER};
-                }
+                    root /home/$PROJECT_FOLDER;
+                  }
 
-                 location / {
-                    include proxy_params;
-                    proxy_pass http://unix:/run/gunicorn.sock;
-                }
-            }
+                  location / {
+                      include proxy_params;
+                      proxy_pass http://unix:/run/gunicorn.sock;
+                  }
+              }
             EOF"'
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo ln -s /etc/nginx/sites-available/nginx_config /etc/nginx/sites-enabled/'
