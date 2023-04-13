@@ -18,9 +18,7 @@ jobs:
             sudo apt install -y sshpass 
             sudo apt install -y python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl
             sudo apt-get install -y python3-pip python3-venv
-            python3 -m venv myenv
-            source myenv/bin/activate
-            pip install -r requirements.txt
+            
 
       # Create and load environment variables
       # - run:
@@ -51,31 +49,45 @@ jobs:
       - run:
           name: Deploy application
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo apt-get -y update && sudo apt install -y python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl'
-            sshpass -p "${SSH_PASSWORD}" rsync -r . ${SSH_USERNAME}@${SERVER_IP}:~/${PROJECT_FOLDER}
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && python3 -m venv myenv"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'cd ~/${PROJECT_FOLDER} && source myenv/bin/activate && pip install -r requirements.txt'
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DB_NAME=${DB_NAME}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DB_USER=${DB_USER}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DB_PASSWORD=${DB_PASSWORD}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DB_HOST=${DB_HOST}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DJANGO_DEBUG=${DJANGO_DEBUG}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export ALLOWED_HOSTS=${ALLOWED_HOSTS}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export ENVIRONMENT=${ENVIRONMENT}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export FLW_SECRET_KEY=${FLW_SECRET_KEY}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export EMAIL_HOST_USER=${EMAIL_HOST_USER}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export FLUTTER_VERIFICATION_URL=${FLUTTER_VERIFICATION_URL}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export AZURE_ACCOUNT_NAME=${AZURE_ACCOUNT_NAME}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export AZURE_CONTAINER=${AZURE_CONTAINER}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export ENERGY_BASE_URL=${ENERGY_BASE_URL}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' >> ./.env"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && echo 'export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo apt-get -y update && sudo apt install -y python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl python3.10-venv'
+            sshpass -p "${SSH_PASSWORD}" rsync -r . ${SSH_USERNAME}@${SERVER_IP}:/home/${PROJECT_FOLDER}
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && python3 -m venv myenv"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'cd /home/${PROJECT_FOLDER} && source myenv/bin/activate && pip install -r requirements.txt'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DB_NAME=${DB_NAME}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DB_USER=${DB_USER}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DB_PASSWORD=${DB_PASSWORD}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DB_HOST=${DB_HOST}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DJANGO_DEBUG=${DJANGO_DEBUG}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export ALLOWED_HOSTS=${ALLOWED_HOSTS}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export ENVIRONMENT=${ENVIRONMENT}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export FLW_SECRET_KEY=${FLW_SECRET_KEY}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export EMAIL_HOST_USER=${EMAIL_HOST_USER}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export FLUTTER_VERIFICATION_URL=${FLUTTER_VERIFICATION_URL}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export AZURE_ACCOUNT_NAME=${AZURE_ACCOUNT_NAME}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export AZURE_CONTAINER=${AZURE_CONTAINER}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export ENERGY_BASE_URL=${ENERGY_BASE_URL}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}' >> ./.env"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}}:5432/${DB_NAME}' >> ./.env"
 
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/${PROJECT_FOLDER}-gunicorn.service \<<EOF
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'cd /home/${PROJECT_FOLDER} && source myenv/bin/activate && python manage.py migrate'
+
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.socket \<<EOF
+            [Unit]
+            Description=gunicorn socket
+
+            [Socket]
+            ListenStream=/run/gunicorn.sock
+
+            [Install]
+            WantedBy=sockets.target
+            EOF"'
+
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.service \<<EOF
             [Unit]
             Description=Gunicorn
             After=network.target
@@ -83,15 +95,15 @@ jobs:
             [Service]
             User=root
             Group=www-data
-            WorkingDirectory=/home/${SSH_USERNAME}/${PROJECT_FOLDER}
-            ExecStart=/home/${SSH_USERNAME}/${PROJECT_FOLDER}/myenv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/root/${PROJECT_FOLDER}/${PROJECT_FOLDER}.sock config.wsgi:application
+            WorkingDirectory=/home/${PROJECT_FOLDER}
+            ExecStart=/home/${PROJECT_FOLDER}/myenv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock config.wsgi:application
 
             [Install]
             WantedBy=multi-user.target
             EOF"'
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl daemon-reload'
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl start ${PROJECT_FOLDER}-gunicorn'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl start gunicorn.socket'
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl enable ${PROJECT_FOLDER}-gunicorn'
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/${PROJECT_FOLDER} \<<EOF
@@ -101,12 +113,12 @@ jobs:
 
                 location = /favicon.ico { access_log off; log_not_found off; }
                 location /static/ {
-                    root /home/projectdir/tiwa_proj;
+                    root /home/${PROJECT_FOLDER};
                 }
 
-                location / {
+                 location / {
                     include proxy_params;
-                    proxy_pass http://unix:/home/root/${PROJECT_FOLDER}/${PROJECT_FOLDER}.sock;
+                    proxy_pass http://unix:/run/gunicorn.sock;
                 }
             }
             EOF"'
@@ -117,29 +129,33 @@ jobs:
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart nginx'
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart gunicorn'
 
-  setup-postgres:
-    docker:
-      - image: python:3.7-alpine3.11
+  setup_db:
+    machine:
+      image: ubuntu-2004:202107-01
+
+    steps:
+      - checkout
+
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt install -y sshpass 
+
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install PostgreSQL
           command: |
-            apk add --update --no-cache openssh sshpass
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo apt-get update && sudo apt-get install -y postgresql postgresql-contrib'
       - run:
-          name: Update known hosts
-          command: ssh-keyscan -H ${SERVER_IP} >> ~/.ssh/known_hosts
-      - run:
-          name: Install dependencies
+          name: Start PostgreSQL service
           command: |
-            # install the dependencies needed for your playbook
-            apk add --update ansible 
-
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo service postgresql start && sudo systemctl enable postgresql'
       - run:
-          name: Configure DB
+          name: Create PostgreSQL user and database
           command: |
-            cat .circleci/ansible/inventory.txt
-            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/postgres-playbook.yml -e "ansible_host=${SERVER_IP}   ansible_ssh_pass=${SSH_PASSWORD}"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '\'${DB_PASSWORD}\'';" && sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"'
 
 
 
@@ -148,6 +164,8 @@ workflows:
   # Name the workflow
   myWorkflow:
     jobs:
-      # - setup-postgres
+      - setup-postgres
       - deploy
+        requires:
+          - setup-postgres
         
