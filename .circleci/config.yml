@@ -24,7 +24,6 @@ jobs:
             echo "DB_NAME=${DB_NAME}" >> $BASH_ENV
             echo "DB_USER=${DB_USER}" >> $BASH_ENV
             echo "DB_PASSWORD=${DB_PASSWORD}" >> $BASH_ENV
-            echo "DB_HOST=${DB_HOST}" >> $BASH_ENV
             echo "DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}" >> $BASH_ENV
             echo "DJANGO_DEBUG=${DJANGO_DEBUG}" >> $BASH_ENV
             echo "DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}" >> $BASH_ENV
