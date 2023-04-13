@@ -62,20 +62,21 @@ jobs:
             WantedBy=sockets.target
             EOF"'
 
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.service \<<EOF
-            [Unit]
-            Description=Gunicorn
-            After=network.target
+            echo "$(cat <<EOF
+              [Unit]
+              Description=Gunicorn
+              After=network.target
 
-            [Service]
-            User=root
-            Group=www-data
-            WorkingDirectory=/home/$${PROJECT_FOLDER}
-            ExecStart=/home/$${PROJECT_FOLDER}/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock config.wsgi:application
+              [Service]
+              User=root
+              Group=www-data
+              WorkingDirectory=/home/${PROJECT_FOLDER}
+              ExecStart=/home/${PROJECT_FOLDER}/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock config.wsgi:application
 
-            [Install]
-            WantedBy=multi-user.target
-            EOF"'
+              [Install]
+              WantedBy=multi-user.target
+              EOF
+              )" | sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.service"'
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl daemon-reload'
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl start gunicorn.socket'
