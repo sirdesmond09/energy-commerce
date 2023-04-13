@@ -163,7 +163,6 @@ workflows:
   myWorkflow:
     jobs:
       - setup_db
-      - deploy
-        requires: 
-          -setup_db
-        
+      - deploy:
+          requires:
+            - setup_db
