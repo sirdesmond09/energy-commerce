@@ -84,6 +84,12 @@ jobs:
       - run:
           name: Setup Nginx
           command: |
+            export SSH_PASSWORD="${SSH_PASSWORD}"
+            export SSH_USERNAME="${SSH_USERNAME}"
+            export SERVER_IP="${SERVER_IP}"
+            export PROJECT_FOLDER="${PROJECT_FOLDER}"
+            export SERVER_NAME="${SERVER_NAME}"
+            
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/nginx_config \<<EOF
             server {
                 listen 80;
