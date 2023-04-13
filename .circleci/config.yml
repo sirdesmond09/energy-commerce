@@ -85,7 +85,7 @@ jobs:
       - run:
           name: Setup Nginx
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/${PROJECT_FOLDER}.conf \<<EOF
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/nginx_config \<<EOF
             server {
                 listen 80;
                 server_name ${SERVER_NAME} ${SERVER_IP};
@@ -102,7 +102,7 @@ jobs:
             }
             EOF"'
 
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo ln -s /etc/nginx/sites-available/${PROJECT_FOLDER}.conf /etc/nginx/sites-enabled/'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo ln -s /etc/nginx/sites-available/nginx_config /etc/nginx/sites-enabled/'
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo nginx -t'
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart nginx'
