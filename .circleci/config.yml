@@ -15,7 +15,8 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt-get update
-            sudo apt install -y sshpass openssh
+            sudo apt install -y sshpass 
+            sudo apt install openssh-server
             sudo apt install -y python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl
             sudo apt-get install -y python3-pip python3-venv
             python3 -m venv myenv
