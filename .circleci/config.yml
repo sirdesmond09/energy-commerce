@@ -48,43 +48,43 @@ jobs:
       #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}' >> ./.env"
       #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && source venv/bin/activate && python manage.py migrate"
       
-      # - run:
-      #     name: Setup Gunicorn
-      #     command: |
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.socket \<<EOF
-      #       [Unit]
-      #       Description=gunicorn socket
+      - run:
+          name: Setup Gunicorn
+          command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.socket \<<EOF
+            [Unit]
+            Description=gunicorn socket
 
-      #       [Socket]
-      #       ListenStream=/run/gunicorn.sock
+            [Socket]
+            ListenStream=/run/gunicorn.sock
 
-      #       [Install]
-      #       WantedBy=sockets.target
-      #       EOF"'
+            [Install]
+            WantedBy=sockets.target
+            EOF"'
 
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.service \<<EOF
-      #       [Unit]
-      #       Description=Gunicorn
-      #       After=network.target
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.service \<<EOF
+            [Unit]
+            Description=Gunicorn
+            After=network.target
 
-      #       [Service]
-      #       User=root
-      #       Group=www-data
-      #       WorkingDirectory=/home/${PROJECT_FOLDER}
-      #       ExecStart=/home/${PROJECT_FOLDER}/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock config.wsgi:application
+            [Service]
+            User=root
+            Group=www-data
+            WorkingDirectory=/home/$PROJECT_FOLDER
+            ExecStart=/home/$PROJECT_FOLDER/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock config.wsgi:application
 
-      #       [Install]
-      #       WantedBy=multi-user.target
-      #       EOF"'
+            [Install]
+            WantedBy=multi-user.target
+            EOF"'
 
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl daemon-reload'
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl start gunicorn.socket'
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl enable gunicorn.socket'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl daemon-reload'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl start gunicorn.socket'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl enable gunicorn.socket'
 
       - run:
           name: Setup Nginx
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/$PROJECT_FOLDER \<<EOF
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/proj_config \<<EOF
             server {
                 listen 80;
                 server_name $SERVER_IP;
@@ -101,7 +101,7 @@ jobs:
               }
             EOF"'
 
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo ln -s /etc/nginx/sites-available/nginx_config /etc/nginx/sites-enabled/'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo ln -s /etc/nginx/sites-available/proj_config /etc/nginx/sites-enabled/'
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo nginx -t'
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart nginx'
