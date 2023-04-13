@@ -132,12 +132,12 @@ jobs:
           command: |
             # install the dependencies needed for your playbook
             apk add --update ansible 
-            
+
       - run:
           name: Configure DB
           command: |
             cat .circleci/ansible/inventory.txt
-            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/postgres-playbook.yml --tags "setup_postgresql" -e "ansible_host=${SERVER_IP}   ansible_ssh_pass=${SSH_PASSWORD}"
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/postgres-playbook.yml -e "ansible_host=${SERVER_IP}   ansible_ssh_pass=${SSH_PASSWORD}"
 
 
 

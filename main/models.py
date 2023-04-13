@@ -476,7 +476,7 @@ class Rating(models.Model):
         
 class CalculatorItem(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    power_kw = models.FloatField()
+    power = models.FloatField()
     avg_hr_per_day = models.FloatField()
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
