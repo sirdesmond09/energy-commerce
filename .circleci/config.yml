@@ -142,8 +142,6 @@ jobs:
             sudo apt-get update
             sudo apt install -y sshpass 
 
-    steps:
-      - checkout
       - run:
           name: Install PostgreSQL
           command: |
@@ -164,8 +162,8 @@ workflows:
   # Name the workflow
   myWorkflow:
     jobs:
-      - setup-postgres
+      - setup_db
       - deploy
-          requires:
-            - setup-postgres
+        requires: 
+          -setup_db
         
