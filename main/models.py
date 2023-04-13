@@ -517,22 +517,22 @@ class UserInbox(models.Model):
     
     
     
-class CaseMinorCategory(models.Model):
-    name = models.CharField(max_length=200)
+# class CaseMinorCategory(models.Model):
+#     name = models.CharField(max_length=200)
     
     
-class CaseSubCategory(models.Model):
-    name = models.CharField(max_length=200)
+# class CaseSubCategory(models.Model):
+#     name = models.CharField(max_length=200)
     
 
-class CaseType(models.Model):
-    name = models.CharField(max_length=200)
+# class CaseType(models.Model):
+#     name = models.CharField(max_length=200)
     
     
     
-class SupportTicket(models.Model):
-    case_minor_category = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True)
-    case_sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.SET_NULL, null=True)
-    case_type = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True)
-    desc = models.TextField()
-    user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True)
+# class SupportTicket(models.Model):
+#     case_minor_category = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True)
+#     case_sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.SET_NULL, null=True)
+#     case_type = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True)
+#     desc = models.TextField()
+#     user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True)
