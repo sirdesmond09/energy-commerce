@@ -1,6 +1,8 @@
 - name: Set up PostgreSQL
   hosts: all
-  become: yes
+  become: true
+  become_method: sudo
+  become_user: root
 
   pre_tasks:
     - name: "Install packages"
