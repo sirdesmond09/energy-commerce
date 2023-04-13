@@ -8,16 +8,15 @@ jobs:
       image: ubuntu-2004:202107-01
 
     steps:
-      # - checkout
+      - checkout
 
-      # # Install dependencies and create virtual environment
-      # - run:
-      #     name: Install dependencies
-      #     command: |
-      #       sudo apt-get update
-      #       sudo apt install -y sshpass 
-      #       sudo apt install -y python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl
-      #       sudo apt-get install -y python3-pip python3-venv
+      # Install dependencies and create virtual environment
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt install -y sshpass 
+            
 
       # # Deploy the application
       # - run:
