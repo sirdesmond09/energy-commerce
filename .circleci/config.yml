@@ -151,9 +151,34 @@ jobs:
           command: |
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo service postgresql start && sudo systemctl enable postgresql'
       - run:
-          name: Create PostgreSQL user and database
+          name: Create PostgreSQL database
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '\'${DB_PASSWORD}\'';" && sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME};"'
+
+      - run:
+          name: Create PostgreSQL USER
+          command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';"'
+      
+      - run:
+          name: Update PostgreSQL USER Role
+          command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "ALTER ROLE  ${DB_USER} SET client_encoding TO 'utf8';"'
+      
+      - run:
+          name: Set PostgreSQL USER Role
+          command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "ALTER ROLE ${DB_USER} SET default_transaction_isolation TO 'read committed';"'
+      
+      - run:
+          name: Update PostgreSQL USER Role TIMEZONE
+          command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "ALTER ROLE ${DB_USER} SET timezone TO 'UTC';"'
+      
+      - run:
+          name: Grant PostgreSQL USER privileges
+          command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};"'
 
 
 
