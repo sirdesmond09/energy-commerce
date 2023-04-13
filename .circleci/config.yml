@@ -73,9 +73,14 @@ jobs:
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' >> ./.env"
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}' >> ./.env"
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'export DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}}:5432/${DB_NAME}' >> ./.env"
-
+      - run:
+          name: Migrate to DB
+          command: |
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'cd /home/${PROJECT_FOLDER} && source myenv/bin/activate && python manage.py migrate'
-
+      
+      - run:
+          name: Setup Gunicorn
+          command: |
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/systemd/system/gunicorn.socket \<<EOF
             [Unit]
             Description=gunicorn socket
@@ -104,8 +109,11 @@ jobs:
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl daemon-reload'
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl start gunicorn.socket'
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl enable ${PROJECT_FOLDER}-gunicorn'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl enable gunicorn.socket'
 
+      - run:
+          name: Setup Nginx
+          command: |
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/${PROJECT_FOLDER} \<<EOF
             server {
                 listen 80;
@@ -187,7 +195,7 @@ workflows:
   # Name the workflow
   myWorkflow:
     jobs:
-      - setup_db
-      - deploy:
-          requires:
-            - setup_db
+      # - setup_db 
+      - deploy
+          # requires:
+          #   - setup_db
