@@ -514,3 +514,25 @@ class UserInbox(models.Model):
     image_url = models.URLField(null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     
+    
+    
+    
+class CaseMinorCategory(models.Model):
+    name = models.CharField(max_length=200)
+    
+    
+class CaseSubCategory(models.Model):
+    name = models.CharField(max_length=200)
+    
+
+class CaseType(models.Model):
+    name = models.CharField(max_length=200)
+    
+    
+    
+class SupportTicket(models.Model):
+    case_minor_category = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True)
+    case_sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.SET_NULL, null=True)
+    case_type = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True)
+    desc = models.TextField()
+    user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True)

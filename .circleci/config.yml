@@ -50,6 +50,7 @@ jobs:
       - run:
           name: Deploy application
           command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo apt-get -y update && sudo apt install -y python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl'
             sshpass -p "${SSH_PASSWORD}" rsync -r . ${SSH_USERNAME}@${SERVER_IP}:~/${PROJECT_FOLDER}
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd ~/${PROJECT_FOLDER} && python3 -m venv myenv"
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'cd ~/${PROJECT_FOLDER} && source myenv/bin/activate && pip install -r requirements.txt'
@@ -146,6 +147,6 @@ workflows:
   # Name the workflow
   myWorkflow:
     jobs:
-      - setup-postgres
-      # - deploy
+      # - setup-postgres
+      - deploy
         
