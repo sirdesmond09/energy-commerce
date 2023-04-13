@@ -153,22 +153,22 @@ jobs:
       - run:
           name: Create PostgreSQL database
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME};"'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "CREATE DATABASE \'${DB_NAME}\';"'
 
       - run:
           name: Create PostgreSQL USER
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';"'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "CREATE USER \'${DB_USER}\' WITH PASSWORD \'${DB_PASSWORD}\';"'
       
       - run:
           name: Update PostgreSQL USER Role
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "ALTER ROLE  ${DB_USER} SET client_encoding TO 'utf8';"'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "ALTER ROLE  \'${DB_USER}\' SET client_encoding TO \'utf8\';"'
       
       - run:
           name: Set PostgreSQL USER Role
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "ALTER ROLE ${DB_USER} SET default_transaction_isolation TO 'read committed';"'
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo -u postgres psql -c "ALTER ROLE \'${DB_USER}\' SET default_transaction_isolation TO \'read committed\';"'
       
       - run:
           name: Update PostgreSQL USER Role TIMEZONE
