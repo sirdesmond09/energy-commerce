@@ -166,6 +166,6 @@ workflows:
     jobs:
       - setup-postgres
       - deploy
-        requires:
-          - setup-postgres
+          requires:
+            - setup-postgres
         
