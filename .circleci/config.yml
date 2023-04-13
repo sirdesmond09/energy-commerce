@@ -62,7 +62,7 @@ jobs:
             WantedBy=sockets.target
             EOF"'
 
-            echo "$(cat <<EOF
+            echo "$(cat \<<EOF
               [Unit]
               Description=Gunicorn
               After=network.target
