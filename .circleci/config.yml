@@ -87,7 +87,7 @@ jobs:
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/nginx_config \<<EOF
             server {
                 listen 80;
-                server_name ${SERVER_NAME} ${SERVER_IP};
+                server_name ${SERVER_IP};
 
                 location = /favicon.ico { access_log off; log_not_found off; }
                 location /static/ {
