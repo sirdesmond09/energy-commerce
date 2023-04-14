@@ -16,7 +16,13 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt install -y sshpass 
-            
+      
+      # Deploy the application
+      - run:
+          name: Deploy application and migrate DB
+          command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo apt-get -y update && sudo apt install -y python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl python3.10-venv'
+            sshpass -p "${SSH_PASSWORD}" rsync -r . ${SSH_USERNAME}@${SERVER_IP}:/home/${PROJECT_FOLDER}
 
       # Deploy the application
       # - run:
