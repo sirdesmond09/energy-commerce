@@ -533,9 +533,9 @@ class CaseMinorCategory(models.Model):
 
     
     
-# class SupportTicket(models.Model):
-#     case_minor_category = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True)
-#     case_sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.SET_NULL, null=True)
-#     case_type = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True)
-#     desc = models.TextField()
-#     user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True)
+class SupportTicket(models.Model):
+    case_minor = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True, related_name="support_tickets")
+    sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.SET_NULL, null=True,related_name="support_tickets")
+    case_type = models.ForeignKey(CaseType, on_delete=models.SET_NULL, null=True, related_name="support_tickets")
+    desc = models.TextField()
+    user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True, related_name="support_tickets")

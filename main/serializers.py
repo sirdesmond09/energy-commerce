@@ -391,9 +391,13 @@ class CaseTypeSerializer(serializers.ModelSerializer):
         model  = CaseType
         fields = "__all__"
         
+    def get_sub_categories(self, obj):
+        return CaseSubCategorySerializer(obj.sub_categories.all(), many=True)
+        
         
 class CaseSubCategorySerializer(serializers.ModelSerializer):
     case_minors = serializers.ReadOnlyField()
+    
     class Meta:
         model  = CaseSubCategory
         fields = "__all__"

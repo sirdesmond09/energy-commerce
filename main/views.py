@@ -1979,8 +1979,8 @@ class TermAndConditionUpdate(RetrieveUpdateAPIView):
 class CaseTypeView(ListCreateAPIView):
     serializer_class = CaseTypeSerializer
     queryset =CaseType.objects.all()
-    permission_classes = [IsAdminUser]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAdminUser]
+    # authentication_classes = [JWTAuthentication]
     
     
 class CaseTypeDetailView(RetrieveUpdateAPIView):
@@ -1995,8 +1995,8 @@ class CaseTypeDetailView(RetrieveUpdateAPIView):
 class CaseSubCategoryView(ListCreateAPIView):
     serializer_class = CaseSubCategorySerializer
     queryset =CaseSubCategory.objects.all()
-    permission_classes = [IsAdminUser]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAdminUser]
+    # authentication_classes = [JWTAuthentication]
     
     
 class CaseSubCategoryDetail(RetrieveUpdateAPIView):
@@ -2011,8 +2011,8 @@ class CaseSubCategoryDetail(RetrieveUpdateAPIView):
 class CaseMinorView(ListCreateAPIView):
     serializer_class = CaseMinorCategorySerializer
     queryset =CaseMinorCategory.objects.all()
-    permission_classes = [IsAdminUser]
-    authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAdminUser]
+    # authentication_classes = [JWTAuthentication]
     
     
 class CaseMinorDetail(RetrieveUpdateAPIView):
