@@ -516,18 +516,21 @@ class UserInbox(models.Model):
     
     
     
+class CaseType(models.Model):
+    name = models.CharField(max_length=200)
+  
+class CaseSubCategory(models.Model):
+    name = models.CharField(max_length=200)
+    case_type = models.ForeignKey(CaseType, on_delete=models.CASCADE, related_name="sub_categories")   
     
-# class CaseMinorCategory(models.Model):
-#     name = models.CharField(max_length=200)
+    @property
+    def case_minors(self):
+        return self.minors.values("name")
     
-    
-# class CaseSubCategory(models.Model):
-#     name = models.CharField(max_length=200)
-    
+class CaseMinorCategory(models.Model):
+    name = models.CharField(max_length=200)
+    sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.CASCADE, related_name="minors")
 
-# class CaseType(models.Model):
-#     name = models.CharField(max_length=200)
-    
     
     
 # class SupportTicket(models.Model):

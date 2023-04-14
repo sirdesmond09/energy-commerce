@@ -2,8 +2,8 @@ from datetime import datetime
 import random
 from accounts.models import ActivityLog
 from main.helpers import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CommissionSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, TermAndConditionSerializer, UpdateStatusSerializer, UserInboxSerializer
-from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, TermAndCondition, UserInbox, ValidationOTP
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, TermAndConditionSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .models import Address, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, TermAndCondition, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -1968,6 +1968,54 @@ class TermAndConditionList(ListAPIView):
     
     
 class TermAndConditionUpdate(RetrieveUpdateAPIView):
+    serializer_class = TermAndConditionSerializer
+    queryset =TermAndCondition.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    lookup_field = "id"
+    
+    
+    
+class CaseTypeView(ListCreateAPIView):
+    serializer_class = CaseTypeSerializer
+    queryset =CaseType.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    
+    
+class CaseTypeDetailView(RetrieveUpdateAPIView):
+    serializer_class = TermAndConditionSerializer
+    queryset =TermAndCondition.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    lookup_field = "id"
+    
+    
+    
+class CaseSubCategoryView(ListCreateAPIView):
+    serializer_class = CaseSubCategorySerializer
+    queryset =CaseSubCategory.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    
+    
+class CaseSubCategoryDetail(RetrieveUpdateAPIView):
+    serializer_class = CaseSubCategorySerializer
+    queryset =CaseSubCategory.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    lookup_field = "id"
+    
+    
+    
+class CaseMinorView(ListCreateAPIView):
+    serializer_class = CaseMinorCategorySerializer
+    queryset =CaseMinorCategory.objects.all()
+    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    
+    
+class CaseMinorDetail(RetrieveUpdateAPIView):
     serializer_class = TermAndConditionSerializer
     queryset =TermAndCondition.objects.all()
     permission_classes = [IsAdminUser]

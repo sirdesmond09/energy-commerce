@@ -70,9 +70,12 @@ urlpatterns = [
     path("commissions/<int:id>/", views.CommissionUpdate.as_view()),
     path("terms/", views.TermAndConditionList.as_view()),
     path("terms/<int:id>/", views.TermAndConditionUpdate.as_view()),
-    
-    
-    
+    path("support/case-types/", views.CaseTypeView.as_view()),
+    path("support/case-types/<int:id>/", views.CaseTypeDetailView.as_view()),
+    path("support/case-minors/", views.CaseMinorView.as_view()),
+    path("support/case-minors/<int:id>/", views.CaseMinorDetail.as_view()),
+    path("support/case-sub-categories/", views.CaseSubCategoryView.as_view()),
+    path("support/case-sub-categories/<int:id>/", views.CaseSubCategoryDetail.as_view()),
     
     
     
