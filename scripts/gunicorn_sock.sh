@@ -12,14 +12,5 @@ ListenStream=/run/gunicorn.sock
 WantedBy=sockets.target
 ' > /etc/systemd/system/gunicorn.socket"
 
-# # Run the command with sudo and redirect the input to the file
-# sudo bash -c "cat > /etc/systemd/system/gunicorn.socket <<EOF
-# [Unit]
-# Description=gunicorn socket
 
-# [Socket]
-# ListenStream=/run/gunicorn.sock
-
-# [Install]
-# WantedBy=sockets.target
-# EOF"
+echo "Gunicorn socket file created successfully!"

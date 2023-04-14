@@ -32,66 +32,42 @@ jobs:
       #       sshpass -p "${SSH_PASSWORD}" rsync -r . ${SSH_USERNAME}@${SERVER_IP}:/home/${PROJECT_FOLDER}
       #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && python3 -m venv venv"
       #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && source venv/bin/activate && pip install -r requirements.txt"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DB_NAME=${DB_NAME}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DB_USER=${DB_USER}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DB_PASSWORD=${DB_PASSWORD}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DB_HOST=${DB_HOST}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DJANGO_DEBUG=${DJANGO_DEBUG}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'ALLOWED_HOSTS=${ALLOWED_HOSTS}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'ENVIRONMENT=${ENVIRONMENT}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'FLW_SECRET_KEY=${FLW_SECRET_KEY}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'EMAIL_HOST_USER=${EMAIL_HOST_USER}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'FLUTTER_VERIFICATION_URL=${FLUTTER_VERIFICATION_URL}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'AZURE_ACCOUNT_NAME=${AZURE_ACCOUNT_NAME}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'AZURE_CONTAINER=${AZURE_CONTAINER}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'ENERGY_BASE_URL=${ENERGY_BASE_URL}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}' >> .env"
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && source venv/bin/activate && python manage.py migrate"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DB_NAME=${DB_NAME}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DB_USER=${DB_USER}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DB_PASSWORD=${DB_PASSWORD}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DB_HOST=${DB_HOST}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DJANGO_DEBUG=${DJANGO_DEBUG}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DJANGO_TEMPLATE_DEBUG=${DJANGO_TEMPLATE_DEBUG}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'ALLOWED_HOSTS=${ALLOWED_HOSTS}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'ENVIRONMENT=${ENVIRONMENT}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'FLW_SECRET_KEY=${FLW_SECRET_KEY}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'EMAIL_HOST_USER=${EMAIL_HOST_USER}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'FLUTTER_VERIFICATION_URL=${FLUTTER_VERIFICATION_URL}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'AZURE_ACCOUNT_NAME=${AZURE_ACCOUNT_NAME}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'AZURE_CONTAINER=${AZURE_CONTAINER}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'AZURE_ACCOUNT_KEY=${AZURE_ACCOUNT_KEY}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'ENERGY_BASE_URL=${ENERGY_BASE_URL}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && echo 'DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}' >> .env"
+            # sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && source venv/bin/activate && python manage.py migrate"
       
       
       - run:
           name: Setup Gunicorn
-
           command: |
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && chmod +x scripts/gunicorn_sock.sh && scripts/gunicorn_sock.sh"
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && chmod +x scripts/gunicorn_service.sh && scripts/gunicorn_service.sh ${PROJECT_FOLDER}"
 
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "sudo systemctl daemon-reload"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "sudo systemctl start gunicorn.socket"
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "sudo systemctl enable gunicorn.socket"
             
-      # - run:
-      #     name: Setup Nginx
-      #     command: |
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo bash -c "cat > /etc/nginx/sites-available/proj_config \<<EOF
-      #       server {
-      #           listen 80;
-      #           server_name $SERVER_IP;
-
-      #           location = /favicon.ico { access_log off; log_not_found off; }
-      #           location /static/ {
-      #               root /home/$PROJECT_FOLDER;
-      #             }
-
-      #             location / {
-      #                 include proxy_params;
-      #                 proxy_pass http://unix:/run/gunicorn.sock;
-      #             }
-      #         }
-      #       EOF"'
-
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo ln -s /etc/nginx/sites-available/proj_config /etc/nginx/sites-enabled/'
-
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo nginx -t'
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart nginx'
-      #       sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} 'sudo systemctl restart gunicorn'
+            
+      - run:
+          name: Setup Nginx
+          command: |
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && chmod +x scripts/nginx_setup.sh && scripts/nginx_setup.sh ${PROJECT_FOLDER} ${SERVER_IP}"
 
   setup_db:
     machine:
