@@ -153,16 +153,20 @@ workflows:
   myWorkflow:
     jobs:
       # - setup_db:
-            # branches:
-            #   only:
-            #     - main
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main  
       # - deploy:
-            # branches:
-            #   only:
-            #     - main
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main  
       #     requires:
       #       - setup_db
+
       - update_deploy:
-          branches:
-              only:
-                - main
+          filters:
+            branches:
+                only:
+                  - main
