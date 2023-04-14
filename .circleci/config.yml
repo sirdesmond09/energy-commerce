@@ -153,7 +153,7 @@ workflows:
   myWorkflow:
     jobs:
       - setup_db 
-      - deploy
+      - deploy:
           requires:
             - setup_db
       # - update_deploy
