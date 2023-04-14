@@ -387,6 +387,9 @@ class FAQSerializer(serializers.ModelSerializer):
         
         
 class CaseTypeSerializer(serializers.ModelSerializer):
+    
+    sub_categories = serializers.SerializerMethodField()
+    
     class Meta:
         model  = CaseType
         fields = "__all__"
