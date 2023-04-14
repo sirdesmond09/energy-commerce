@@ -1,3 +1,0 @@
-[all]
-161.35.192.70
-ansible_user=root

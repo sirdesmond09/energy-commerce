@@ -60,8 +60,6 @@ jobs:
 
             sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && chmod +x scripts/gunicorn_service.sh && scripts/gunicorn_service.sh ${PROJECT_FOLDER}"
 
-            
-            
       - run:
           name: Setup Nginx
           command: |
@@ -154,9 +152,8 @@ workflows:
   # Name the workflow
   myWorkflow:
     jobs:
-      # - setup_db 
-      # - deploy
-          # requires:
-          #   - setup_db
-
-      - update_deploy
+      - setup_db 
+      - deploy
+          requires:
+            - setup_db
+      # - update_deploy
