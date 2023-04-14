@@ -152,8 +152,11 @@ workflows:
   # Name the workflow
   myWorkflow:
     jobs:
-      - setup_db 
-      - deploy:
-          requires:
-            - setup_db
-      # - update_deploy
+      # - setup_db 
+      # - deploy:
+      #     requires:
+      #       - setup_db
+      - update_deploy
+          branches:
+              only:
+                - main
