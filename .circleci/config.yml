@@ -67,7 +67,7 @@ jobs:
       - run:
           name: Setup Nginx
           command: |
-            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && chmod +x scripts/nginx_setup.sh && scripts/nginx_setup.sh ${PROJECT_FOLDER} ${SERVER_IP}"
+            sshpass -p "${SSH_PASSWORD}" ssh ${SSH_USERNAME}@${SERVER_IP} "cd /home/${PROJECT_FOLDER} && chmod +x scripts/nginx_setup.sh && scripts/nginx_setup.sh ${SERVER_IP} ${PROJECT_FOLDER}"
 
   setup_db:
     machine:
