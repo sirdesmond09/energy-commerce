@@ -271,7 +271,7 @@ class Development(Common):
     """
     The in-development settings and the default configuration.
     """
-    DEBUG = False
+    DEBUG = True
 
     ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
 
