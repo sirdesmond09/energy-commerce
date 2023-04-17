@@ -155,9 +155,9 @@ def comfirmaion_email(user, request, *args,**kwargs):
         send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
         
         
-        payload  = send_data(user=user)
+        send_data(user=user)
         
-        print(payload)
+
         return
         
         
