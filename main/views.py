@@ -2026,4 +2026,4 @@ class CaseMinorDetail(RetrieveUpdateAPIView):
     
 @api_view(["GET"])
 def bank_lists(request):
-    return Response({"data":Bank.objects.all().values_list()})
+    return Response({"data":Bank.objects.all().values()})
