@@ -32,11 +32,6 @@ class Command(BaseCommand):
             "avg_hr_per_day": 1
         },
         {
-            "name": "Washing Machine",
-            "power": 500,
-            "avg_hr_per_day": 1
-        },
-        {
             "name": "Clothes Dryer",
             "power": 3000,
             "avg_hr_per_day": 1
