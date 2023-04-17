@@ -1963,8 +1963,7 @@ class CommissionUpdate(RetrieveUpdateAPIView):
 class TermAndConditionList(ListAPIView):
     serializer_class = TermAndConditionSerializer
     queryset =TermAndCondition.objects.all()
-    permission_classes = [IsAdminUser]
-    authentication_classes = [JWTAuthentication]
+
     
     
 class TermAndConditionUpdate(RetrieveUpdateAPIView):
