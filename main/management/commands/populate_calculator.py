@@ -5,7 +5,6 @@ from ...models import CalculatorItem
 User = get_user_model()
 
 class Command(BaseCommand):
-    help = 'Create Dummy Box locations'
 
 
     def handle(self, *args, **options):

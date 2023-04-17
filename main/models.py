@@ -549,3 +549,11 @@ class SupportTicket(models.Model):
     case_type = models.ForeignKey(CaseType, on_delete=models.SET_NULL, null=True, related_name="support_tickets")
     desc = models.TextField()
     user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True, related_name="support_tickets")
+    
+    
+    
+class Bank(models.Model):
+    name = models.CharField(max_length=350, unique=True)
+    code = models.CharField(max_length=50)
+    date_added = models.DateTimeField(auto_now_add=True)
+    
