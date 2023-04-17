@@ -410,8 +410,11 @@ class Commission(models.Model):
     percent = models.PositiveIntegerField(default=12)
     
     
-class TermAndCondition(models.Model):
+class Documentation(models.Model):
+    name = models.CharField(max_length=50)
     data = models.TextField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
    
     
     
