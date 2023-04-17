@@ -17,5 +17,5 @@ class Command(BaseCommand):
         for i in data:
             i.pop("id")
             banks.append(Bank(**i))
-        Bank.objects.bulk_create(**banks)
+        Bank.objects.bulk_create(*banks)
         
