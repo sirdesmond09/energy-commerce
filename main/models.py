@@ -495,7 +495,7 @@ class CalculatorItem(models.Model):
 
 class FrequentlyAskedQuestion(models.Model):
     question = models.CharField(max_length=255, unique=True)
-    answer = models.FloatField()
+    answer = models.TextField(null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
