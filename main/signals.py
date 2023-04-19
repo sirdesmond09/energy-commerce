@@ -80,7 +80,7 @@ def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
         url=url,
         data = {
 
-            "CaseMinorCategory": instance.case_minor.name,
+            "CaseMinorCategory": instance.case_minor.name if instance.case_minor else None,
 
             "CaseSubCategory": instance.sub_category.name,
 
