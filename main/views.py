@@ -1827,7 +1827,7 @@ class CalculatorItemDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class =  CalculatorItemSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [CalculatorItemTablePermissions]
-    
+    lookup_field = "id"
     
     @swagger_auto_schema(method="put", request_body=CalculatorItemSerializer())
     @action(methods=["put"], detail=True)
@@ -1925,6 +1925,7 @@ class FAQDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class =  FAQSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [FAQTablePermissions]
+    lookup_field = "id"
     
     
     @swagger_auto_schema(method="put", request_body=FAQSerializer())
