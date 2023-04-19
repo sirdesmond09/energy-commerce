@@ -532,7 +532,7 @@ class CaseSubCategory(models.Model):
     
     @property
     def case_minors(self):
-        return self.minors.values("name")
+        return self.minors.values("id","name")
     
     def __str__(self):
         return f"{self.name} -- {self.case_type.name}"
