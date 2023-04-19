@@ -9,7 +9,8 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from firebase_admin import messaging
-
+import os
+import requests
 
 
 
@@ -67,3 +68,36 @@ def send_notification(sender, instance:UserInbox, created, *args,**kwargs):
 def send_message(token):
     notification = messaging.Notification(title="New Product", body="A new product is here! Check it out.", image="https://res.cloudinary.com/univel/image/upload/v1/media/products/primary_imgs/Placeholder-18_gdbubg")
     messaging.send(messaging.Message(notification=notification, token=token))
+
+
+
+@receiver(post_save, sender=SupportTicket)
+def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
+    
+    url = os.getenv("CRM_URL")
+    
+    res = requests.post(
+        url=url,
+        data = {
+
+            "CaseMinorCategory": instance.case_minor.name,
+
+            "CaseSubCategory": instance.sub_category.name,
+
+            "CaseType": instance.case_type.name,
+
+            "Description": instance.desc,
+
+            "Email": instance.user.email,
+
+            "FirstName": instance.user.first_name,
+
+            "Phone": instance.user.phone,
+
+            "Surname": instance.user.last_name
+
+        }
+    )
+    
+    print(res.status_code)
+    print(res.content)

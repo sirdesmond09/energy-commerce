@@ -76,6 +76,8 @@ urlpatterns = [
     path("support/case-minors/<int:id>/", views.CaseMinorDetail.as_view()),
     path("support/case-sub-categories/", views.CaseSubCategoryView.as_view()),
     path("support/case-sub-categories/<int:id>/", views.CaseSubCategoryDetail.as_view()),
+    path("support/tickets/", views.SupportTicketView.as_view()),
+    path("support/tickets/<int:id>/", views.SupportTicketDetail.as_view()),
     path("payments/banks/", views.bank_lists),
     
     

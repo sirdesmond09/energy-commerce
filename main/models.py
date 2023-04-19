@@ -524,6 +524,7 @@ class CaseType(models.Model):
     
     def __str__(self):
         return self.name
+    
   
 class CaseSubCategory(models.Model):
     name = models.CharField(max_length=200)
@@ -535,6 +536,7 @@ class CaseSubCategory(models.Model):
     
     def __str__(self):
         return f"{self.name} -- {self.case_type.name}"
+    
     
 class CaseMinorCategory(models.Model):
     name = models.CharField(max_length=200)
