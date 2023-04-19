@@ -88,13 +88,13 @@ def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
 
             "Description": instance.desc,
 
-            "Email": instance.user.email,
+            "Email": instance.email,
 
-            "FirstName": instance.user.first_name,
+            "FirstName": instance.first_name,
 
-            "Phone": instance.user.phone,
+            "Phone": instance.phone,
 
-            "Surname": instance.user.last_name
+            "Surname": instance.last_name
 
         }
     )

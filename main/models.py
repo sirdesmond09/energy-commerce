@@ -553,7 +553,10 @@ class SupportTicket(models.Model):
     sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.SET_NULL, null=True,related_name="support_tickets")
     case_type = models.ForeignKey(CaseType, on_delete=models.SET_NULL, null=True, related_name="support_tickets")
     desc = models.TextField()
-    user = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True, related_name="support_tickets")
+    first_name = models.CharField(max_length=255, null=True)
+    last_name = models.CharField(max_length=255, null=True)
+    phone = models.CharField(max_length=255, null=True)
+    email = models.EmailField(null=True)
     
     
     
