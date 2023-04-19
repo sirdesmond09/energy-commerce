@@ -2022,11 +2022,17 @@ class CaseMinorDetail(RetrieveUpdateAPIView):
     authentication_classes = [JWTAuthentication]
     lookup_field = "id"
 
-class SupportTicketView(ListCreateAPIView):
+class SupportTicketCreateView(CreateAPIView):
     serializer_class = SupportTicketSerializer
     queryset =SupportTicket.objects.all()
-    permission_classes = [IsAuthenticated]
+
+
+class SupportTicketListView(ListAPIView):
+    serializer_class = SupportTicketSerializer
+    queryset =SupportTicket.objects.all()
+    permission_classes = [IsAdminUser]
     authentication_classes = [JWTAuthentication]
+
     
     
 class SupportTicketDetail(RetrieveAPIView):
