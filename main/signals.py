@@ -73,7 +73,7 @@ def send_message(token):
 def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
     
     url = os.getenv("CRM_URL")
-    data = {"CaseMinorCategory": instance.case_minor.name if instance.case_minor else None,
+    data = json.dumps({"CaseMinorCategory": instance.case_minor.name if instance.case_minor else "",
             "CaseSubCategory": instance.sub_category.name,
             "CaseType": instance.case_type.name,
             "Description": instance.desc,
@@ -81,12 +81,13 @@ def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
             "FirstName": instance.first_name,
             "Phone": instance.phone,
             "Surname": instance.last_name
-        }
+        })
     res = requests.post(
         url=url,
-        json = json.dumps(data),
+        data = data ,
         headers = {'Content-type': 'application/json'}
     )
     
+    print(data)
     print(res.status_code)
     print(res.content)
