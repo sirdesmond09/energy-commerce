@@ -91,6 +91,7 @@ def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
     if res.status_code == 200:
         body = res.json().get("ResponseText")
         instance.crm_id = body.split()[1]
+        instance.save()
         
     
     print(data)
