@@ -88,6 +88,11 @@ def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
         headers = {'Content-type': 'application/json'}
     )
     
+    if res.status_code == 200:
+        body = res.json().get("ResponseText")
+        instance.crm_id = body.split()[1]
+        
+    
     print(data)
     print(res.status_code)
     print(res.content)

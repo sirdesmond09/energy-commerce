@@ -557,6 +557,7 @@ class SupportTicket(models.Model):
     last_name = models.CharField(max_length=255, null=True)
     phone = models.CharField(max_length=255, null=True)
     email = models.EmailField(null=True)
+    crm_id = models.CharField(max_length=255, null=True, blank=True)
     
     
     
