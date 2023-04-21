@@ -560,6 +560,11 @@ class SupportTicket(models.Model):
     crm_id = models.CharField(max_length=255, null=True, blank=True)
     
     
+    def __str__(self):
+        return f'{self.first_name} -- {self.case_type.name} -- {self.crm_id}'
+    
+    
+    
     
 class Bank(models.Model):
     name = models.CharField(max_length=350, unique=True)
