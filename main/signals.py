@@ -5,9 +5,7 @@ from django.db.models.signals import post_save, post_delete
 from config import settings
 from accounts.models import ActivityLog
 from .models import *
-from django.utils import timezone
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+import json
 from firebase_admin import messaging
 import os
 import requests
@@ -75,28 +73,19 @@ def send_message(token):
 def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
     
     url = os.getenv("CRM_URL")
-    
+    data = {"CaseMinorCategory": instance.case_minor.name if instance.case_minor else None,
+            "CaseSubCategory": instance.sub_category.name,
+            "CaseType": instance.case_type.name,
+            "Description": instance.desc,
+            "Email": instance.email,
+            "FirstName": instance.first_name,
+            "Phone": instance.phone,
+            "Surname": instance.last_name
+        }
     res = requests.post(
         url=url,
-        data = {
-
-            "CaseMinorCategory": instance.case_minor.name if instance.case_minor else None,
-
-            "CaseSubCategory": instance.sub_category.name,
-
-            "CaseType": instance.case_type.name,
-
-            "Description": instance.desc,
-
-            "Email": instance.email,
-
-            "FirstName": instance.first_name,
-
-            "Phone": instance.phone,
-
-            "Surname": instance.last_name
-
-        }
+        json = json.dumps(data),
+        headers = {'Content-type': 'application/json'}
     )
     
     print(res.status_code)
