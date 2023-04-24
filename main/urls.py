@@ -68,11 +68,18 @@ urlpatterns = [
     path("faq/<int:id>/", views.FAQDetailView.as_view()),
     path("commissions/", views.CommissionList.as_view()),
     path("commissions/<int:id>/", views.CommissionUpdate.as_view()),
-    path("terms/", views.TermAndConditionList.as_view()),
-    path("terms/<int:id>/", views.TermAndConditionUpdate.as_view()),
-    
-    
-    
+    path("page-docs/", views.DocumentationList.as_view()),
+    path("page-docs/<int:id>/", views.DocumentationUpdate.as_view()),
+    path("support/case-types/", views.CaseTypeView.as_view()),
+    path("support/case-types/<int:id>/", views.CaseTypeDetailView.as_view()),
+    path("support/case-minors/", views.CaseMinorView.as_view()),
+    path("support/case-minors/<int:id>/", views.CaseMinorDetail.as_view()),
+    path("support/case-sub-categories/", views.CaseSubCategoryView.as_view()),
+    path("support/case-sub-categories/<int:id>/", views.CaseSubCategoryDetail.as_view()),
+    path("support/tickets/", views.SupportTicketListView.as_view()),
+    path("support/tickets/create/", views.SupportTicketCreateView.as_view()),
+    path("support/tickets/<int:id>/", views.SupportTicketDetail.as_view()),
+    path("payments/banks/", views.bank_lists),
     
     
     

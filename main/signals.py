@@ -5,11 +5,10 @@ from django.db.models.signals import post_save, post_delete
 from config import settings
 from accounts.models import ActivityLog
 from .models import *
-from django.utils import timezone
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+import json
 from firebase_admin import messaging
-
+import os
+import requests
 
 
 
@@ -67,3 +66,34 @@ def send_notification(sender, instance:UserInbox, created, *args,**kwargs):
 def send_message(token):
     notification = messaging.Notification(title="New Product", body="A new product is here! Check it out.", image="https://res.cloudinary.com/univel/image/upload/v1/media/products/primary_imgs/Placeholder-18_gdbubg")
     messaging.send(messaging.Message(notification=notification, token=token))
+
+
+
+@receiver(post_save, sender=SupportTicket)
+def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
+    
+    url = os.getenv("CRM_URL")
+    data = json.dumps({"CaseMinorCategory": instance.case_minor.name if instance.case_minor else "",
+            "CaseSubCategory": instance.sub_category.name,
+            "CaseType": instance.case_type.name,
+            "Description": instance.desc,
+            "Email": instance.email,
+            "FirstName": instance.first_name,
+            "Phone": instance.phone,
+            "Surname": instance.last_name
+        })
+    res = requests.post(
+        url=url,
+        data = data ,
+        headers = {'Content-type': 'application/json'}
+    )
+    
+    if res.status_code == 200:
+        body = res.json().get("ResponseText")
+        instance.crm_id = body.split()[1]
+        instance.save()
+        
+    
+    print(data)
+    print(res.status_code)
+    print(res.content)

@@ -220,6 +220,9 @@ class Common(Configuration):
     SITE_NAME = "Imperium"
     DOMAIN = "#"
     
+    #OAuth credentials
+    GOOGLE_CLIENT_ID= os.getenv("GOOGLE_CLIENT_ID")
+    
     # Azure Blob Storage settings
     AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
     AZURE_CONTAINER = os.getenv("AZURE_CONTAINER")
@@ -242,6 +245,25 @@ class Common(Configuration):
     EMAIL_USE_TLS = False 
     DEFAULT_FROM_EMAIL = "Ope from Imperium <noreply@getmobile.tech>" # TODO: Change to imperium email
     
+    
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(BASE_DIR, 'imperium.log'),
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+        },
+    }
 
 
 
@@ -249,7 +271,7 @@ class Development(Common):
     """
     The in-development settings and the default configuration.
     """
-    DEBUG = False
+    DEBUG = True
 
     ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
 
@@ -297,7 +319,7 @@ class Staging(Common):
     )
     
 
-    ALLOWED_HOSTS = ["*"]
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
 
 
 class Production(Staging):
