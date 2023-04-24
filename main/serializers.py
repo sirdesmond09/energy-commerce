@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id, generate_order_id
-from .models import Address, CalculatorItem, Cart, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, TermAndCondition, UserInbox
+from .models import Address, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, Documentation, SupportTicket, UserInbox
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -318,10 +318,10 @@ class CommissionSerializer(serializers.ModelSerializer):
         
 
 
-class TermAndConditionSerializer(serializers.ModelSerializer):
+class DocumentationSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
-        model = TermAndCondition
+        model = Documentation
         
         
 
@@ -382,4 +382,36 @@ class UserInboxSerializer(serializers.ModelSerializer):
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:
         model  = FrequentlyAskedQuestion
+        fields = "__all__"
+        
+        
+        
+class CaseTypeSerializer(serializers.ModelSerializer):
+    
+    sub_categories = serializers.SerializerMethodField()
+    
+    class Meta:
+        model  = CaseType
+        fields = "__all__"
+        
+    def get_sub_categories(self, obj):
+        return CaseSubCategorySerializer(obj.sub_categories.all(), many=True).data
+        
+        
+class CaseSubCategorySerializer(serializers.ModelSerializer):
+    case_minors = serializers.ReadOnlyField()
+    
+    class Meta:
+        model  = CaseSubCategory
+        fields = "__all__"
+        
+class CaseMinorCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = CaseMinorCategory
+        fields = "__all__"
+
+
+class SupportTicketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = SupportTicket
         fields = "__all__"

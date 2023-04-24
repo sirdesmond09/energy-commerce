@@ -1,3 +1,5 @@
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/Getmobile-Technologies/imperium-backend/tree/main.svg?style=svg&circle-token=a8891eef4dfd701640e4618bc251661d6be8afa9)](https://dl.circleci.com/status-badge/redirect/gh/Getmobile-Technologies/imperium-backend/tree/main)
+
 # Introduction 
 TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
 

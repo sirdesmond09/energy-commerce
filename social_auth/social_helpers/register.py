@@ -12,6 +12,8 @@ def split_name(name):
 
 
 def register_social_user(provider, user_id,email, name):
+    """Allows user to login even if they didn't initially signup with google. """
+    
     filtered_user_by_email = User.objects.filter(email=email, is_deleted=False, is_active=True)
 
     if filtered_user_by_email.exists():
@@ -19,26 +21,28 @@ def register_social_user(provider, user_id,email, name):
 
             registered_user = authenticate(
                 email=email, password=os.getenv('SOCIAL_SECRET'))
-            
-            refresh = RefreshToken.for_user(registered_user)
-            return {
-                'id':registered_user.id,
-                'first_name': registered_user.first_name,
-                'last_name':registered_user.last_name,
-                'email': registered_user.email,
-                'role':registered_user.role,
-                "phone":registered_user.phone,
-                'is_admin':registered_user.is_admin,
-                'is_superuser' : registered_user.is_superuser,
-                "provider":provider,
-                'refresh': str(refresh),
-                'access' : str(refresh.access_token)
-            }
-
-
+        
         else:
-            raise AuthenticationFailed(
-                detail='Please continue your login using ' + filtered_user_by_email[0].provider)
+            registered_user = filtered_user_by_email[0]
+            
+            
+        refresh = RefreshToken.for_user(registered_user)
+        return {
+            'id':registered_user.id,
+            'first_name': registered_user.first_name,
+            'last_name':registered_user.last_name,
+            'email': registered_user.email,
+            'role':registered_user.role,
+            "phone":registered_user.phone,
+            'is_admin':registered_user.is_admin,
+            'is_superuser' : registered_user.is_superuser,
+            "provider":provider,
+            'refresh': str(refresh),
+            'access' : str(refresh.access_token)
+        }
+
+
+        
 
     else:
         first_name, last_name = split_name(name)

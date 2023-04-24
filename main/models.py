@@ -410,8 +410,11 @@ class Commission(models.Model):
     percent = models.PositiveIntegerField(default=12)
     
     
-class TermAndCondition(models.Model):
+class Documentation(models.Model):
+    name = models.CharField(max_length=50)
     data = models.TextField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
    
     
     
@@ -476,7 +479,7 @@ class Rating(models.Model):
         
 class CalculatorItem(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    power_kw = models.FloatField()
+    power = models.FloatField()
     avg_hr_per_day = models.FloatField()
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
@@ -492,7 +495,7 @@ class CalculatorItem(models.Model):
 
 class FrequentlyAskedQuestion(models.Model):
     question = models.CharField(max_length=255, unique=True)
-    answer = models.FloatField()
+    answer = models.TextField(null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
@@ -512,5 +515,59 @@ class UserInbox(models.Model):
     heading = models.CharField(max_length=255)
     body = models.TextField()
     image_url = models.URLField(null=True, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    
+    
+    
+class CaseType(models.Model):
+    name = models.CharField(max_length=200)
+    
+    def __str__(self):
+        return self.name
+    
+  
+class CaseSubCategory(models.Model):
+    name = models.CharField(max_length=200)
+    case_type = models.ForeignKey(CaseType, on_delete=models.CASCADE, related_name="sub_categories")   
+    
+    @property
+    def case_minors(self):
+        return self.minors.values("id","name")
+    
+    def __str__(self):
+        return f"{self.name} -- {self.case_type.name}"
+    
+    
+class CaseMinorCategory(models.Model):
+    name = models.CharField(max_length=200)
+    sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.CASCADE, related_name="minors")
+    
+    def __str__(self):
+        return f"{self.name} -- {self.sub_category.name} -- {self.sub_category.case_type.name}"
+    
+
+    
+    
+class SupportTicket(models.Model):
+    case_minor = models.ForeignKey(CaseMinorCategory, on_delete=models.SET_NULL, null=True, related_name="support_tickets")
+    sub_category = models.ForeignKey(CaseSubCategory, on_delete=models.SET_NULL, null=True,related_name="support_tickets")
+    case_type = models.ForeignKey(CaseType, on_delete=models.SET_NULL, null=True, related_name="support_tickets")
+    desc = models.TextField()
+    first_name = models.CharField(max_length=255, null=True)
+    last_name = models.CharField(max_length=255, null=True)
+    phone = models.CharField(max_length=255, null=True)
+    email = models.EmailField(null=True)
+    crm_id = models.CharField(max_length=255, null=True, blank=True)
+    
+    
+    def __str__(self):
+        return f'{self.first_name} -- {self.case_type.name} -- {self.crm_id}'
+    
+    
+    
+    
+class Bank(models.Model):
+    name = models.CharField(max_length=350, unique=True)
+    code = models.CharField(max_length=50)
     date_added = models.DateTimeField(auto_now_add=True)
     
