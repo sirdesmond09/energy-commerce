@@ -100,7 +100,7 @@ def activate_otp(user, request, *args,**kwargs):
     {site_name} Team            
     """   
         msg_html = render_to_string('email/activation.html', {
-                        'first_name': str(user.first_name).title(),
+                        'first_name': user,
                         'code':code,
                         'site_name':site_name,
                         "url":url})
@@ -146,7 +146,7 @@ def comfirmaion_email(user, request, *args,**kwargs):
     {site_name} Team            
     """   
         msg_html = render_to_string('email/confirmation.html', {
-                        'first_name': str(user.first_name).title(),
+                        'user': str(user.first_name).title(),
                         'site_name':site_name,
                         "url":url})
         
