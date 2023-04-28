@@ -13,6 +13,7 @@ class CustomPasswordResetEmail(PasswordResetEmail):
         
             
         context["domain"] = self.request.META.get('HTTP_REFERER')
+        context['MARKET_PLACE_URL'] = Common.MARKETPLACE_URL
             
         
         return context

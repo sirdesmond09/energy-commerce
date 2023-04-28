@@ -215,10 +215,11 @@ class Common(Configuration):
     
     AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']
     
-    LOGIN_URL = '/admin/login/'
     
+    LOGIN_URL = '/admin/login/'
     SITE_NAME = "Imperium"
     DOMAIN = "#"
+    MARKETPLACE_URL=os.getenv("MARKETPLACE_URL")
     
     #OAuth credentials
     GOOGLE_CLIENT_ID= os.getenv("GOOGLE_CLIENT_ID")

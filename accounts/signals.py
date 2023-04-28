@@ -17,9 +17,9 @@ import  requests
 
 User = get_user_model()
 site_name = "Imperium"
-url="https://imperium-market-place.vercel.app/"
+MARKET_PLACE_URL = settings.Common.MARKETPLACE_URL
 energy_url=os.getenv("ENERGY_BASE_URL")
-# energy_url="https://www.imperiumdev.wyreng.com"
+
 
 def generate_otp(n):
     return "".join([str(random.choice(range(10))) for _ in range(n)])
@@ -103,7 +103,7 @@ def activate_otp(user, request, *args,**kwargs):
                         'first_name': str(user.first_name),
                         'code':code,
                         'site_name':site_name,
-                        "url":url})
+                        "MARKET_PLACE_URL":MARKET_PLACE_URL})
         
         email_from = settings.Common.DEFAULT_FROM_EMAIL
         recipient_list = [user.email]
@@ -148,7 +148,7 @@ def comfirmaion_email(user, request, *args,**kwargs):
         msg_html = render_to_string('email/confirmation.html', {
                         'first_name': str(user.first_name).title(),
                         'site_name':site_name,
-                        "url":url})
+                        "MARKET_PLACE_URL":MARKET_PLACE_URL})
         
         email_from = settings.Common.DEFAULT_FROM_EMAIL
         recipient_list = [user.email]
@@ -178,7 +178,7 @@ def send_vendor_details(sender, instance, created, **kwargs):
         msg_html = render_to_string('email/vendor_confirm.html', {
                         'first_name': str(instance.first_name).title(),
                         'site_name':site_name,
-                        "url":url})
+                        "MARKET_PLACE_URL":MARKET_PLACE_URL})
         
         email_from = settings.Common.DEFAULT_FROM_EMAIL
         recipient_list = [instance.email]
@@ -206,7 +206,7 @@ Cheers,
         msg_html = render_to_string('email/vendor_decline.html', {
                         'first_name': str(instance.first_name).title(),
                         'site_name':site_name,
-                        "url":url})
+                        "MARKET_PLACE_URL":MARKET_PLACE_URL})
         
         email_from = settings.Common.DEFAULT_FROM_EMAIL
         recipient_list = [instance.email]
