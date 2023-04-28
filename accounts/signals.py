@@ -100,7 +100,7 @@ def activate_otp(user, request, *args,**kwargs):
     {site_name} Team            
     """   
         msg_html = render_to_string('email/activation.html', {
-                        'first_name': str(user.first_name).title(),
+                        'first_name': str(user.first_name),
                         'code':code,
                         'site_name':site_name,
                         "url":url})
@@ -203,10 +203,10 @@ Your vendor account was not approved on imperium. Please contact the administrat
 Cheers,
 {site_name} Team            
     """   
-        # msg_html = render_to_string('email/vendor_confirm.html', {
-        #                 'first_name': str(instance.first_name).title(),
-        #                 'site_name':site_name,
-        #                 "url":url})
+        msg_html = render_to_string('email/vendor_decline.html', {
+                        'first_name': str(instance.first_name).title(),
+                        'site_name':site_name,
+                        "url":url})
         
         email_from = settings.Common.DEFAULT_FROM_EMAIL
         recipient_list = [instance.email]

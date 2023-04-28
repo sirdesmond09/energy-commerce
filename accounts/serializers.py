@@ -143,7 +143,8 @@ class NewOtpSerializer(serializers.Serializer):
         msg_html = render_to_string('email/new_otp.html', {
                         'first_name': str(user.first_name).title(),
                         'code':code,
-                        'url':url})
+                        'url':url,
+                        'site_name':"Imperium"})
         
         email_from = settings.Common.DEFAULT_FROM_EMAIL
         recipient_list = [user.email]

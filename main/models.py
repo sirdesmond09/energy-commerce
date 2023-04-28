@@ -15,6 +15,8 @@ class ProductCategory(models.Model):
     name = models.CharField(max_length=300, unique=True)
     desc = models.TextField()
     img = models.ImageField(
+        null=True,
+        blank=True,
         upload_to='categories', 
         validators=[
             FileExtensionValidator(
