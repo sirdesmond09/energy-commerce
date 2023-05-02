@@ -115,7 +115,8 @@ def send_invoice(sender, payment, user, **kwargs):
                     'first_name': str(user.first_name).title(),
                     'site_name':site_name,
                     "MARKET_PLACE_URL":MARKET_PLACE_URL,
-                    "order_items":sender.items.filter(is_deleted=False)})
+                    "order_items":sender.items.filter(is_deleted=False),
+                    "order":sender})
     
     email_from = settings.Common.DEFAULT_FROM_EMAIL
     recipient_list = [user.email]
