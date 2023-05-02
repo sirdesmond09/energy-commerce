@@ -21,6 +21,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.db.utils import ProgrammingError
 from django.db.models import Case, F, Value, When
+from .helpers.signals import payment_approved
 
 
 User = get_user_model()
@@ -446,7 +447,7 @@ def outright_payment(request, booking_id):
             
         elif payment_is_verified(trans_id):
             #create payment record
-            PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='outright', status="approved")
+            payment = PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='outright', status="approved")
             
             
             #mark order as paid
@@ -475,6 +476,8 @@ def outright_payment(request, booking_id):
                 "total_amount" : order.total_price
             }
             
+            payment_approved.send(sender=order, payment=payment, user=order.user) #send payment signal for invoice
+             
             return Response(data, status=status.HTTP_201_CREATED)
         
         else:

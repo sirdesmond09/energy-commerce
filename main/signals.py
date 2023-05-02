@@ -2,6 +2,7 @@ import random
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.db.models.signals import post_save, post_delete
+from accounts.signals import MARKET_PLACE_URL, site_name
 from config import settings
 from accounts.models import ActivityLog
 from .models import *
@@ -9,6 +10,9 @@ import json
 from firebase_admin import messaging
 import os
 import requests
+from helpers.signals import payment_approved
+from django.template.loader import render_to_string
+
 
 
 
@@ -97,3 +101,26 @@ def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
     print(data)
     print(res.status_code)
     print(res.content)
+    
+    
+    
+
+@receiver(payment_approved)
+def send_invoice(sender, payment, user, **kwargs):
+    
+    subject = "Imperium Payment Invoice"
+            
+    message = ""
+    msg_html = render_to_string('email/order_invoice.html', {
+                    'first_name': str(user.first_name).title(),
+                    'site_name':site_name,
+                    "MARKET_PLACE_URL":MARKET_PLACE_URL,
+                    "order_items":sender.items.filter(is_deleted=False)})
+    
+    email_from = settings.Common.DEFAULT_FROM_EMAIL
+    recipient_list = [user.email]
+    send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+    
+            
+    return 
+        

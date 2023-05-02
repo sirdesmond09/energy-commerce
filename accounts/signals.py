@@ -33,7 +33,7 @@ def send_details(sender, instance, created, **kwargs):
         subject = f"YOUR ADMIN ACCOUNT FOR {site_name}".upper()
         
         message = f"""Hi, {str(instance.first_name).title()}.
-You have just been onboarded on the {site_name} platform. Your login details are below:
+You have just been on boarded on the {site_name} platform. Your login details are below:
 E-mail: {data.get('email')} 
 password: {data.get('_password')}    
 
@@ -210,7 +210,7 @@ Cheers,
         
         email_from = settings.Common.DEFAULT_FROM_EMAIL
         recipient_list = [instance.email]
-        send_mail( subject, message, email_from, recipient_list)
+        send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
         
         instance.sent_vendor_email =True
         instance.save()
