@@ -10,7 +10,7 @@ import json
 from firebase_admin import messaging
 import os
 import requests
-from helpers.signals import payment_approved
+from .helpers.signals import payment_approved
 from django.template.loader import render_to_string
 
 
