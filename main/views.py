@@ -1,7 +1,7 @@
 from datetime import datetime
 import random
 from accounts.models import ActivityLog
-from main.helpers import payment_is_verified, calculate_start_date
+from main.helpers.validator import payment_is_verified, calculate_start_date
 from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
 from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
 from rest_framework import status
