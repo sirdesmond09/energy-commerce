@@ -111,7 +111,7 @@ def send_invoice(sender, payment, user, **kwargs):
     subject = "Imperium Payment Invoice"
             
     message = ""
-    msg_html = render_to_string('email/order_invoice.html', {
+    msg_html = render_to_string('email/invoice.html', {
                     'first_name': str(user.first_name).title(),
                     'site_name':site_name,
                     "MARKET_PLACE_URL":MARKET_PLACE_URL,
