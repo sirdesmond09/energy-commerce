@@ -177,13 +177,13 @@
                           <tbody class="table">
                             {% for order_item in order_items  %}
                             {% with unit_price=order_item.unit_price|add:order_item.delivery_fee|add:order_item.installation_fee %}
-                            {% with total=unit_price|multiply:order_item.qty %}
+
                             <tr>
                               <td style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;" align="left">{{ order_item.item.name }}</td>
                               <td style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;" align="left">{{ order_item.item.vendor.store_name }}</td>
                               <td style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;" align="left">{{ unit_price }}</td>
                               <td style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;" align="left">{{ order_item.qty }}</td>
-                              <td style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;" align="left">{{ total }}</td>
+                              <td style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd;" align="left">{{ order_item.item_total }}</td>
                             </tr>
 
                             {% endfor %}

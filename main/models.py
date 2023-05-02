@@ -351,6 +351,10 @@ class OrderItem(models.Model):
     def store(self):
         return self.item.store_detail
     
+                            
+    def item_total(self):
+        return (self.delivery_fee + self.installation_fee +self.unit_price) * self.qty
+         
     def delete(self):
         self.is_deleted = True
         self.save()
