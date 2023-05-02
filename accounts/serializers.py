@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
 from .models import ActivationOtp, ModuleAccess, StoreBankDetail, StoreProfile
-from .signals import generate_otp, site_name,url
+from .signals import generate_otp, site_name
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import Permission, Group
 from drf_extra_fields.fields import Base64ImageField
@@ -143,7 +143,7 @@ class NewOtpSerializer(serializers.Serializer):
         msg_html = render_to_string('email/new_otp.html', {
                         'first_name': str(user.first_name).title(),
                         'code':code,
-                        'url':url,
+                        'MARKET_PLACE_URL':settings.Common.MARKETPLACE_URL,
                         'site_name':"Imperium"})
         
         email_from = settings.Common.DEFAULT_FROM_EMAIL
@@ -223,7 +223,6 @@ class AddVendorSerializer(serializers.Serializer):
                 
             StoreBankDetail.objects.create(**bank_detail, store=store)
         except Exception as e:
-            print("another errror")
             store.delete_permanently()
             raise ValidationError(str(e))
         return 

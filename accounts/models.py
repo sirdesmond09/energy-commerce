@@ -17,6 +17,29 @@ from django.contrib.auth.models import Group as DjangoGroup
 
 class User(AbstractBaseUser, PermissionsMixin):
     
+    """
+    Database schema for User model.
+
+    Fields:
+        - id (UUID): Unique identifier for the user.
+        - first_name (str): First name of the user
+        - last_name (str): Last name of the user
+        - email (str): Email address of the user.
+        - role (str): User type i.e admin, user, vendor.
+        - favourite (Fk): Many to many relationship of user's favorite products
+        - vendor_status (str): status of user who are vendors
+        - image (img): profile picture of users
+        - password (str): Password of the users
+        - is_staff (bool): Field to mark an admin user as a super admin
+        - is_admin (bool): Field to mark the  user as an admin
+        - is_active (bool): Active status of the user
+        - is_deleted (bool): Deleted status of the user
+        - sent_vendor_email (bool): Helps to know if a vendor has been sent an email upon account status change to avoid multiple sending.
+        - fcm_token (str): User's device firebase token for push notification
+        - provider (str): Channel through which user signed up.
+        - date_joined (datetime): Time at which the user signed up.
+    """
+    
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('user', 'User'),
@@ -76,30 +99,61 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     @property
     def module_access(self):
+        """Fetches all the modules that an admin can view
+
+        Returns:
+            arr: List of all unique modules assigned to an admin's role type
+        """
         unique_modules = ModuleAccess.objects.filter(group__user=self.id).distinct().values()
         
         return unique_modules
     
     @property
     def image_url(self):
+        
+        """See the image url of the user
+
+        Returns:
+            str: Image url of the  user or empty string if no image uploaded
+        """
+        
         if self.image:
             return self.image.url
         return ""
     
     def delete(self):
+        
+        """
+        Performs soft delete on the user model
+        Delete the user by flagging it as deleted and adding updating the email and phone with delete flags.
+        """
+        
         self.is_deleted = True
         self.email = f"{random.randint(0,100000)}-deleted-{self.email}"
         self.phone = f"{self.phone}-deleted-{random.randint(0,100000)}"
         self.save()
         
+        return 
         
     def delete_permanently(self):
+        
+        """
+        Performs hard delete on the user model.
+        To be used with caution!
+        """
+        
         super().delete()
+        
+        return
         
 
     
     @property
     def store_profile(self):
+        """
+        Shows the store data of the user if the user type is "vendor"
+        """
+        
         if self.role == "vendor":
             profile = model_to_dict(self.store, exclude=["logo", "cac_doc", "is_deleted", "vendor" ])
             profile["id"] = self.store.id
@@ -118,6 +172,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     @property
     def bank_detail(self):
+        """
+        Shows the bank data of the user if the user type is "vendor"
+        """
+        
         if self.role == "vendor":
             detail = model_to_dict(self.store.bank_detail, exclude=[ "is_deleted", "store" ])
             detail["id"] = self.store.id
@@ -128,6 +186,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         
         
     class Meta:
+        """additional permission to the  user model for viewing dashboards"""
         permissions = [
             ("view_dashboard", "Can view all dashboards"),
         ]
@@ -137,18 +196,57 @@ class User(AbstractBaseUser, PermissionsMixin):
         
         
 class ActivationOtp(models.Model):
+    """
+    Database schema for Activation Otp model.
+
+    Fields:
+        - id (int): Unique identifier for the OTP.
+        - code (str): OTP for the user
+        - user (FK): User attached to the  otp
+        - expiry_date (datetime): Time at which the OTP expires.
+    """
+
     user  =models.ForeignKey('accounts.User', on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
     expiry_date = models.DateTimeField()
     
     
     def is_valid(self):
+        """Checks if the OTP has expires or not
+
+        Returns:
+            bool: Result of OTP check.
+        """
+        
         return bool(self.expiry_date > timezone.now())
 
 
 
 
 class StoreProfile(models.Model):
+    """
+    Database schema for Store Profile model.
+
+    Fields:
+        - id (UUID): Unique identifier for the user.
+        - first_name (str): First name of the user
+        - last_name (str): Last name of the user
+        - email (str): Email address of the user.
+        - role (str): User type i.e admin, user, vendor.
+        - favourite (Fk): Many to many relationship of user's favorite products
+        - vendor_status (str): status of user who are vendors
+        - image (img): profile picture of users
+        - password (str): Password of the users
+        - is_staff (bool): Field to mark an admin user as a super admin
+        - is_admin (bool): Field to mark the  user as an admin
+        - is_active (bool): Active status of the user
+        - is_deleted (bool): Deleted status of the user
+        - sent_vendor_email (bool): Helps to know if a vendor has been sent an email upon account status change to avoid multiple sending.
+        - fcm_token (str): User's device firebase token for push notification
+        - provider (str): Channel through which user signed up.
+        - date_joined (datetime): Time at which the user signed up.
+    """
+    
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     vendor = models.OneToOneField('accounts.User', on_delete=models.CASCADE, related_name="store", null=True)
     store_name = models.CharField(max_length=250, unique=True)
@@ -200,6 +298,19 @@ class StoreProfile(models.Model):
         
         
 class StoreBankDetail(models.Model):
+    """
+    Database schema for Store Profile model.
+
+    Fields:
+        - id (UUID): Unique identifier for the bank detail.
+        - account_name (str): Name of the store account
+        - account_num (str): Sterling bank account number of the vendor's store
+        - phone (str): phone number associated with the account
+        - store (FK): Foreign key relationship to the store
+        - is_deleted (bool): Deleted status of the bank detail
+        - date_joined (datetime): Time at which the bank data was added
+    """
+    
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     account_name = models.CharField(max_length=300)
     account_num = models.CharField(max_length=12,
@@ -229,6 +340,18 @@ class StoreBankDetail(models.Model):
         
     
 class ModuleAccess(models.Model):
+    """
+    Database schema for modules available on the frontend.
+
+    Fields:
+        - url (str): frontend relative path 
+        - name (str): name of the module (menu) on the admin site
+        
+    N/B: This is a set field and cannot be altered except new modules are created on the FE, 
+    then the developer can add them on the DB.
+    This table is used for permissions
+    """
+    
     url = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     
@@ -240,6 +363,17 @@ DjangoGroup.add_to_class('module_access', models.ManyToManyField(ModuleAccess,  
 
 
 class ActivityLog(models.Model):
+    """
+    Database schema for user activity logs.
+
+    Fields:
+        - user (FK): User that the log belongs to
+        - action (str): action performed by user
+        - date_created (timestamp): date the log was created
+        - is_deleted (bool): flags the log as deleted
+    
+    """
+    
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     action = models.CharField(max_length=255)
     date_created = models.DateTimeField(auto_now_add=True)
