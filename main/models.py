@@ -353,7 +353,7 @@ class OrderItem(models.Model):
     
                             
     def item_total(self):
-        return (self.delivery_fee + self.installation_fee +self.unit_price) * self.qty
+        return (self.delivery_fee + self.installation_fee + self.unit_price) * self.qty
          
     def delete(self):
         self.is_deleted = True
