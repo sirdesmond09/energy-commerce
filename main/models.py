@@ -577,3 +577,14 @@ class Bank(models.Model):
     code = models.CharField(max_length=50)
     date_added = models.DateTimeField(auto_now_add=True)
     
+    
+    
+class Video(models.Model):
+    
+    FOLDERS = (("testimonials","testimonials"),
+               ("user_education_videos","user_education_videos"))
+    
+    folder = models.CharField(max_length=50, choices=FOLDERS)
+    file_name = models.CharField(max_length=50)
+    url = models.URLField(null=True)
+    date_added = models.DateTimeField(auto_now_add=True)
