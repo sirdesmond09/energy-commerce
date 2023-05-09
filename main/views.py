@@ -2,15 +2,15 @@ from datetime import datetime
 import random
 from accounts.models import ActivityLog
 from main.helpers.validator import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
-from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
 from rest_framework.generics import ListCreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView, RetrieveUpdateAPIView, RetrieveDestroyAPIView, UpdateAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
-from accounts.permissions import CalculatorItemTablePermissions, CommissionTablePermissions, CustomDjangoModelPermissions, DashboardPermission, FAQTablePermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductCategoryPermissions, ProductTablePermissions, RatingTablePermissions
+from accounts.permissions import CalculatorItemTablePermissions, CommissionTablePermissions, CustomDjangoModelPermissions, DashboardPermission, VideoPermissions, FAQTablePermissions, IsUserOrVendor, IsVendor, IsVendorOrReadOnly, OrderItemTablePermissions, OrderTablePermissions, PaymentTablePermissions, ProductCategoryPermissions, ProductTablePermissions, RatingTablePermissions
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
 from django.utils import timezone
@@ -22,6 +22,7 @@ from django.db.models import Sum
 from django.db.utils import ProgrammingError
 from django.db.models import Case, F, Value, When
 from .helpers.signals import payment_approved
+from .helpers import uploader
 
 
 User = get_user_model()
@@ -2050,3 +2051,65 @@ class SupportTicketDetail(RetrieveAPIView):
 @api_view(["GET"])
 def bank_lists(request):
     return Response({"data":Bank.objects.all().values()})
+
+
+
+class VideoListCreateView(ListCreateAPIView):
+    
+    """Get and create a list of help videos. When getting, the most recent ones are returned on top"""
+    
+    queryset = Video.objects.all().order_by('-date_added')
+    serializer_class =  VideoSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [VideoPermissions]
+    
+    
+    @swagger_auto_schema(method="post", request_body=VideoSerializer())
+    @action(methods=["post"], detail=True)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        video_file = serializer.validated_data.pop("file")
+        folder = serializer.validated_data.get("folder")
+        file_name = serializer.validated_data.get("file_name")
+        
+        url = uploader.upload(folder=folder,file_name=file_name,file=video_file)
+        
+        obj = Video.objects.create(folder=folder, file_name=file_name, url=url)
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"Added a new video"
+            )
+            
+        serializer = self.get_serializer(obj)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        
+    
+class VideoDetailView(RetrieveUpdateDestroyAPIView):
+    
+    """Edit, retrieve, and delete an address"""
+
+    queryset = Cart.objects.all().order_by('-date_added')
+    serializer_class =  CartSerializer
+    lookup_field = "id"
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    
+    @swagger_auto_schema(method="put", request_body=VideoSerializer())
+    @action(methods=["put"], detail=True)
+    def put(self, request, *args, **kwargs):
+       
+        return super().put(request, *args, **kwargs)
+    
+    @swagger_auto_schema(method="patch", request_body=VideoSerializer())
+    @action(methods=["patch"], detail=True)
+    def patch(self, request, *args, **kwargs):
+     
+        return super().patch(request, *args, **kwargs)
+    
+    

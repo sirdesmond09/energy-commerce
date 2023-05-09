@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id, generate_order_id
-from .models import Address, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, Documentation, SupportTicket, UserInbox
+from .models import Address, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, EducationalVideo, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, Documentation, SupportTicket, UserInbox
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -415,3 +415,31 @@ class SupportTicketSerializer(serializers.ModelSerializer):
     class Meta:
         model  = SupportTicket
         fields = "__all__"
+        
+        
+        
+class VideoSerializer(serializers.ModelSerializer):
+    file = serializers.FileField()
+    
+    class Meta:
+        model = EducationalVideo
+        fields = "__all__"
+        
+        
+    def validate_file_name(self, data):
+        if data.split(".")[0] != "mp4":
+            raise ValidationError("File name must include proper extension e.g 'video.mp4'")
+        return data
+    
+    def validate_file(self, value):
+        """
+        Check if the uploaded file is an MP4 video.
+        """
+        # Get the file extension
+        ext = value.name.split('.')[-1].lower()
+
+        # Check if the file extension is MP4
+        if ext != 'mp4':
+            raise serializers.ValidationError("File must be an MP4 video.")
+
+        return value

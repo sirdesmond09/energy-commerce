@@ -80,6 +80,9 @@ urlpatterns = [
     path("support/tickets/create/", views.SupportTicketCreateView.as_view()),
     path("support/tickets/<int:id>/", views.SupportTicketDetail.as_view()),
     path("payments/banks/", views.bank_lists),
+    path("videos/", views.VideoListCreateView.as_view()),
+    path("videos/<int:id>/", views.VideoDetailView.as_view()),
+    
     
     
     
