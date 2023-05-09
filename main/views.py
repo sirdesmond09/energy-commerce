@@ -477,7 +477,7 @@ def outright_payment(request, booking_id):
                 "total_amount" : order.total_price
             }
             
-            payment_approved.send(sender=order, payment=payment, user=order.user) #send payment signal for invoice
+            payment_approved.send(sender=order, user=order.user) #send payment signal for invoice
              
             return Response(data, status=status.HTTP_201_CREATED)
         
