@@ -425,11 +425,6 @@ class VideoSerializer(serializers.ModelSerializer):
         model = Video
         fields = "__all__"
         
-        
-    def validate_file_name(self, data):
-        if data.split(".")[0] != "mp4":
-            raise ValidationError("File name must include proper extension e.g 'video.mp4'")
-        return data
     
     def validate_file(self, value):
         """

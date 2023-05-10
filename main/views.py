@@ -2072,21 +2072,45 @@ class VideoListCreateView(ListCreateAPIView):
         
         video_file = serializer.validated_data.pop("file")
         folder = serializer.validated_data.get("folder")
-        file_name = serializer.validated_data.get("file_name")
+        title = serializer.validated_data.get("title")
+        file_name = video_file.name
         
         url = uploader.upload(folder=folder,file_name=file_name,file=video_file)
         
-        obj = Video.objects.create(folder=folder, file_name=file_name, url=url)
+        obj = Video.objects.create(folder=folder, title=title, url=url)
         
         ActivityLog.objects.create(
             user=request.user,
-            action = f"Added a new video"
+            action = f"Added a new video titled '{title}'"
             )
             
         serializer = self.get_serializer(obj)
         
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    
+    @swagger_auto_schema(method="list", request_body=VideoSerializer())
+    @action(methods=["list"], detail=True)
+    def list(self, request, *args, **kwargs):
+        
+        folder = request.GET.get("folder")
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        
+        
+        if folder:
+            queryset = queryset.filter(folder=folder)
+
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
         
     
 class VideoDetailView(RetrieveUpdateDestroyAPIView):
