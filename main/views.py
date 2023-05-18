@@ -24,7 +24,7 @@ from django.db.utils import ProgrammingError
 from django.db.models import Case, F, Value, When
 from .helpers.signals import payment_approved
 from .helpers import uploader
-import requests
+import requests, json
 
 
 User = get_user_model()
@@ -2150,7 +2150,7 @@ def splinter_request(request):
         serializer.is_valid(raise_exception=True)
         
         response = requests.post(url=os.getenv('SPLINTER_API'),
-                                 data=serializer.validated_data,
+                                 data=json.dumps(serializer.validated_data),
                                  headers={"content-type":'application/json'})
         
         return Response(response.json())
