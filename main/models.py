@@ -586,5 +586,8 @@ class Video(models.Model):
     
     folder = models.CharField(max_length=50, choices=FOLDERS)
     title = models.CharField(max_length=250)
+    testifier_name = models.CharField(max_length=100, null=True)
+    testifier_occupation= models.CharField(max_length=100, null=True)
+    desc = models.CharField(max_length=255, null=True)
     url = models.URLField(null=True)
     date_added = models.DateTimeField(auto_now_add=True)

@@ -2119,8 +2119,8 @@ class VideoDetailView(RetrieveUpdateDestroyAPIView):
     
     """Edit, retrieve, and delete an address"""
 
-    queryset = Cart.objects.all().order_by('-date_added')
-    serializer_class =  CartSerializer
+    queryset = Video.objects.all().order_by('-date_added')
+    serializer_class =  VideoSerializer
     lookup_field = "id"
     authentication_classes = [JWTAuthentication]
     permission_classes = [VideoPermissions | IsAuthenticatedOrReadOnly]
