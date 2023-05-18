@@ -1,8 +1,9 @@
 from datetime import datetime
+import os
 import random
 from accounts.models import ActivityLog
 from main.helpers.validator import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, SplinterDataSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
 from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
@@ -23,6 +24,7 @@ from django.db.utils import ProgrammingError
 from django.db.models import Case, F, Value, When
 from .helpers.signals import payment_approved
 from .helpers import uploader
+import requests
 
 
 User = get_user_model()
@@ -2137,3 +2139,18 @@ class VideoDetailView(RetrieveUpdateDestroyAPIView):
         return super().patch(request, *args, **kwargs)
     
     
+
+@api_view(["POST"])
+@permission_classes([IsUserOrVendor])
+@authentication_classes([JWTAuthentication])
+def splinter_request(request):
+    if request.method == "POST":
+        serializer = SplinterDataSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        response = requests.post(url=os.getenv('SPLINTER_API'),
+                                 data=serializer.validated_data)
+        
+        return Response(response.json())
+        
+        

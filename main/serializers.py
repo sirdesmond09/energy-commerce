@@ -438,3 +438,29 @@ class VideoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("File must be an MP4 video.")
 
         return value
+    
+    
+
+class SplinterDataSerializer(serializers.Serializer):
+    tenant_name = serializers.CharField(max_length=100)
+    request_id = serializers.CharField(max_length=10)
+    accommodation_type = serializers.CharField(max_length=10)
+    number_of_dependents = serializers.CharField(max_length=5)
+    years_in_current_accomodation = serializers.CharField(max_length=10)
+    job_changes = serializers.CharField(max_length=5)
+    hamish = serializers.IntegerField()
+    dob = serializers.DateField()
+    email = serializers.EmailField()
+    first_name = serializers.CharField(max_length=100)
+    last_name = serializers.CharField(max_length=100)
+    marital_status = serializers.CharField(max_length=20)
+    occupation = serializers.CharField(max_length=100, required=False)
+    phone_number = serializers.CharField(max_length=20)
+    sex = serializers.CharField(max_length=10)
+    account_number = serializers.CharField(max_length=20, required=False)
+    bank = serializers.CharField(max_length=100, required=False)
+    bvn = serializers.CharField(max_length=20)
+    monthly_income = serializers.DecimalField(max_digits=10, decimal_places=2)
+    payment_period = serializers.CharField(max_length=10, default="Monthly")
+    tenor = serializers.IntegerField()
+    total = serializers.DecimalField(max_digits=10, decimal_places=2)
