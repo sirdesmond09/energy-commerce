@@ -23,6 +23,8 @@ from django.contrib.auth.hashers import check_password
 from main.models import Product, UserInbox
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q
+import requests
+import os
 
 
 
@@ -603,3 +605,20 @@ def image_upload(request):
         user.save()
         
         return Response({"message": "upload successful"}, status=status.HTTP_200_OK)
+    
+    
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_mono_token(request):
+    
+    res = requests.post(url=os.getenv("MONO_URL"), data={
+        "client_id": os.getenv('MONO_CLIENT_ID'),
+        "client_secret": os.getenv('MONO_CLIENT_SECRET'),
+        "audience":os.getenv('MONO_AUDIENCE'),
+        "grant_type":"client_credentials"}
+                  )
+    
+    
+    return Response(res.json())
+    
