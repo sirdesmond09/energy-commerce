@@ -2153,6 +2153,8 @@ def splinter_request(request):
                                  data=json.dumps(serializer.validated_data),
                                  headers={"content-type":'application/json'})
         
+        print(response.status_code)
+        print(response.content)
         return Response(response.json())
         
         
