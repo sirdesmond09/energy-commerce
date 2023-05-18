@@ -444,10 +444,10 @@ class VideoSerializer(serializers.ModelSerializer):
 class SplinterDataSerializer(serializers.Serializer):
     tenant_name = serializers.CharField(max_length=100)
     request_id = serializers.CharField(max_length=10)
-    accommodation_type = serializers.CharField(max_length=10)
+    accommodation_type = serializers.CharField(max_length=100)
     number_of_dependents = serializers.CharField(max_length=5)
     years_in_current_accomodation = serializers.CharField(max_length=10)
-    job_changes = serializers.CharField(max_length=5)
+    job_changes = serializers.CharField(max_length=50)
     hamish = serializers.IntegerField()
     dob = serializers.DateField()
     email = serializers.EmailField()
