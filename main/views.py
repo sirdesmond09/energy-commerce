@@ -2150,7 +2150,8 @@ def splinter_request(request):
         serializer.is_valid(raise_exception=True)
         
         response = requests.post(url=os.getenv('SPLINTER_API'),
-                                 data=serializer.validated_data)
+                                 data=serializer.validated_data,
+                                 headers={"content-type":'application/json'})
         
         return Response(response.json())
         
