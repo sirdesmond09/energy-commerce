@@ -2140,6 +2140,7 @@ class VideoDetailView(RetrieveUpdateDestroyAPIView):
     
     
 
+@swagger_auto_schema(method="post", request_body=SplinterDataSerializer())
 @api_view(["POST"])
 @permission_classes([IsUserOrVendor])
 @authentication_classes([JWTAuthentication])
