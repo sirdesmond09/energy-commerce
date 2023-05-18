@@ -2061,7 +2061,7 @@ class VideoListCreateView(ListCreateAPIView):
     queryset = Video.objects.all().order_by('-date_added')
     serializer_class =  VideoSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [VideoPermissions]
+    permission_classes = [VideoPermissions | IsAuthenticatedOrReadOnly]
     
     
     @swagger_auto_schema(method="post", request_body=VideoSerializer())
@@ -2121,7 +2121,7 @@ class VideoDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class =  CartSerializer
     lookup_field = "id"
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [VideoPermissions | IsAuthenticatedOrReadOnly]
     
     
     @swagger_auto_schema(method="put", request_body=VideoSerializer())
