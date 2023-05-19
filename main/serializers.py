@@ -419,11 +419,12 @@ class SupportTicketSerializer(serializers.ModelSerializer):
         
         
 class VideoSerializer(serializers.ModelSerializer):
-    file = serializers.FileField()
+    file = serializers.FileField(write_only=True)
     
     class Meta:
         model = Video
         fields = "__all__"
+        
         
     
     def validate_file(self, value):
