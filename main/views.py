@@ -2073,13 +2073,13 @@ class VideoListCreateView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         
         video_file = serializer.validated_data.pop("file")
-        folder = serializer.validated_data.get("folder")
-        title = serializer.validated_data.get("title")
+        folder = serializer.validated_data.pop("folder")
+        title = serializer.validated_data.pop("title")
         file_name = video_file.name
         
         url = uploader.upload(folder=folder,file_name=file_name,file=video_file)
         
-        obj = Video.objects.create(folder=folder, title=title, url=url)
+        obj = Video.objects.create(folder=folder, title=title, url=url, **serializer.validated_data)
         
         ActivityLog.objects.create(
             user=request.user,
