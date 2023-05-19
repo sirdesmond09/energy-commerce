@@ -38,4 +38,4 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ["order", "status",]
     list_filter = ["order", "status"]
     
-admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent, Cart, PayOuts, Commission, CaseSubCategory, CaseType, CaseMinorCategory, Documentation, SupportTicket])
+admin.site.register([ProductCategory, ProductGallery, Location, ProductComponent, Cart, PayOuts, Commission, CaseSubCategory, CaseType, CaseMinorCategory, Documentation, SupportTicket, Video])
