@@ -1582,7 +1582,7 @@ def dashboard_stat(request):
 
 class PayOutList(ListAPIView):
     serializer_class = PayOutSerializer
-    queryset = PayOuts.objects.all()
+    queryset = PayOuts.objects.filter(is_deleted=False).order_by('-date_added')
     
     
     def list(self, request, *args, **kwargs):
