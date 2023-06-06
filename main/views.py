@@ -2258,9 +2258,9 @@ def pay_with_specta(request, booking_id):
         
         if res.status_code==200:
             response = res.json().get('content')
-            data = decrypt_data(response)
-            
-            PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='specta', status="approved")
+            data = json.loads(decrypt_data(response))
+            data_=data.get('result').get('data')
+            PaymentDetail.objects.create(transaction_id=data_.get('paymentReference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
             
             
             #mark order as paid
