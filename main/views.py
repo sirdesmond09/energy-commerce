@@ -3,7 +3,7 @@ import os
 import random
 from accounts.models import ActivityLog
 from main.helpers.validator import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, SplinterDataSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, GetSpectaOTPSerializer, SpectaSerializer, SplinterDataSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
 from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
@@ -21,10 +21,10 @@ import calendar
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.db.utils import ProgrammingError
-from django.db.models import Case, F, Value, When
 from .helpers.signals import payment_approved
 from .helpers import uploader
 import requests, json
+from .helpers.encryption import decrypt_data, encrypt_data
 
 
 User = get_user_model()
@@ -2153,8 +2153,151 @@ def splinter_request(request):
                                  data=json.dumps(serializer.validated_data),
                                  headers={"content-type":'application/json'})
         
-        print(response.status_code)
-        print(response.content)
+   
         return Response(response.json())
         
+        
+@swagger_auto_schema(method='post', request_body=GetSpectaOTPSerializer())       
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsUserOrVendor])
+def pws_get_otp(request):
+    
+    
+    if request.method=="POST":
+        serializer=GetSpectaOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        
+        pre_encoded_data = {
+            "queryParameters": [
+                {
+                    "parameterName": "spectaID",
+                    "value": serializer.validated_data.get("specta_id")
+                }
+            ],
+            "headers": {
+                "x-ApiKey": os.getenv("SPECTA_API_KEY")
+            },
+            "jsonBody": ""
+        }
+        
+        
+        encoded_str = encrypt_data(pre_encoded_data)
+        
+        data = { 
+            "encryptedPayLoad": encoded_str,
+                "applicationEndpoint": "/api/Purchase/PayOnlineWithoutRedirect", 
+                "httpMethod": 2
+        }
+        
+        res = requests.post(url=os.getenv("SPECTA_URL"),
+                      json=data,
+                      headers={"Authorization": f"Bearer {os.getenv('SPECTA_API_TOKEN')}",
+                               "content-type":'application/json'})
+        
+        
+        if res.status_code==200:
+            response = res.json().get('content')
+            data = decrypt_data(response)
+            
+            return Response(json.loads(data), status=status.HTTP_202_ACCEPTED)
+
+        response = res.json().get('content')
+        data = decrypt_data(response)
+        return  Response(json.loads(data), status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@swagger_auto_schema(method='post', request_body=SpectaSerializer())       
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def pay_with_specta(request, booking_id):
+    
+    try:
+        order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+    except KeyError:
+        raise ValidationError(detail={"message": "order was not found"})
+    
+    if order.is_paid_for:
+        raise ValidationError(detail={"message": "multiple payment not allowed. order has been paid for"})
+        
+        
+    if request.method=="POST":
+        serializer=SpectaSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        payload = serializer.validated_data
+        
+        payload['merchantId'] = os.getenv('MERCHANT_ID')
+        
+        
+        
+        pre_encoded_data = {
+            "queryParameters": [],
+            "headers": {
+                "x-ApiKey": os.getenv("SPECTA_API_KEY")
+            },
+            "jsonBody": json.dumps(dict(payload))
+        }
+        
+        encoded_str = encrypt_data(pre_encoded_data)
+        
+        data = { 
+            "encryptedPayLoad": encoded_str,
+            "applicationEndpoint": "/api/Purchase/CompleteOnlinePurchaseWithSummary", 
+            "httpMethod": 2
+        }
+        
+        res = requests.post(url=os.getenv("SPECTA_URL"),
+                      json=data,
+                      headers={"Authorization": f"Bearer {os.getenv('SPECTA_API_TOKEN')}",
+                               "content-type":'application/json'})
+        
+        
+        if res.status_code==200:
+            response = res.json().get('content')
+            data = decrypt_data(response)
+            
+            PaymentDetail.objects.create(**serializer.validated_data, order=order, user=request.user, payment_type='specta', status="approved")
+            
+            
+            #mark order as paid
+            order.is_paid_for =True
+            order.status = "pending"
+            order.save()
+            
+            payouts = [PayOuts(vendor=order_item.item.vendor,
+                               item= order_item,
+                               amount = ((order_item.unit_price * order_item.qty) - ((order_item.unit_price * order_item.qty) * COMMISSION)) + ((order_item.delivery_fee + order_item.installation_fee)* order_item.qty),
+                               order_booking_id = order.booking_id,
+                               commission = (order_item.unit_price * order_item.qty) * COMMISSION,commission_percent = COMMISSION,
+                                                    ) for order_item in order.items.filter(is_deleted=False)]
+            
+            
+            PayOuts.objects.bulk_create(payouts)
+            
+            ActivityLog.objects.create(
+                user=request.user,
+                action = f"Created and paid with specta for order {order.booking_id}"
+            )
+            
+            data = {
+                "message": "success",
+                "booking_id": order.booking_id,
+                "total_amount" : order.total_price
+            }
+            
+            payment_approved.send(sender=order, user=order.user) #send payment signal for invoice
+            
+            return Response(data, status=status.HTTP_202_ACCEPTED)
+
+        
+        else:
+            
+            response = res.json().get('content')
+            data = decrypt_data(response)
+            return  Response(json.loads(data), status=status.HTTP_400_BAD_REQUEST)
+                    
         

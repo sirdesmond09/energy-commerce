@@ -462,3 +462,19 @@ class SplinterDataSerializer(serializers.Serializer):
     monthly_income = serializers.FloatField()
     tenor = serializers.IntegerField()
     total = serializers.FloatField()
+    
+    
+
+class GetSpectaOTPSerializer(serializers.Serializer):
+    specta_id = serializers.CharField(max_length=200)
+    
+
+
+class SpectaSerializer(serializers.Serializer):
+    spectaId = serializers.CharField()
+    loanTenorInMonths = serializers.IntegerField()
+    equityContribution = serializers.FloatField()
+    reference = serializers.CharField()
+    description = serializers.CharField()
+    totalPurchaseAmount = serializers.FloatField()
+    otp = serializers.CharField()
