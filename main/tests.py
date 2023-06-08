@@ -86,18 +86,18 @@ from django.test import TestCase
 # key = base64_decoding(key_base64)
 # iv = base64_decoding(iv_base64)
 
-data = {
-     "queryParameters": [
-         {
-             "parameterName": "spectaID",
-             "value": "SPTest333"
-         }
-     ],
-     "headers": {
-         "x-ApiKey": "TEST_API_KEY"
-     },
-     "jsonBody": ""
-}
+# data = {
+#      "queryParameters": [
+#          {
+#              "parameterName": "spectaID",
+#              "value": "SPTest333"
+#          }
+#      ],
+#      "headers": {
+#          "x-ApiKey": "TEST_API_KEY"
+#      },
+#      "jsonBody": ""
+# }
 
 # # def base64Encoding(input):
 # #     dataBase64 = base64.b64encode(input)
@@ -112,7 +112,7 @@ data = {
 
 
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
+from Crypto.Util.Padding import pad, unpad
 import base64
 import json
 
@@ -123,37 +123,45 @@ def base64_decoding(input):
     decoded_bytes = base64.b64decode(input)
     return decoded_bytes
 
-key = base64_decoding(key_base64)
-iv = base64_decoding(iv_base64)
 
-# data = "Imperium Testing PWS"
+def encrypt_data(data):
+    key = base64_decoding(key_base64)
+    iv = base64_decoding(iv_base64)
 
-# padded_data = pad(data.encode('utf-8'), AES.block_size)
+    data_json = json.dumps(data).encode('utf-8')
 
+    # Pad the data to a multiple of the AES block size
+    padded_data = pad(data_json, AES.block_size)
 
-data_json = json.dumps(data).encode('utf-8')
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    ciphertext = cipher.encrypt(padded_data)
 
-# Pad the data to a multiple of the AES block size
-padded_data = pad(data_json, AES.block_size)
+    # Encode ciphertext as base64 and obtain a string representation
+    ciphertext_base64 = base64.b64encode(ciphertext).decode('utf-8')
 
-cipher = AES.new(key, AES.MODE_CBC, iv)
-ciphertext = cipher.encrypt(padded_data)
-
-# Encode ciphertext as base64 and obtain a string representation
-ciphertext_base64 = base64.b64encode(ciphertext).decode('utf-8')
-
-print(ciphertext_base64)
+    return ciphertext_base64
 
 
 
+payload = {
+    "totalPurchaseAmount": 125988,
+    "description": "Payment for items in cart",
+    "reference": "2eea8e2e-3839-48a5-9bb7-dbc79d289392",
+    "spectaId": "SPTest",
+    "equityContribution": 5000,
+    "loanTenorInMonths": 7,
+    "otp": "111111",
+    "merchantId":"50154"
+}
 
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import unpad
-import base64
+data = {
+    "queryParameters": [],
+    "headers": {
+        "x-ApiKey": "TEST_API_KEY"
+    },
+    "jsonBody": json.dumps(payload)
+}
 
-def base64_decoding(input):
-    decoded_bytes = base64.b64decode(input)
-    return decoded_bytes
 
 def decrypt_data(ciphertext_base64):
     key = base64_decoding(key_base64)
@@ -170,7 +178,8 @@ def decrypt_data(ciphertext_base64):
 
     return unpadded_data.decode('utf-8')
 
-text = "8fEeMc2WglBMVoFz/uLEQOWJp5drEAvRsS0Sucb+pRGH2qemgDeZJsSsYokshVLL6Frsn3FcTMT0zLJL8W/L2+3qAq+8Y5Q3xHQexi5uWT6CmGSgdK1Ui132fsNVdDKeJTqq+checxMeYPgUHITpAXYDiCsIPQmBMx2XTEgPCvLAxetqNfulRtZso2zn2aRqjLSvZYTsFD992P0a6n5m4Q=="
 
 
-print(decrypt_data(text))
+
+# print(encrypt_data(data))
+print(json.loads(decrypt_data("GYdZxBN120RG8AD7SOPd32jnsdLsRNDmtVCKO8WWIldYIasP9C+tBilFKfsNpNus/qCHuRt+zjKH1vxn0La7U3f45PTtCWTiKJVI9CnIfiMFUcRUEuYWjfNYiFLaYx5xIcFTGDREvMCZgkhe67c9YhQMORDVF5ALvEFBbj0Cb0BNv66E3acHylfEIU04U7UG/nS3wm/sTDOv8lhzR5AvoNl7P8jGvMuBpCu/w2a8UQjO9E7H6TSX6Af2+caTZCMYhsr+JunQHB9Vfrc2Cc6VVoL3H+wGWIdpO+63HpSYvsyuAv95pGzFgHPh5I4YQeWzu6t4ECaRY0rHbbxxeXLAic1soZEfDC84UgCNCJ4LGLEc/MMZiskleBEUx3ll3EHEqeAiRik143vQ2fspkXaKnipM05WoxFHHZF8Cbx7lBIXjtzmhsK6l5EeOSwJqOaql8eMcGW3wMISE1K/6wVSV4DDmzu/oje/ZMsZ3c6CA4i8OpF8ovKkEKJXXUKeGnZq+tJbL6LnBgXfxErKVM9rf+Q==")))
