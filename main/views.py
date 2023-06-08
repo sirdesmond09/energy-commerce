@@ -2297,5 +2297,5 @@ def pay_with_specta(request, booking_id):
             
         except Exception as e:
             clear_order(order)
-            raise ValidationError({"detail":"Your request failed"})
+            return  Response(json.loads(data), status=status.HTTP_400_BAD_REQUEST)
         
