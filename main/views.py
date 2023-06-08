@@ -2210,6 +2210,7 @@ def pay_with_specta(request, booking_id):
     
     try:
         order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+        print(order.id)
     except KeyError:
         raise ValidationError(detail={"message": "order was not found"})
     
@@ -2250,7 +2251,6 @@ def pay_with_specta(request, booking_id):
         
         response = res.json().get('content')
         data = json.loads(decrypt_data(response))
-        print(data)
         try:
             if res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True:
                 response = res.json().get('content')
