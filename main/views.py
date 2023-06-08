@@ -2249,12 +2249,11 @@ def pay_with_specta(request, booking_id):
                                "content-type":'application/json'})
         
         response = res.json().get('content')
-        data = decrypt_data(response)
-        
+        data = json.loads(decrypt_data(response))
+        print(data)
         try:
             if res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True:
                 response = res.json().get('content')
-                data = json.loads(decrypt_data(response))
                 data_=data.get('result').get('data')
                 PaymentDetail.objects.create(transaction_id=data_.get('paymentReference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
                 
