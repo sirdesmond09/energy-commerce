@@ -2252,47 +2252,54 @@ def pay_with_specta(request, booking_id):
         response = res.json().get('content')
         data = json.loads(decrypt_data(response))
 
-        if res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True:
-            response = res.json().get('content')
-            data_=data.get('result').get('data')
-            PaymentDetail.objects.create(transaction_id=data_.get('paymentReference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
-            
-            
-            #mark order as paid
-            order.is_paid_for =True
-            order.status = "pending"
-            order.save()
-            
-            payouts = [PayOuts(vendor=order_item.item.vendor,
-                            item= order_item,
-                            amount = ((order_item.unit_price * order_item.qty) - ((order_item.unit_price * order_item.qty) * COMMISSION)) + ((order_item.delivery_fee + order_item.installation_fee)* order_item.qty),
-                            order_booking_id = order.booking_id,
-                            commission = (order_item.unit_price * order_item.qty) * COMMISSION,commission_percent = COMMISSION,
-                                                    ) for order_item in order.items.filter(is_deleted=False)]
-            
-            
-            PayOuts.objects.bulk_create(payouts)
-            
-            ActivityLog.objects.create(
-                user=request.user,
-                action = f"Created and paid with specta for order {order.booking_id}"
-            )
-            
-            data = {
-                "message": "success",
-                "booking_id": order.booking_id,
-                "total_amount" : order.total_price
-            }
-            
-            payment_approved.send(sender=order, user=order.user) #send payment signal for invoice
-            
-            return Response(data, status=status.HTTP_202_ACCEPTED)
+        try:
+            if res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True:
+                response = res.json().get('content')
+                data_=data.get('result').get('data')
+                PaymentDetail.objects.create(transaction_id=data_.get('paymentReference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
+                
+                
+                #mark order as paid
+                order.is_paid_for =True
+                order.status = "pending"
+                order.save()
+                
+                payouts = [PayOuts(vendor=order_item.item.vendor,
+                                item= order_item,
+                                amount = ((order_item.unit_price * order_item.qty) - ((order_item.unit_price * order_item.qty) * COMMISSION)) + ((order_item.delivery_fee + order_item.installation_fee)* order_item.qty),
+                                order_booking_id = order.booking_id,
+                                commission = (order_item.unit_price * order_item.qty) * COMMISSION,commission_percent = COMMISSION,
+                                                        ) for order_item in order.items.filter(is_deleted=False)]
+                
+                
+                PayOuts.objects.bulk_create(payouts)
+                
+                ActivityLog.objects.create(
+                    user=request.user,
+                    action = f"Created and paid with specta for order {order.booking_id}"
+                )
+                
+                data = {
+                    "message": "success",
+                    "booking_id": order.booking_id,
+                    "total_amount" : order.total_price
+                }
+                
+                payment_approved.send(sender=order, user=order.user) #send payment signal for invoice
+                
+                return Response(data, status=status.HTTP_202_ACCEPTED)
 
-        
-        else:
             
-            clear_order(order)
-            return  Response(json.loads(data), status=status.HTTP_400_BAD_REQUEST)
-        
-        
+            else:
+                
+                clear_order(order)
+                return  Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            try:
+                clear_order(order)
+            except Exception as e:
+                pass
+            
+            return  Response(data, status=status.HTTP_400_BAD_REQUEST)
+            
         
