@@ -247,24 +247,57 @@ class Common(Configuration):
     DEFAULT_FROM_EMAIL = "Ope from Imperium <noreply@getmobile.tech>" # TODO: Change to imperium email
     
     
+    # Configure the logging settings
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
+
+    # Ensure the logs directory exists
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+
+    # Logging configuration for errors
+    LOG_FILE_ERROR = os.path.join(LOG_DIR, 'error.log')
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
         'handlers': {
-            'file': {
-                'level': 'DEBUG',
+            'error_file': {
+                'level': 'ERROR',
                 'class': 'logging.FileHandler',
-                'filename': os.path.join(BASE_DIR, 'imperium.log'),
+                'filename': LOG_FILE_ERROR,
+                'formatter': 'verbose',
             },
         },
         'loggers': {
             'django': {
-                'handlers': ['file'],
-                'level': 'DEBUG',
+                'handlers': ['error_file'],
+                'level': 'ERROR',
                 'propagate': True,
             },
         },
     }
+
+    # Logging configuration for server prints
+    LOG_FILE_SERVER = os.path.join(LOG_DIR, 'server.log')
+    LOGGING['handlers']['server_file'] = {
+        'level': 'INFO',
+        'class': 'logging.FileHandler',
+        'filename': LOG_FILE_SERVER,
+        'formatter': 'verbose',
+    }
+    LOGGING['loggers']['django.server'] = {
+        'handlers': ['server_file'],
+        'level': 'INFO',
+        'propagate': False,
+    }
+
+    # Logging formatter
+    LOGGING['formatters'] = {
+        'verbose': {
+            'format': '%(asctime)s [%(levelname)s] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    }
+
 
 
 
