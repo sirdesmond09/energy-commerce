@@ -2254,10 +2254,8 @@ def pay_with_specta(request, booking_id):
 
         try:
             if res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True:
-                response = res.json().get('content')
                 data_=data.get('result').get('data')
-                print(res.json())
-                PaymentDetail.objects.create(transaction_id=data_.get('paymentReference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
+                PaymentDetail.objects.create(transaction_id=data_.get('reference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
                 
                 
                 #mark order as paid
@@ -2280,16 +2278,17 @@ def pay_with_specta(request, booking_id):
                     action = f"Created and paid with specta for order {order.booking_id}"
                 )
                 
-                data = {
+                res_data = {
                     "message": "success",
                     "booking_id": order.booking_id,
-                    "total_amount" : order.total_price
+                    "total_amount" : order.total_price,
+                    "pws_data" : data
                 }
                 
                 payment_approved.send(sender=order, user=order.user) #send payment signal for invoice
                 
             
-                return Response(data, status=status.HTTP_202_ACCEPTED)
+                return Response(res_data, status=status.HTTP_202_ACCEPTED)
 
             
             else:
