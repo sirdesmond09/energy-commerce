@@ -354,6 +354,7 @@ class Staging(Common):
     
 
     ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
+    CSRF_TRUSTED_ORIGINS = os.getenv("ALLOWED_HOSTS").split(',')
 
 
 class Production(Staging):
@@ -361,3 +362,4 @@ class Production(Staging):
     The in-production settings.
     """
     ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
+    CSRF_TRUSTED_ORIGINS = os.getenv("ALLOWED_HOSTS").split(',')
