@@ -261,7 +261,7 @@ class StoreProfile(models.Model):
     zip_code = models.CharField(max_length=50)
     cac_num  = models.CharField(max_length=50)
     cac_doc = models.FileField(upload_to='cac_documents', validators=[
-        FileExtensionValidator(allowed_extensions=['pdf','doc', "jpg", "jpeg"])])
+        FileExtensionValidator(allowed_extensions=['pdf','doc', "jpg", "jpeg"])], null=True)
     is_deleted    = models.BooleanField( default=False)
     date_joined   = models.DateTimeField(auto_now_add=True)
     

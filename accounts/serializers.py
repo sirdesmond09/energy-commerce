@@ -10,7 +10,7 @@ from .models import ActivationOtp, ModuleAccess, StoreBankDetail, StoreProfile
 from .signals import generate_otp, site_name
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import Permission, Group
-from drf_extra_fields.fields import Base64ImageField
+from drf_extra_fields.fields import Base64ImageField, Base64FileField
 
 from config import settings
  
@@ -161,6 +161,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
     cac_doc_url = serializers.ReadOnlyField()
     bank_data = serializers.ReadOnlyField()
     vendor_data = serializers.SerializerMethodField()
+    cac_doc = Base64FileField()
     
     class Meta:
         fields = '__all__'
@@ -210,8 +211,11 @@ class AddVendorSerializer(serializers.Serializer):
         
             if "vendor" in store_profile.keys():
                 store_profile.pop("vendor")
-                
+            cac_doc = store_profile.pop("cac_doc")
             store = StoreProfile.objects.create(**store_profile, vendor=vendor)
+            store.cac_doc=cac_doc
+            store.save()
+            
         except Exception as e:
             print("error")
             vendor.delete_permanently()
