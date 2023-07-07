@@ -10,7 +10,8 @@ from .models import ActivationOtp, ModuleAccess, StoreBankDetail, StoreProfile
 from .signals import generate_otp, site_name
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import Permission, Group
-from drf_extra_fields.fields import Base64ImageField, Base64FileField
+from drf_extra_fields.fields import Base64ImageField
+from .helpers.fields import PDFBase64File
 
 from config import settings
  
@@ -161,7 +162,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
     cac_doc_url = serializers.ReadOnlyField()
     bank_data = serializers.ReadOnlyField()
     vendor_data = serializers.SerializerMethodField()
-    cac_doc = Base64FileField()
+    cac_doc = PDFBase64File()
     
     class Meta:
         fields = '__all__'
