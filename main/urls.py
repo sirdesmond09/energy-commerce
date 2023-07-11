@@ -58,6 +58,7 @@ urlpatterns = [
     
     #specta payments
     path("payments/pws_get_otp/", views.pws_get_otp),
+    path("payments/pay_balance/", views.pay_balance),
     path("orders/<str:booking_id>/pay-with-specta/", views.pay_with_specta),
 
     

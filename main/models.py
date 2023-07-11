@@ -379,6 +379,7 @@ class PaymentDetail(models.Model):
         ("pending", "pending"),
         ("approved", "approved"),
         ("declined", "declined")), default="pending")
+    balance = models.OneToOneField("main.PaymentBalance", on_delete=models.CASCADE, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
@@ -591,3 +592,28 @@ class Video(models.Model):
     desc = models.CharField(max_length=255, null=True)
     url = models.URLField(null=True)
     date_added = models.DateTimeField(auto_now_add=True)
+
+
+
+class PaymentBalance(models.Model):
+    id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
+    user  = models.ForeignKey('accounts.User', on_delete=models.CASCADE,null=True)
+    eligible_amount = models.FloatField()
+    paid_amount = models.FloatField()
+    transaction_id = models.CharField(max_length=255)
+    payment_channel = models.CharField(max_length=255, default="flutterwave")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    date_added = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    
+    
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+        
+        
+    def delete_permanently(self):
+        super().delete()
+    
+    
+    

@@ -3,9 +3,9 @@ import os
 import random
 from accounts.models import ActivityLog
 from main.helpers.deletion import clear_order
-from main.helpers.validator import payment_is_verified, calculate_start_date
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, GetSpectaOTPSerializer, SpectaSerializer, SplinterDataSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
-from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
+from main.helpers.validator import payment_is_verified, calculate_start_date, validate_pws
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, GetSpectaOTPSerializer, PaymentBalanceSerializer, SpectaSerializer, SplinterDataSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, PaymentBalance, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
@@ -2210,7 +2210,7 @@ def pay_with_specta(request, booking_id):
     
     try:
         order = Order.objects.get(booking_id=booking_id, is_deleted=False)
-        print(order.id)
+
     except KeyError:
         raise ValidationError(detail={"message": "order was not found"})
     
@@ -2225,7 +2225,6 @@ def pay_with_specta(request, booking_id):
         payload = serializer.validated_data
         
         payload['merchantId'] = os.getenv('MERCHANT_ID')
-        
         
         
         pre_encoded_data = {
@@ -2251,9 +2250,11 @@ def pay_with_specta(request, booking_id):
         
         response = res.json().get('content')
         data = json.loads(decrypt_data(response))
+        
+        pws_is_valid = validate_pws(payload.get("reference"))
 
         try:
-            if res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True:
+            if pws_is_valid and (res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True):
                 data_=data.get('result').get('data')
                 PaymentDetail.objects.create(transaction_id=data_.get('reference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
                 
@@ -2292,8 +2293,7 @@ def pay_with_specta(request, booking_id):
 
             
             else:
-                
-                clear_order(order)
+                # TODO: What happens if PWS response is showing not successful but the core-banking validation shows success?
                 return  Response(data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             try:
@@ -2304,3 +2304,52 @@ def pay_with_specta(request, booking_id):
             return  Response(data, status=status.HTTP_400_BAD_REQUEST)
             
         
+
+
+
+@swagger_auto_schema(method="post", request_body=PaymentBalanceSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def pay_balance(request, booking_id):
+    
+    if request.method == "POST":
+        
+        try:
+            order = Order.objects.get(booking_id=booking_id, is_deleted=False)
+        except KeyError:
+            raise ValidationError(detail={"message": "order was not found"})
+        
+        if order.is_paid_for:
+            raise ValidationError(detail={"message": "multiple payment not allowed. order has been paid for"})
+        
+        serializer = PaymentBalanceSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        
+        try:
+            trans_id = serializer.validated_data["transaction_id"]
+        except KeyError:
+            raise ValidationError(detail={"message": "transaction_id was not provided"})
+        result = payment_is_verified(trans_id)
+        if isinstance(result, dict):
+            raise ValidationError(detail={"message": result})
+            
+        elif result==True:
+            #create balance payment record
+            payment = PaymentBalance.objects.create(**serializer.validated_data, order=order, user=request.user)
+            
+            ActivityLog.objects.create(
+                user=request.user,
+                action = f"Part-payment for order with ID {order.booking_id}"
+            )
+            
+            data = {
+                "message": "success",
+                "data" : PaymentBalanceSerializer(payment).data
+            }
+             
+            return Response(data, status=status.HTTP_201_CREATED)
+        
+        else:
+            return Response({"message":"payment not successful"}, status=status.HTTP_201_CREATED)

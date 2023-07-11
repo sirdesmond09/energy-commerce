@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from main.generators import generate_booking_id, generate_order_id
-from .models import Address, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, Documentation, SupportTicket, UserInbox
+from .models import Address, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, PaymentBalance, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductComponent, ProductGallery, ProductCategory, Product, Rating, Documentation, SupportTicket, UserInbox
 from rest_framework.exceptions import ValidationError
 from accounts.serializers import StoreProfileSerializer
 from djoser.serializers import UserSerializer
@@ -297,6 +297,14 @@ class PaymentSerializer(serializers.ModelSerializer):
         
     def get_order_detail(self, payment):
         return OrderSerializer(payment.order).data
+
+
+class PaymentBalanceSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        fields = "__all__"
+        model = PaymentBalance
+        
         
         
 
