@@ -205,32 +205,35 @@ class AddVendorSerializer(serializers.Serializer):
         
         if "role" in vendor_data.keys():
             vendor_data.pop("role") 
-            
-        vendor = User.objects.create(**vendor_data, role="vendor", vendor_status="applied")
         
         try:
-        
-            if "vendor" in store_profile.keys():
-                store_profile.pop("vendor")
-            cac_doc = store_profile.pop("cac_doc")
-            store = StoreProfile.objects.create(**store_profile, vendor=vendor)
-            store.cac_doc=cac_doc
-            store.save()
+            vendor = User.objects.create(**vendor_data, role="vendor", vendor_status="applied")
             
-        except Exception as e:
-            print("error")
-            vendor.delete_permanently()
-            raise ValidationError(str(e))
-        
-        try:
-            if "store" in bank_detail.keys():
-                bank_detail.pop("store")
+            try:
+            
+                if "vendor" in store_profile.keys():
+                    store_profile.pop("vendor")
+                cac_doc = store_profile.pop("cac_doc")
+                store = StoreProfile.objects.create(**store_profile, vendor=vendor)
+                store.cac_doc=cac_doc
+                store.save()
                 
-            StoreBankDetail.objects.create(**bank_detail, store=store)
+            except Exception as e:
+
+                vendor.delete_permanently()
+                raise ValidationError(str(e))
+            
+            try:
+                if "store" in bank_detail.keys():
+                    bank_detail.pop("store")
+                    
+                StoreBankDetail.objects.create(**bank_detail, store=store)
+            except Exception as e:
+                store.delete_permanently()
+                vendor.delete_permanently()
+                raise ValidationError(str(e))
         except Exception as e:
-            store.delete_permanently()
-            raise ValidationError(str(e))
-        return 
+            raise ValidationError(str(e)) 
     
     
 class PermissionSerializer(serializers.ModelSerializer):
