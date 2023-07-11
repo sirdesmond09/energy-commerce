@@ -193,7 +193,7 @@ def send_vendor_details(sender, instance, created, **kwargs):
     
 @receiver(post_save, sender=User)
 def send_vendor_details(sender, instance, created, **kwargs):
-    if (instance.role =="vendor" and instance.vendor_status=="unapproved") and instance.sent_vendor_email is False:
+    if (instance.role =="vendor" and (instance.vendor_status=="unapproved"  or instance.vendor_status=="blocked") )and instance.sent_vendor_email is False:
         # print(instance.password)
         subject = "Oops! Something went wrong with your account"
             
