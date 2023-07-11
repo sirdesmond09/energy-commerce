@@ -234,6 +234,8 @@ class AddVendorSerializer(serializers.Serializer):
                 raise ValidationError(str(e))
         except Exception as e:
             raise ValidationError(str(e)) 
+        
+        return vendor
     
     
 class PermissionSerializer(serializers.ModelSerializer):

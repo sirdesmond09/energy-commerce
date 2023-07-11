@@ -327,7 +327,7 @@ class AddVendorView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            instance = serializer.save()
+            instance = serializer.create(serializer.validated_data)
             ActivityLog.objects.create(
                 user=instance,
                 action = f"Signed up as a vendor"
