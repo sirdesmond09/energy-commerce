@@ -57,7 +57,7 @@ def validate_pws(ref):
     encoded_str = encrypt_data(pre_encoded_data)
     
     data = { "encryptedPayLoad": encoded_str,
-        "applicationEndpoint": "/api/Purchase/VerifyPurchaseByReference", 
+        "applicationEndpoint": "/api/services/app/Purchase/RequeryFailedPurchase", 
         "httpMethod": 2
         } 
     
