@@ -2254,7 +2254,7 @@ def pay_with_specta(request, booking_id):
         pws_is_valid = validate_pws(payload.get("reference"))
 
         try:
-            if pws_is_valid and (res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True):
+            if (res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True):
                 data_=data.get('result').get('data')
                 PaymentDetail.objects.create(transaction_id=data_.get('reference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
                 
