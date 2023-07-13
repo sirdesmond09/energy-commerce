@@ -100,108 +100,108 @@
 
 
 
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
-import base64
-import json
+# from Crypto.Cipher import AES
+# from Crypto.Util.Padding import pad, unpad
+# import base64
+# import json
 
-key_base64 = "72hu8A8GlK0wCkdQfac83AuPMOqmtKYmFXbNTD9SH1Y="
-iv_base64 = "7EhddMLWwvlqPrMyCYf+VQ=="
+# key_base64 = "72hu8A8GlK0wCkdQfac83AuPMOqmtKYmFXbNTD9SH1Y="
+# iv_base64 = "7EhddMLWwvlqPrMyCYf+VQ=="
 
-def base64_decoding(input):
-    decoded_bytes = base64.b64decode(input)
-    return decoded_bytes
-
-
-def encrypt_data(data):
-    key = base64_decoding(key_base64)
-    iv = base64_decoding(iv_base64)
-
-    data_json = json.dumps(data).encode('utf-8')
-
-    # Pad the data to a multiple of the AES block size
-    padded_data = pad(data_json, AES.block_size)
-
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    ciphertext = cipher.encrypt(padded_data)
-
-    # Encode ciphertext as base64 and obtain a string representation
-    ciphertext_base64 = base64.b64encode(ciphertext).decode('utf-8')
-
-    return ciphertext_base64
-
-#Get OTP data
-data1 = {
-     "queryParameters": [
-         {
-             "parameterName": "spectaID",
-             "value": "SP528175288"
-         }
-     ],
-     "headers": {
-         "x-ApiKey": "9a538cfcb6ad43c8939ac7b55e786bf7"
-     },
-     "jsonBody": ""
- }
+# def base64_decoding(input):
+#     decoded_bytes = base64.b64decode(input)
+#     return decoded_bytes
 
 
-# get eligibility
-payload1 = {
-    "totalPurchaseAmount": 5000000,
-    "description": "Payment for items in cart",
-    "reference": "1qqa8e1e-oop2-1334-9bq7-dbc79d289396",
-    "spectaId": "SP528175288",
-    "equityContribution": 0,
-    "loanTenorInMonths": 7,
-    "otp": "122333",
-    "merchantId":"60170"
-}
+# def encrypt_data(data):
+#     key = base64_decoding(key_base64)
+#     iv = base64_decoding(iv_base64)
 
-data2 = {
-    "queryParameters": [],
-    "headers": {
-        "x-ApiKey": "9a538cfcb6ad43c8939ac7b55e786bf7"
-    },
-    "jsonBody": json.dumps(payload1)
-}
+#     data_json = json.dumps(data).encode('utf-8')
 
+#     # Pad the data to a multiple of the AES block size
+#     padded_data = pad(data_json, AES.block_size)
 
-#validate response
-payload2 = {
-  "reference": "0128f1c9-a469-4947-8261-4cc8866b0681"
-}
+#     cipher = AES.new(key, AES.MODE_CBC, iv)
+#     ciphertext = cipher.encrypt(padded_data)
 
-data3 = {
-    "queryParameters": [],
-    "headers": {
-        "x-ApiKey": "9a538cfcb6ad43c8939ac7b55e786bf7"
-    },
-    "jsonBody": json.dumps(payload2)
-}
+#     # Encode ciphertext as base64 and obtain a string representation
+#     ciphertext_base64 = base64.b64encode(ciphertext).decode('utf-8')
+
+#     return ciphertext_base64
+
+# #Get OTP data
+# data1 = {
+#      "queryParameters": [
+#          {
+#              "parameterName": "spectaID",
+#              "value": "SP528175288"
+#          }
+#      ],
+#      "headers": {
+#          "x-ApiKey": "9a538cfcb6ad43c8939ac7b55e786bf7"
+#      },
+#      "jsonBody": ""
+#  }
 
 
+# # get eligibility
+# payload1 = {
+#     "totalPurchaseAmount": 5000000,
+#     "description": "Payment for items in cart",
+#     "reference": "1qqa8e1e-oop2-1334-9bq7-dbc79d289396",
+#     "spectaId": "SP528175288",
+#     "equityContribution": 0,
+#     "loanTenorInMonths": 7,
+#     "otp": "122333",
+#     "merchantId":"60170"
+# }
+
+# data2 = {
+#     "queryParameters": [],
+#     "headers": {
+#         "x-ApiKey": "9a538cfcb6ad43c8939ac7b55e786bf7"
+#     },
+#     "jsonBody": json.dumps(payload1)
+# }
 
 
-def decrypt_data(ciphertext_base64):
-    key = base64_decoding(key_base64)
-    iv = base64_decoding(iv_base64)
+# #validate response
+# payload2 = {
+#   "reference": "0128f1c9-a469-4947-8261-4cc8866b0681"
+# }
 
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-
-    ciphertext = base64_decoding(ciphertext_base64)
-
-    decrypted_data = cipher.decrypt(ciphertext)
-
-    # Unpad the decrypted data
-    unpadded_data = unpad(decrypted_data, AES.block_size)
-
-    return unpadded_data.decode('utf-8')
+# data3 = {
+#     "queryParameters": [],
+#     "headers": {
+#         "x-ApiKey": "9a538cfcb6ad43c8939ac7b55e786bf7"
+#     },
+#     "jsonBody": json.dumps(payload2)
+# }
 
 
 
 
-# print(encrypt_data(data3))
-print(json.loads(decrypt_data("ESELUmtAztG92Nme/jyPjUAPafjeqIjDnT0LEgYw0b9MWnxE4c1Nnudp4k8niZt75proNXcuuBcGteGaz6YMyvUfHDXH7HjVK9RGvyA/UlFSO6WWBu3Ri9fcbw/7V68gKNYg+NhvTph8qWCmsqYcCX8uIiKfvxNgvmi/DPV8rv72NUvAd+Udcb/+kOi/xCyzXnJwFMltWd2znc+GdBK/CIUKyUnWAAMoWAzi0ce4+xyMngqJ2RWxeE1D7CLx1xkKTv21Mnj+Oy7ntyA8bnkrpQ==")))
+# def decrypt_data(ciphertext_base64):
+#     key = base64_decoding(key_base64)
+#     iv = base64_decoding(iv_base64)
+
+#     cipher = AES.new(key, AES.MODE_CBC, iv)
+
+#     ciphertext = base64_decoding(ciphertext_base64)
+
+#     decrypted_data = cipher.decrypt(ciphertext)
+
+#     # Unpad the decrypted data
+#     unpadded_data = unpad(decrypted_data, AES.block_size)
+
+#     return unpadded_data.decode('utf-8')
+
+
+
+
+# # print(encrypt_data(data3))
+# print(json.loads(decrypt_data("ESELUmtAztG92Nme/jyPjUAPafjeqIjDnT0LEgYw0b9MWnxE4c1Nnudp4k8niZt75proNXcuuBcGteGaz6YMyslwPD/K7lAKYYGvz/IzhHXHrUvTsnUm+mHtrSrHTN65yHw89OAm7usgU235bUvzCabbyO4etOzOKEN7+boCU+/z3KDPDvQt8Blgslfdw9mw3bUDKCeLvMM2YyELDhQRu4oADQVnbNEoEoyET1hGYS6TBO+EBt91Agp1+LSRuxSN")))
 
 
 

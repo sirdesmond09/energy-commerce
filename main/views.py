@@ -413,7 +413,8 @@ def new_order(request):
         data = {
             "message": "success",
             "booking_id": order.booking_id,
-            "total_amount" : order.total_price
+            "total_amount" : order.total_price,
+            "id":order.id
         }
         
         
