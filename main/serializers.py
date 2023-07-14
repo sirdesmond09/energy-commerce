@@ -486,3 +486,4 @@ class SpectaSerializer(serializers.Serializer):
     description = serializers.CharField()
     totalPurchaseAmount = serializers.FloatField()
     otp = serializers.CharField()
+    balance = serializers.CharField(required=False)
