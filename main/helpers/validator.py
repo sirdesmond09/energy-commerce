@@ -72,6 +72,8 @@ def validate_pws(ref):
         
     response = res.json().get('content')
     data = json.loads(decrypt_data(response))
+    print("PWS")
+    print(data)
     result = data.get("result", {})
     error = data.get("error", {})
     
@@ -103,7 +105,8 @@ def refund(balance):
     }
     
     res = requests.post(url=url, json=payload, headers=header)
-    
+    print("REFUND:\n")
+    print(res.json())
     if res.json().get("status") == "success":
         return True
     return False

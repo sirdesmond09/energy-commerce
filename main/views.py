@@ -2261,6 +2261,7 @@ def pay_with_specta(request, booking_id):
             ref = data.get('result').get('data').get('purchaseId')
         
             pws_is_valid = validate_pws(ref)
+            print("PWS IS VALID:", pws_is_valid)
 
         try:
             if pws_is_valid:
