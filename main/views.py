@@ -3,7 +3,7 @@ import os
 import random
 from accounts.models import ActivityLog
 from main.helpers.deletion import clear_order
-from main.helpers.validator import payment_is_verified, calculate_start_date, validate_pws
+from main.helpers.validator import payment_is_verified, calculate_start_date, refund, validate_pws
 from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, GetSpectaOTPSerializer, PaymentBalanceSerializer, SpectaSerializer, SplinterDataSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
 from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, PaymentBalance, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
 from rest_framework import status
@@ -2223,6 +2223,10 @@ def pay_with_specta(request, booking_id):
         serializer=SpectaSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
+        balance = serializer.validated_data.get("balance", None)
+        if balance:
+            serializer.validated_data['totalPurchaseAmount'] =  balance.total_amount - balance.paid_amount
+        
         payload = serializer.validated_data
         
         payload['merchantId'] = os.getenv('MERCHANT_ID')
@@ -2251,14 +2255,21 @@ def pay_with_specta(request, booking_id):
         
         response = res.json().get('content')
         data = json.loads(decrypt_data(response))
+        pws_is_valid = False
+        ref = ""
+        if data.get('result'):
+            ref = data.get('result').get('data').get('purchaseId')
         
-        pws_is_valid = validate_pws(payload.get("reference"))
+            pws_is_valid = validate_pws(ref)
 
         try:
-            if (res.status_code==200 and data.get('result').get('data').get("isSuccessful") == True):
-                data_=data.get('result').get('data')
-                PaymentDetail.objects.create(transaction_id=data_.get('reference'),note=f"pay with specta reference is: {data_.get('reference')}", order=order, user=request.user, payment_type='specta', status="approved")
+            if pws_is_valid:
+
+                payment = PaymentDetail.objects.create(transaction_id=ref,note=f"pay with specta reference is: {ref}", order=order, user=request.user, payment_type='specta', status="approved")
                 
+                payment.balance = balance
+                payment.save()
+                    
                 
                 #mark order as paid
                 order.is_paid_for =True
@@ -2294,7 +2305,23 @@ def pay_with_specta(request, booking_id):
 
             
             else:
-                # TODO: What happens if PWS response is showing not successful but the core-banking validation shows success?
+                
+                if balance:
+                    res = refund(balance)
+                    
+                    if res:
+                        data = {
+                            "error":"Loan Request Failed",
+                            "message" : "Balance transaction refund has been initiated"
+                        }
+                        
+                    else:
+                        data = {
+                            "error":"Loan Request Failed",
+                            "message" : f"Could not initiate transaction refund for transaction ID {balance.transaction_id}. Please contact support"
+                        }
+                        
+                    clear_order(order)
                 return  Response(data, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             try:

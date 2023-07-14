@@ -602,8 +602,8 @@ class PaymentBalance(models.Model):
     paid_amount = models.FloatField()
     transaction_id = models.CharField(max_length=255)
     payment_channel = models.CharField(max_length=255, default="flutterwave")
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    spectaID = models.CharField(max_length=255, null=True)
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True)
+    spectaId = models.CharField(max_length=255, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     

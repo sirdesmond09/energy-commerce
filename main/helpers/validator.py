@@ -7,6 +7,10 @@ from django.utils import timezone
 from main.helpers.encryption import decrypt_data, encrypt_data
 
 def payment_is_verified(trans_id):
+    
+    """Validate flutterwave payment"""
+
+    
     base_url = os.getenv("FLUTTER_VERIFICATION_URL")
     token = os.getenv("FLW_SECRET_KEY")
     url = base_url + f"{trans_id}/verify/"
@@ -39,10 +43,10 @@ def calculate_start_date(days_ago):
 
 def validate_pws(ref):
     
+    """Validate the Pay with specta payment on re-query API"""
     
-    """Validate the Pay with specta payment on core-banking API"""
     payload = {
-        "reference" : ref
+        "purchaseId" : ref
     }
         
         
@@ -68,9 +72,44 @@ def validate_pws(ref):
         
     response = res.json().get('content')
     data = json.loads(decrypt_data(response))
+    result = data.get("result", {})
+    error = data.get("error", {})
     
-    if data.get("status") == 404:
+    if error.get("code") == 404:
         return False
-    return True
+    elif result.get("item1") == True and result.get("item2") == 'Loan booking was sucessful':
+        return True
+    else:
+        return False
+
+
+
+
+
+def refund(balance):
     
-    # {'result': {'status': 404, 'data': None, 'message': 'Not Found'}, 'targetUrl': None, 'success': True, 'error': None, 'unAuthorizedRequest': False, '__abp': True}
+    """Refund the down payment if loan request fails"""
+    
+    base_url = os.getenv("FLUTTER_VERIFICATION_URL")
+    token = os.getenv("FLW_SECRET_KEY")
+    url = base_url + f"{balance.transaction_id}/refund/"
+    
+    header =  {'Authorization': f"Bearer {token}",
+               'Content-Type' : 'application/json'
+               }
+    payload = {
+    "amount": balance.paid_amount,
+    "comments": "Imperium Refund -- Pay with specta loan failed to complete"
+    }
+    
+    res = requests.post(url=url, json=payload, headers=header)
+    
+    if res.json().get("status") == "success":
+        return True
+    return False
+
+# not found
+# {'result': None, 'targetUrl': None, 'success': False, 'error': {'code': 404, 'message': 'Purchase was not found!', 'details': None, 'validationErrors': None}, 'unAuthorizedRequest': False, '__abp': True}
+
+# success
+# {'result': {'item1': True, 'item2': 'Loan booking was sucessful'}, 'targetUrl': None, 'success': True, 'error': None, 'unAuthorizedRequest': False, '__abp': True}
