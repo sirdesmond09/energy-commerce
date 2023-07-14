@@ -2327,6 +2327,8 @@ def pay_balance(request, booking_id):
         serializer = PaymentBalanceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
+        if  "order" in serializer.validated_data.keys():
+            serializer.validated_data.pop("order")
         
         try:
             trans_id = serializer.validated_data["transaction_id"]
