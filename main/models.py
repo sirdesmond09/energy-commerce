@@ -615,6 +615,11 @@ class PaymentBalance(models.Model):
         
     def delete_permanently(self):
         super().delete()
+        
+        
+    def __str__(self):
+        return self.id
+    
     
     
     
