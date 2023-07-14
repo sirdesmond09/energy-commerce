@@ -2356,3 +2356,12 @@ def pay_balance(request, booking_id):
         
         else:
             return Response({"message":"payment not successful"}, status=status.HTTP_201_CREATED)
+        
+        
+class BalanceRetrieveView(RetrieveAPIView):
+    permission_classes=[IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    queryset = PaymentBalance.objects.all()
+    serializer_class = PaymentBalanceSerializer
+    lookup_field = "id"
+    

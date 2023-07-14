@@ -300,12 +300,14 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 class PaymentBalanceSerializer(serializers.ModelSerializer):
+    order_detail = serializers.SerializerMethodField()
     
     class Meta:
         fields = "__all__"
         model = PaymentBalance
         
-        
+    def get_order_detail(self, obj):
+        return OrderSerializer(obj.order).data
         
 
 class PayOutSerializer(serializers.ModelSerializer):
@@ -487,3 +489,14 @@ class SpectaSerializer(serializers.Serializer):
     totalPurchaseAmount = serializers.FloatField()
     otp = serializers.CharField()
     balance = serializers.CharField(required=False)
+    
+    
+    def validate_balance(self, attrs):
+        
+        if attrs:
+            try:
+                balance = PaymentBalance.objects.get(id=attrs)
+                return balance
+            except PaymentBalance.DoesNotExist:
+                raise serializers.ValidationError("Balance not found")
+        return None
