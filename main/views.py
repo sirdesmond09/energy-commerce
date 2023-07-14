@@ -2257,6 +2257,7 @@ def pay_with_specta(request, booking_id):
         data = json.loads(decrypt_data(response))
         pws_is_valid = False
         ref = ""
+        print(data)
         if data.get('result'):
             ref = data.get('result').get('data').get('purchaseId')
         
