@@ -147,9 +147,9 @@ data1 = {
 
 # get eligibility
 payload1 = {
-  "totalPurchaseAmount": 6800000,
+  "totalPurchaseAmount": 20000,
   "description": "Payment for items in cart",
-  "reference": "c61eadd8-aq12-4ab7-b9a5-bf07251bf55d",
+  "reference": "c61eadd8-ae12-4ab7-b9a5-bf07251bf55d",
   "spectaId": "SP528175288",
   "equityContribution": 0,
   "loanTenorInMonths": 7,
@@ -168,7 +168,7 @@ data2 = {
 
 #validate response
 payload2 = {
-  "purchaseId": "c61eadd8-aq12-4ab6-b9a5-bf07251bf55d"
+  "purchaseId": "ebae779b-dbe2-4587-bd45-e0041094f3bc"
 }
 
 data3 = {
@@ -200,9 +200,9 @@ def decrypt_data(ciphertext_base64):
 
 
 
-# print(encrypt_data(data2))
+print(encrypt_data(data3))
 # print(data3)
-print(json.loads(decrypt_data("ESELUmtAztG92Nme/jyPjUAPafjeqIjDnT0LEgYw0b9MWnxE4c1Nnudp4k8niZt75proNXcuuBcGteGaz6YMyvUfHDXH7HjVK9RGvyA/UlFSO6WWBu3Ri9fcbw/7V68gKNYg+NhvTph8qWCmsqYcCctsWBkbUfyi0XNXa9dcyaDkYb0aW4p2/hEH3Qndu5jgZdcgahRZ8Sk5fIYcqsX0WbhwVvg2D3ASyPTzuA/BhSzhvpiJ0RepF4CClAkY24h91qvr3h/l6NA94wKE+Q4/lw==")))
+print(json.loads(decrypt_data("WGXZPK1QHGDxdED8yv9hhG1hrkfYmzZYzB73peHgmuE/772v48g/wFx38Mv1Yg5NanholA075X92RbO6tXTkRnU7LLAAksfxWP1VnKXR0EPUxwiX4tyoLJh0iPLwybCGI3Z75LhCIIzS+fgsUEZWDo5ELaMoqDH+GW2QzSeBA2CfiHAD4HXzhlqDIpOudwjNc0YCc1aNVviJQxLLcliHyg==")))
 
 
 

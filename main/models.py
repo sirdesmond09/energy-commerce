@@ -598,7 +598,7 @@ class Video(models.Model):
 class PaymentBalance(models.Model):
     id = models.UUIDField(primary_key=True, unique=True, editable=False, default=uuid.uuid4)
     user  = models.ForeignKey('accounts.User', on_delete=models.CASCADE,null=True)
-    eligible_amount = models.FloatField()
+    total_amount = models.FloatField()
     paid_amount = models.FloatField()
     transaction_id = models.CharField(max_length=255)
     payment_channel = models.CharField(max_length=255, default="flutterwave")
