@@ -2263,6 +2263,10 @@ def pay_with_specta(request, booking_id):
         
             pws_is_valid = validate_pws(ref)
             print("PWS IS VALID:", pws_is_valid)
+        elif data.get('detail'):
+            ref = data.get('detail')
+            pws_is_valid = validate_pws(ref)
+            print("PWS IS VALID:", pws_is_valid)
 
         try:
             if pws_is_valid:
