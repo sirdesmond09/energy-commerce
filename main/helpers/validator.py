@@ -74,12 +74,12 @@ def validate_pws(ref):
     data = json.loads(decrypt_data(response))
     print("PWS")
     print(data)
-    result = data.get("result", {})
-    error = data.get("error", {})
+    result = data.get("result", None)
+    error = data.get("error", None)
     
-    if error.get("code") == 404:
+    if error != None and error.get("code") == 404:
         return False
-    elif result.get("item1") == True and result.get("item2") == 'Loan booking was sucessful':
+    elif result!= None and result.get("item1") == True and result.get("item2") == 'Loan booking was sucessful':
         return True
     else:
         return False
