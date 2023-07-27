@@ -1,6 +1,4 @@
 amqp==5.1.1
-ansible==7.4.0
-ansible-core==2.14.4
 asgiref==3.6.0
 async-timeout==4.0.2
 attrs==22.2.0
