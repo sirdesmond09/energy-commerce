@@ -27,7 +27,7 @@ def payment_is_verified(trans_id):
     
     res = requests.get(url, headers=headers)
 
-    logger.debug(f"The response is: {res.content}")
+    logger.warning(f"The response is: {res.content}")
     
     if res.status_code == 200:
         try:
@@ -80,7 +80,7 @@ def validate_pws(ref):
         
     response = res.json().get('content')
     data = json.loads(decrypt_data(response))
-    logger.debug(f"PWS: {data}")
+    logger.warning(f"PWS: {data}")
     result = data.get("result", None)
     error = data.get("error", None)
     
@@ -112,7 +112,7 @@ def refund(balance):
     }
     
     res = requests.post(url=url, json=payload, headers=header)
-    logger.debug(f"Refund: {res.json()}")
+    logger.warning(f"Refund: {res.json()}")
 
     if res.json().get("status") == "success":
         return True

@@ -2264,17 +2264,17 @@ def pay_with_specta(request, booking_id):
         data = json.loads(decrypt_data(response))
         pws_is_valid = False
         ref = ""
-        logger.info(f"PWS Data: {pws_is_valid}")
+        logger.warning(f"PWS Data: {pws_is_valid}")
         if data.get('result'):
             ref = data.get('result').get('data').get('purchaseId')
         
             pws_is_valid = validate_pws(ref)
-            logger.info(f"PWS IS VALID: {pws_is_valid}")
+            logger.warning(f"PWS IS VALID: {pws_is_valid}")
         elif data.get('detail'):
             ref = data.get('detail')
             pws_is_valid = validate_pws(ref)
 
-            logger.info(f"PWS IS VALID: {pws_is_valid}")
+            logger.warning(f"PWS IS VALID: {pws_is_valid}")
 
         try:
             if pws_is_valid:
@@ -2411,7 +2411,7 @@ class BalanceRetrieveView(RetrieveAPIView):
 @api_view(['GET'])
 def check(request):
 
-    logger.debug("This is a test")
+    logger.warning("This is a test")
     
     return Response({"message":"payment not successful"})
     

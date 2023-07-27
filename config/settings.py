@@ -302,8 +302,8 @@ class Common(Configuration):
     'handlers': {
         'logtail': {
             'class': 'logtail.LogtailHandler',
-            'source_token': os.getenv("LOGGER_SOURCE"),
-            "level": "DEBUG",
+            'source_token': "RNPseagWrr2965HbV6uwAKvP",
+            'level': 'INFO',
         },
     },
     "loggers": {
