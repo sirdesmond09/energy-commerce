@@ -5,6 +5,7 @@ from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 
 from main.helpers.encryption import decrypt_data, encrypt_data
+import logging
 
 def payment_is_verified(trans_id):
     
@@ -20,6 +21,8 @@ def payment_is_verified(trans_id):
     }
     
     res = requests.get(url, headers=headers)
+
+    logging.error(f"The response is: {res.content}")
     
     if res.status_code == 200:
         try:
