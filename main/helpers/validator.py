@@ -6,6 +6,11 @@ from django.utils import timezone
 
 from main.helpers.encryption import decrypt_data, encrypt_data
 import logging
+from config.settings import Common
+
+logging.config.dictConfig(Common.LOGGING)
+
+logger = logging.getLogger('django.server')
 
 def payment_is_verified(trans_id):
     
@@ -22,7 +27,7 @@ def payment_is_verified(trans_id):
     
     res = requests.get(url, headers=headers)
 
-    logging.error(f"The response is: {res.content}")
+    logger.debug(f"The response is: {res.content}")
     
     if res.status_code == 200:
         try:
@@ -75,8 +80,7 @@ def validate_pws(ref):
         
     response = res.json().get('content')
     data = json.loads(decrypt_data(response))
-    print("PWS")
-    print(data)
+    logger.debug(f"PWS: {data}")
     result = data.get("result", None)
     error = data.get("error", None)
     
@@ -108,8 +112,8 @@ def refund(balance):
     }
     
     res = requests.post(url=url, json=payload, headers=header)
-    print("REFUND:\n")
-    print(res.json())
+    logger.debug(f"Refund: {res.json()}")
+
     if res.json().get("status") == "success":
         return True
     return False

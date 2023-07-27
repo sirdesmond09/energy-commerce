@@ -3,8 +3,11 @@ import uuid
 import os
 import logging
 import io
+from config.settings import Common
 
-logger = logging.getLogger(__name__)
+logging.config.dictConfig(Common.LOGGING)
+
+logger = logging.getLogger("django.server")
 
 ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
 ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
@@ -77,7 +80,7 @@ def upload(folder, file_name, file):
         
         blob_client.commit_block_list(block_list)
     except Exception as err:
-        logger.exception(str(err))
+        logger.exception(f"Upload Encountered an error: {str(err)}")
         raise err
 
     url = AZURE_STORAGE_ENDPOINT + CONTAINER + "/" + blob_client.get_blob_properties().name

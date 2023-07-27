@@ -26,6 +26,13 @@ from .helpers.signals import payment_approved
 from .helpers import uploader
 import requests, json
 from .helpers.encryption import decrypt_data, encrypt_data
+from  config.settings import Common
+import logging
+
+# Configure the logging system with the settings provided
+logging.config.dictConfig(Common.LOGGING)
+
+logger = logging.getLogger('django.server')
 
 
 User = get_user_model()
@@ -2257,16 +2264,17 @@ def pay_with_specta(request, booking_id):
         data = json.loads(decrypt_data(response))
         pws_is_valid = False
         ref = ""
-        print(data)
+        logger.info(f"PWS Data: {pws_is_valid}")
         if data.get('result'):
             ref = data.get('result').get('data').get('purchaseId')
         
             pws_is_valid = validate_pws(ref)
-            print("PWS IS VALID:", pws_is_valid)
+            logger.info(f"PWS IS VALID: {pws_is_valid}")
         elif data.get('detail'):
             ref = data.get('detail')
             pws_is_valid = validate_pws(ref)
-            print("PWS IS VALID:", pws_is_valid)
+
+            logger.info(f"PWS IS VALID: {pws_is_valid}")
 
         try:
             if pws_is_valid:
@@ -2333,7 +2341,7 @@ def pay_with_specta(request, booking_id):
             try:
                 clear_order(order)
             except Exception as e:
-                pass
+                logger.error(f"PWS Failed with: {str(e)}")
             
             return  Response(data, status=status.HTTP_400_BAD_REQUEST)
             
@@ -2397,4 +2405,13 @@ class BalanceRetrieveView(RetrieveAPIView):
     queryset = PaymentBalance.objects.all()
     serializer_class = PaymentBalanceSerializer
     lookup_field = "id"
+
+
+
+@api_view(['GET'])
+def check(request):
+
+    logger.debug("This is a test")
+    
+    return Response({"message":"payment not successful"})
     

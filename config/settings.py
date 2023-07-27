@@ -15,6 +15,9 @@ from configurations import Configuration, values
 import firebase_admin
 from firebase_admin import credentials
 import json
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 
 
 
@@ -246,8 +249,99 @@ class Common(Configuration):
     EMAIL_USE_TLS = False 
     DEFAULT_FROM_EMAIL = "Ope from Imperium <noreply@getmobile.tech>" # TODO: Change to imperium email
     
+
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
+
+    # Ensure the logs directory exists
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+
+    # Logging configuration for errors
+    LOG_FILE_ERROR = os.path.join(LOG_DIR, 'error.log')
+    # LOGGING = {
+    #     'version': 1,
+    #     'disable_existing_loggers': False,
+    #     'handlers': {
+    #         'error_file': {
+    #             'level': 'ERROR',
+    #             'class': 'logging.FileHandler',
+    #             'filename': LOG_FILE_ERROR,
+    #             'formatter': 'verbose',
+    #         },
+    #     },
+    #     'loggers': {
+    #         'django': {
+    #             'handlers': ['error_file'],
+    #             'level': 'ERROR',
+    #             'propagate': True,
+    #         },
+    #     },
+    # }
+
+    # # Logging configuration for server prints
+    # LOG_FILE_SERVER = os.path.join(LOG_DIR, 'server.log')
+    # LOGGING['handlers']['server_file'] = {
+    #         'class': 'logtail.LogtailHandler',
+    #         'source_token': "RNPseagWrr2965HbV6uwAKvP",
+    #     },
+    # LOGGING['loggers']['django.server'] = {
+    #         "handlers": [
+    #             "logtail",
+    #         ],
+    #         "level": "INFO",
+    #     }
+    # # LOGGING['loggers']['django.server'] = {
+    # #     'handlers': ['server_file'],
+    # #     'level': 'INFO',
+    # #     'propagate': False,
+    # # }
     
+    LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    'handlers': {
+        'logtail': {
+            'class': 'logtail.LogtailHandler',
+            'source_token': os.getenv("LOGGER_SOURCE"),
+        },
+    },
+    "loggers": {
+        "django.server": {
+            "handlers": [
+                "logtail",
+            ],
+            "level": "INFO",
+            },
+        },
+    }
+
+
+    # Logging formatter
+    LOGGING['formatters'] = {
+        'verbose': {
+            'format': '%(asctime)s [%(levelname)s] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    }
     
+    sentry_sdk.init(
+    dsn=os.getenv("SENTRY_URL"),
+    integrations=[DjangoIntegration(
+            transaction_style='url',
+            middleware_spans=True,
+            signals_spans=True,
+            cache_spans=True,
+        )],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+    )
 
 
 
@@ -306,6 +400,8 @@ class Staging(Common):
 
     ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
     CSRF_TRUSTED_ORIGINS = os.getenv("TRUSTED_ORIGINS").split(',')
+    
+    
 
 
 class Production(Staging):
@@ -316,52 +412,4 @@ class Production(Staging):
     CSRF_TRUSTED_ORIGINS = os.getenv("TRUSTED_ORIGINS").split(',')
     
     # Configure the logging settings
-    LOG_DIR = os.path.join(Common.BASE_DIR, 'logs')
-
-    # Ensure the logs directory exists
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
-
-    # Logging configuration for errors
-    LOG_FILE_ERROR = os.path.join(LOG_DIR, 'error.log')
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'error_file': {
-                'level': 'ERROR',
-                'class': 'logging.FileHandler',
-                'filename': LOG_FILE_ERROR,
-                'formatter': 'verbose',
-            },
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['error_file'],
-                'level': 'ERROR',
-                'propagate': True,
-            },
-        },
-    }
-
-    # Logging configuration for server prints
-    LOG_FILE_SERVER = os.path.join(LOG_DIR, 'server.log')
-    LOGGING['handlers']['server_file'] = {
-        'level': 'INFO',
-        'class': 'logging.FileHandler',
-        'filename': LOG_FILE_SERVER,
-        'formatter': 'verbose',
-    }
-    LOGGING['loggers']['django.server'] = {
-        'handlers': ['server_file'],
-        'level': 'INFO',
-        'propagate': False,
-    }
-
-    # Logging formatter
-    LOGGING['formatters'] = {
-        'verbose': {
-            'format': '%(asctime)s [%(levelname)s] %(message)s',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-        },
-    }
+    
