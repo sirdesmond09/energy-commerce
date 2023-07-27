@@ -2224,8 +2224,8 @@ def pay_with_specta(request, booking_id):
         serializer.is_valid(raise_exception=True)
         
         balance = serializer.validated_data.pop("balance", None)
-        if balance:
-            serializer.validated_data['totalPurchaseAmount'] =  balance.total_amount - balance.paid_amount
+        # if balance:
+        #     serializer.validated_data['totalPurchaseAmount'] =  balance.total_amount - balance.paid_amount
         
         payload = serializer.validated_data
         
