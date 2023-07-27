@@ -250,14 +250,14 @@ class Common(Configuration):
     DEFAULT_FROM_EMAIL = "Ope from Imperium <noreply@getmobile.tech>" # TODO: Change to imperium email
     
 
-    LOG_DIR = os.path.join(BASE_DIR, 'logs')
+    # LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
-    # Ensure the logs directory exists
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
+    # # Ensure the logs directory exists
+    # if not os.path.exists(LOG_DIR):
+    #     os.makedirs(LOG_DIR)
 
-    # Logging configuration for errors
-    LOG_FILE_ERROR = os.path.join(LOG_DIR, 'error.log')
+    # # Logging configuration for errors
+    # LOG_FILE_ERROR = os.path.join(LOG_DIR, 'error.log')
     # LOGGING = {
     #     'version': 1,
     #     'disable_existing_loggers': False,
@@ -303,6 +303,7 @@ class Common(Configuration):
         'logtail': {
             'class': 'logtail.LogtailHandler',
             'source_token': os.getenv("LOGGER_SOURCE"),
+            "level": "DEBUG",
         },
     },
     "loggers": {
