@@ -12,6 +12,7 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import Permission, Group
 from drf_extra_fields.fields import Base64ImageField
 from .helpers.fields import PDFBase64File
+from djoser.serializers import UserCreatePasswordRetypeSerializer
 
 from config import settings
  
@@ -19,11 +20,19 @@ User = get_user_model()
 
         
 
-class UserRegistrationSerializer(BaseUserRegistrationSerializer):
+class UserRegistrationSerializer(UserCreatePasswordRetypeSerializer):
+    password = serializers.CharField(
+            style={"input_type": "password"},
+            write_only=True,
+        )
     
-    class Meta(BaseUserRegistrationSerializer.Meta):
-        fields = ['id',"first_name", "last_name", "email", "role","phone", "password", "is_active"]
+    class Meta(UserCreatePasswordRetypeSerializer.Meta):
+        fields = ['id',"first_name", "last_name", "email", "role","phone", "referral_code", "password", "is_active"]
         
+    extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
     
 class UserDeleteSerializer(serializers.Serializer):
     current_password = serializers.CharField(style={"input_type": "password"})
@@ -34,17 +43,21 @@ class CustomUserSerializer(serializers.ModelSerializer):
     bank_detail = serializers.ReadOnlyField()
     favourite_detail = serializers.ReadOnlyField()
     vendor_rating = serializers.SerializerMethodField()
+    referral_code = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
     image_url = serializers.ReadOnlyField()
     
     class Meta():
         model = User
-        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "roles", "is_superuser", "image_url", "date_joined"]
+        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "referral_code" ,"role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "roles", "is_superuser", "image_url", "date_joined"]
 
         extra_kwargs = {
             'password': {'write_only': True}
         }
         
+        
+    def get_referral_code(self, user):
+        return user.referral_code
         
     def get_vendor_rating(self, vendor):
         

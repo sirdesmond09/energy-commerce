@@ -1,5 +1,6 @@
 import string
 import random
+import secrets
 
 def generate_password():
     a = []
@@ -15,5 +16,13 @@ def generate_password():
 def generate_code(n):
     
     alphabet = string.ascii_letters + string.digits
-    code = ''.join(random.choice(alphabet) for i in range(n))
+    code = ''.join(secrets.choice(alphabet) for i in range(n))
     return code
+
+
+
+
+def generate_referral_code(length=8):
+    characters = string.ascii_letters
+    referral_code = ''.join(secrets.choice(characters) for _ in range(length))
+    return referral_code

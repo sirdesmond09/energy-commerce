@@ -52,5 +52,6 @@ urlpatterns = [
     path("activity-logs/", views.activity_logs),
     path("auth/image-upload", views.image_upload, name="image-upload"),
     path("auth/mono-token/", views.get_mono_token, name="get_mono_token"),
+    path("referrals/check-code/", views.check_ref_code, name="check-code"),
     
 ]

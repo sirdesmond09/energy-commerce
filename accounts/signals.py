@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.db.models.signals import post_save, pre_save
 from django.contrib.auth import get_user_model
+from accounts.helpers.generators import generate_referral_code
 from config import settings
 from djoser.signals import user_registered, user_activated
 
@@ -79,6 +80,7 @@ def activate_otp(user, request, *args,**kwargs):
     
     if user.role == "user":
         user.is_active = False
+        user.referral_code = generate_referral_code()
         user.save()
         
         code = generate_otp(6)

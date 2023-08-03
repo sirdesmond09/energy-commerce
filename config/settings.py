@@ -149,7 +149,7 @@ class Common(Configuration):
 
     AUTH_USER_MODEL = 'accounts.User'
     
-    
+
 
     DJOSER = {
         "USER_ID_FIELD" : "id",
@@ -167,6 +167,7 @@ class Common(Configuration):
         'ACTIVATION_URL' : 'activate/{uid}/{token}',
         'SERIALIZERS':{
             'user_create': 'accounts.serializers.UserRegistrationSerializer',
+            "user_create_password_retype": "accounts.serializers.UserRegistrationSerializer",
             'user': 'accounts.serializers.CustomUserSerializer',
             'user_delete': 'accounts.serializers.UserDeleteSerializer',
             "current_user" : 'accounts.serializers.CustomUserSerializer',

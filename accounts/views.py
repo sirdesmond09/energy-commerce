@@ -25,6 +25,10 @@ from django.contrib.auth.models import Permission, Group
 from django.db.models import Q
 import requests
 import os
+from djoser import signals, utils
+from djoser.compat import get_user_email
+from djoser.conf import settings
+
 
 
 
@@ -52,6 +56,25 @@ def get_query():
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.filter(is_deleted=False)
     
+    def perform_create(self, serializer):
+        referral = serializer.validated_data.pop("referral_code")
+
+        user = serializer.save()
+        if referral is not None:
+            ref = User.objects.filter(referral_code=referral).first()
+            user.referred_by = ref
+            user.save()
+        signals.user_registered.send(
+            sender=self.__class__, user=user, request=self.request
+        )
+
+        context = {"user": user}
+        to = [get_user_email(user)]
+        if settings.SEND_ACTIVATION_EMAIL:
+            settings.EMAIL.activation(self.request, context).send(to)
+        elif settings.SEND_CONFIRMATION_EMAIL:
+            settings.EMAIL.confirmation(self.request, context).send(to)
+            
     def list(self, request, *args, **kwargs):
         queryset = self.queryset.filter(role="user")
 
@@ -620,4 +643,17 @@ def get_mono_token(request):
     
     
     return Response(res.json())
+
+
+@api_view(["GET"])
+def check_ref_code(request):
+    
+    referralCode = request.GET.get("ref")
+    if referralCode is not None:
+        ref = User.objects.filter(referral_code=referralCode).first()
+        
+        return Response({"first_name":ref.first_name,
+                        "last_name":ref.last_name,
+                        "image":ref.image_url})
+    return Response({"error":"invalid"}, status=404)
     
