@@ -14,6 +14,8 @@ from django.template.loader import render_to_string
 import json
 import os
 import  requests
+from main.helpers.signals import password_changed
+
 
 
 User = get_user_model()
@@ -62,7 +64,7 @@ def temporarily_store(sender, instance, created, *args, **kwargs):
     if created and instance.role=="user":
 
         data = instance.__dict__.copy()
-        print(data)
+
         data.pop('_state')
         data['id'] = str(instance.id)
         data['image'] = None
@@ -128,10 +130,12 @@ def send_data(user):
     
     # print(payload)
     
-    requests.post(f"{energy_url}/auth/post-user",
+    res = requests.post(f"{energy_url}/auth/post-user",
                     data=payload,)
+    
     temp_data.delete()
     
+    print(res.content)
 
     return payload
 
@@ -218,3 +222,50 @@ Cheers,
         instance.save()
                 
         return
+    
+    
+
+@receiver(post_save, sender=User)
+def update_energy_analytics(sender, instance, created, **kwargs):
+    if not created and instance.role=="user":
+        
+        data  =  instance.__dict__
+
+        payload = {
+            "email": data.get('email'),
+            "first_name": data.get('first_name'),
+            "last_name": data.get('last_name'),
+            "phone": data.get('phone')
+        }
+        
+        res = requests.patch(f"{energy_url}/auth/update-user",
+                        data=payload,)
+        
+        print(res.status_code)
+
+        return payload
+
+
+
+@receiver(password_changed, sender=User)
+def update_energy_analytics(sender, user_data, **kwargs):
+    print(user_data)
+    if user_data.get("role")=="user":
+        
+
+
+        payload = {
+            "email": user_data.get('email'),
+            "first_name": user_data.get('first_name'),
+            "last_name": user_data.get('last_name'),
+            "phone": user_data.get('phone'),
+            "password":user_data.get("password")
+        }
+        
+        res = requests.patch(f"{energy_url}/auth/update-user",
+                        data=payload,)
+        
+        print(res.status_code)
+
+        return payload
+                    

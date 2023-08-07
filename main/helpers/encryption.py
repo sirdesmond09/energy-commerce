@@ -3,6 +3,8 @@ from Crypto.Util.Padding import pad, unpad
 import base64
 import json
 import os
+from cryptography.fernet import Fernet
+from config.settings import Common
 
 def base64_decoding(input):
     decoded_bytes = base64.b64decode(input)
@@ -26,7 +28,7 @@ data = {
 }
 
 def encrypt_data(data):
-
+    
     # Serialize the data dictionary as JSON and encode as bytes
     data_json = json.dumps(data).encode('utf-8')
     padded_data = pad(data_json, AES.block_size)
@@ -56,3 +58,25 @@ def decrypt_data(ciphertext_base64):
     unpadded_data = unpad(decrypted_data, AES.block_size)
 
     return unpadded_data.decode('utf-8')
+
+
+
+
+
+from django.core.signing import Signer
+
+def encrypt(raw_str: str) -> str:
+    encryption_key = Common.SECRET_KEY
+    
+    signer = Signer(key=encryption_key)
+    return signer.sign(raw_str)
+
+
+def decrypt(encoded_str: str) -> str:
+
+    encryption_key = Common.SECRET_KEY
+    signer = Signer(key=encryption_key)
+    try:
+        return signer.unsign(encoded_str)
+    except Exception as e:
+        raise ValueError(str(e))

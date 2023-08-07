@@ -28,7 +28,9 @@ import os
 from djoser import signals, utils
 from djoser.compat import get_user_email
 from djoser.conf import settings
-
+from main.helpers.signals import password_changed
+from django.contrib.auth import get_user_model, update_session_auth_hash
+from django.utils.timezone import now
 
 
 
@@ -115,6 +117,52 @@ class CustomUserViewSet(UserViewSet):
         #     return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             raise AuthenticationFailed(detail={"message":"incorrect password"})
+        
+    
+    @action(["post"], detail=False)
+    def set_password(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.request.user.set_password(serializer.data["new_password"])
+        self.request.user.save()
+        
+        user_data = request.user.__dict__
+        user_data['password'] = serializer.data["new_password"]
+        password_changed.send(sender=User, user_data=user_data)
+        
+
+        if settings.PASSWORD_CHANGED_EMAIL_CONFIRMATION:
+            context = {"user": self.request.user}
+            to = [get_user_email(self.request.user)]
+            settings.EMAIL.password_changed_confirmation(self.request, context).send(to)
+
+        if settings.LOGOUT_ON_PASSWORD_CHANGE:
+            utils.logout_user(self.request)
+        elif settings.CREATE_SESSION_ON_LOGIN:
+            update_session_auth_hash(self.request, self.request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+    @action(["post"], detail=False)
+    def reset_password_confirm(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.user.set_password(serializer.data["new_password"])
+        if hasattr(serializer.user, "last_login"):
+            serializer.user.last_login = now()
+            
+        serializer.user.save()
+        user_data = request.user.__dict__
+        user_data['password'] = serializer.data["new_password"]
+        password_changed.send(sender=User, user_data=user_data)
+
+        if settings.PASSWORD_CHANGED_EMAIL_CONFIRMATION:
+            context = {"user": serializer.user}
+            to = [get_user_email(serializer.user)]
+            settings.EMAIL.password_changed_confirmation(self.request, context).send(to)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AdminListCreateView(ListCreateAPIView):
