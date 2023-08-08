@@ -49,7 +49,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     
     class Meta():
         model = User
-        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "referral_code" ,"role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "roles", "is_superuser", "image_url", "date_joined"]
+        fields = ['id',"first_name", "last_name", "email", "phone", "password", "is_active", "referral_code", "referred_by" ,"role", "bank_detail", "store_profile", "favourite_detail", "groups", "user_permissions", "vendor_rating", "vendor_status", "roles", "is_superuser", "image_url", "date_joined"]
 
         extra_kwargs = {
             'password': {'write_only': True}
