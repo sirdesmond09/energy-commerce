@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from accounts.models import StoreBankDetail, StoreProfile
 
 from main.models import CalculatorItem, Commission, Video, FrequentlyAskedQuestion, Order, OrderItem, PaymentDetail, Product, ProductCategory, Rating
+from referal.models import ReferralBonus
 
 
 
@@ -128,6 +129,11 @@ class CommissionTablePermissions(CustomBasePermissions):
 class VideoPermissions(CustomBasePermissions):
     def __init__(self):
         self.model = Video
+
+
+class ReferralBonusTablePermissions(CustomBasePermissions):
+    def __init__(self):
+        self.model = ReferralBonus
     
 
 

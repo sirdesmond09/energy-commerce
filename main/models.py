@@ -271,6 +271,7 @@ class Order(models.Model):
     processed_at = models.DateTimeField(null=True, blank=True)
     cancel_requested_at = models.DateTimeField(null=True, blank=True)
     cancel_responded_at = models.DateTimeField(null=True, blank=True)
+    is_first_order = models.BooleanField(null=True)
     is_deleted = models.BooleanField(default=False)
     
     

@@ -54,6 +54,7 @@ class Common(Configuration):
 
         'accounts.apps.AccountsConfig',
         'main.apps.MainConfig',
+        "referal.apps.ReferalConfig",
         "social_auth",
         
         'rest_framework',

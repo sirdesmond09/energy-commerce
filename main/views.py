@@ -4,6 +4,7 @@ import random
 from accounts.models import ActivityLog
 from main.helpers.deletion import clear_order
 from main.helpers.validator import payment_is_verified, calculate_start_date, refund, validate_pws
+from referal.helpers import record_reward, update_wallet
 from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, GetSpectaOTPSerializer, PaymentBalanceSerializer, SpectaSerializer, SplinterDataSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
 from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, PaymentBalance, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
 from rest_framework import status
@@ -466,6 +467,8 @@ def outright_payment(request, booking_id):
             order.is_paid_for =True
             order.status = "pending"
             order.save()
+            if order.is_first_order:
+                record_reward(referrer=request.user.referred_by, order=order)
             
             payouts = [PayOuts(vendor=order_item.item.vendor,
                                item= order_item,
@@ -631,6 +634,9 @@ def validate_payment(request, payment_id):
             order.is_paid_for =True
             order.status = "pending"
             order.save()
+            
+            if order.is_first_order:
+                record_reward(referrer=order.user.referred_by, order=order)
 
             # create payout
             
@@ -1481,6 +1487,9 @@ def vendor_update_item_status(request, id):
         if item.status == rules.get(status_):
             
             if status_ == "in-transit" and user_role != "admin":
+                
+                update_wallet(item, item.order.user.referred_by)
+                
                 code = "".join([str(random.choice(range(10))) for _ in range(6)])
                 ValidationOTP.objects.create(order_item=item, code = code, vendor=request.user )
                 
@@ -2289,6 +2298,9 @@ def pay_with_specta(request, booking_id):
                 order.is_paid_for =True
                 order.status = "pending"
                 order.save()
+                
+                if order.is_first_order:
+                    record_reward(referrer=request.user.referred_by, order=order)
                 
                 payouts = [PayOuts(vendor=order_item.item.vendor,
                                 item= order_item,

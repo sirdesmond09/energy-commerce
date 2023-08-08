@@ -81,6 +81,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined   = models.DateTimeField(_('date joined'), auto_now_add=True)
     referral_code = models.CharField(max_length=255, null=True)
     referred_by = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+    referral_bonus = models.FloatField(default=0)
     sent_vendor_email = models.BooleanField(default=False)
     fcm_token = models.TextField(null=True)
     provider = models.CharField(_('provider'), max_length=255, default="email", choices=(('email',"email"),
