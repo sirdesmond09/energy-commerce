@@ -14,8 +14,9 @@ class Command(BaseCommand):
         users = User.objects.filter(role="user")
         
         for user in users:
-            user.referral_code = generate_referral_code()
-            user.save()
+            if not user.referral_code:
+                user.referral_code = generate_referral_code()
+                user.save()
         
         
         self.stdout.write(self.style.SUCCESS("Successfully added updated referral codes"))
