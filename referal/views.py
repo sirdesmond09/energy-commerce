@@ -14,7 +14,7 @@ User=  get_user_model()
 class ReferralBonusList(generics.ListAPIView):
     serializer_class = ReferralBonusSerializer
     queryset =ReferralBonus.objects.all()
-    permission_classes = [ReferralBonusTablePermissions]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     
     
