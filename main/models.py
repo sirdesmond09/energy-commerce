@@ -575,7 +575,7 @@ class SupportTicket(models.Model):
     
     
 class Bank(models.Model):
-    name = models.CharField(max_length=350, unique=True)
+    name = models.CharField(max_length=350)
     code = models.CharField(max_length=50)
     date_added = models.DateTimeField(auto_now_add=True)
     
