@@ -183,13 +183,13 @@ class AdminListCreateView(ListCreateAPIView):
             
             if serializer.validated_data.get('is_superuser') == True and request.user.is_superuser == True:
                 
-                serializer.validated_data['is_superuser'] == True
-                serializer.validated_data['is_staff'] == True
+                serializer.validated_data['is_superuser'] = True
+                serializer.validated_data['is_staff'] = True
                 
                 
             elif serializer.validated_data.get('is_superuser', None) != True  :
-                serializer.validated_data['is_superuser'] == False
-                serializer.validated_data['is_staff'] == False
+                serializer.validated_data['is_superuser'] = False
+                serializer.validated_data['is_staff'] = False
             
             else:
                 raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})

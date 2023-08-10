@@ -9,6 +9,9 @@ User = get_user_model()
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
+        
+        # Bank.objects.all().delete()
+        
         url="https://api.flutterwave.com/v3/banks/NG"
         res = requests.get(url, headers={'Authorization': os.getenv("FLW_SECRET_KEY")})
         data = res.json().get("data")
