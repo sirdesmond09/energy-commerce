@@ -220,7 +220,10 @@ class AddVendorSerializer(serializers.Serializer):
             vendor_data.pop("role") 
         
         try:
+            password = vendor_data.get("password")
             vendor = User.objects.create(**vendor_data, role="vendor", vendor_status="applied")
+            vendor.set_password(password)
+            vendor.save()
             
             try:
             
