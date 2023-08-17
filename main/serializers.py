@@ -56,9 +56,11 @@ class AddProductSerializer(serializers.Serializer):
     
     def create(self, validated_data):
         locations = validated_data['product'].pop("locations")
+        ships_from = validated_data['product'].pop("ships_from")
         primary_img = validated_data['product'].pop('primary_img')
         product = Product.objects.create(**validated_data['product'], primary_img=primary_img)
         product.locations.set(locations)
+        product.ships_from.set(ships_from)
         product.save() 
         
         try:
