@@ -29,7 +29,7 @@ class StoreLinkInline(admin.StackedInline):
 class UserAdmin(admin.ModelAdmin):
     list_display = ["email", "role", "is_active", "is_admin", "is_deleted", "referred_by", "date_joined"]
     list_editable = ["role", "is_active", "is_admin"]
-    list_filter = ["status", "is_active", "is_deleted", "date_joined"]
+    list_filter = ["role","vendor_status", "is_active", "is_deleted", "date_joined"]
     inlines = [ StoreLinkInline]
     
     
