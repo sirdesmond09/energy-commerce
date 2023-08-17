@@ -7,14 +7,14 @@ from accounts.helpers.generators import generate_referral_code
 from config import settings
 from djoser.signals import user_registered, user_activated
 
-from .models import ActivationOtp, TempStorage
+from .models import ActivationOtp, TempStorage, StoreProfile
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 import json
 import os
 import  requests
-from main.helpers.signals import password_changed
+from main.helpers.signals import password_changed, post_store_delete
 
 
 
@@ -268,4 +268,13 @@ def update_energy_analytics(sender, user_data, **kwargs):
         print(res.status_code)
 
         return payload
+                    
+
+
+@receiver(post_store_delete, sender=StoreProfile)
+def delete_products(sender, vendor, **kwargs):
+    #when a store or vendor is deleted, get all the products belonging to that entity and flag as deleted
+    
+    vendor.products.filter(is_deleted=False).update(is_deleted=True)
+    
                     

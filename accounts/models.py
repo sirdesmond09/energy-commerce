@@ -8,12 +8,12 @@ from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.core.validators import MinLengthValidator, FileExtensionValidator
 from django.forms import model_to_dict
-
+from django.db import transaction
 from .managers import UserManager
 import uuid
 import random
 from django.contrib.auth.models import Group as DjangoGroup
-
+from main.helpers.signals import post_store_delete
 
 class User(AbstractBaseUser, PermissionsMixin):
     
@@ -124,6 +124,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return self.image.url
         return ""
     
+    @transaction.atomic
     def delete(self):
         
         """
@@ -136,8 +137,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.phone = f"{self.phone}-deleted-{random.randint(0,100000)}"
         self.save()
         
-        return 
         
+        if self.role == "vendor":
+            self.store.delete()
+        
+        return 
+    
+    @transaction.atomic
     def delete_permanently(self):
         
         """
@@ -291,9 +297,14 @@ class StoreProfile(models.Model):
             
         return detail    
     
+    @transaction.atomic
     def delete(self):
+        self.store_name= f"{random.randint(0,100000)}-deleted-{self.store_name}"
         self.is_deleted = True
+        self.bank_detail.delete()
         self.save()
+        
+        post_store_delete.send(sender=StoreProfile, vendor=self.vendor)
         
         
     def delete_permanently(self):

@@ -66,10 +66,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
             products = vendor.products.filter(is_deleted=False)
             
             if len(products) > 0:
-                non_zero = list(filter(lambda x: x.rating != 0, products))
-                ratings =  list(map(lambda product : product.rating, non_zero))
+                try:
+                    non_zero = list(filter(lambda x: x.rating != 0, products))
+                    ratings =  list(map(lambda product : product.rating, non_zero))
 
-                return round(sum(ratings)/len(ratings), 2)
+                    return round(sum(ratings)/len(ratings), 2)
+                except Exception as e:
+                    return 0
 
             return 0
         
