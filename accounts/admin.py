@@ -27,8 +27,9 @@ class StoreLinkInline(admin.StackedInline):
     
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ["email", "role", "is_active", "is_admin", "referred_by"]
+    list_display = ["email", "role", "is_active", "is_admin", "is_deleted", "referred_by", "date_joined"]
     list_editable = ["role", "is_active", "is_admin"]
+    list_filter = ["status", "is_active", "is_deleted", "date_joined"]
     inlines = [ StoreLinkInline]
     
     
