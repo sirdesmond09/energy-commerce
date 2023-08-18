@@ -59,7 +59,7 @@ def log_delete_delete(sender, instance:Product, created, **kwargs):
 def send_notification(sender, instance:UserInbox, created, *args,**kwargs):
     
     if created:        
-        if instance.user.fcm_token is not None or instance.user.fcm_token!= "":
+        if instance.user.fcm_token is not None:
         
             notification = messaging.Notification(title=instance.heading, body=instance.body, image=instance.image_url)
             messaging.send(messaging.Message(notification=notification, token=instance.user.fcm_token))
