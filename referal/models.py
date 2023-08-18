@@ -25,6 +25,5 @@ class ReferrerReward(models.Model):
     percent = models.FloatField() #percent at the time calculation was made
 
     
-    
 
         

@@ -30,6 +30,7 @@ class ReferralBonusUpdate(generics.RetrieveUpdateAPIView):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
 def referral_data(request):
     
     referred_users  = User.objects.filter(is_deleted=False,
@@ -50,6 +51,7 @@ def referral_data(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
 def check_first_order(request):
     
     orders  = Order.objects.filter(is_deleted=False, user=request.user)
