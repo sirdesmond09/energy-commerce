@@ -49,7 +49,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     VENDOR_STATUS = (
         ('applied', 'applied'),
         ('approved', 'approved'),
-        ('unapproved', 'unapproved'),
         ('blocked', 'blocked'),
     )  
     

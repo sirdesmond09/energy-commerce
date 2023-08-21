@@ -595,8 +595,8 @@ def dashboard_vendor_stat(request):
     data = {
         "total" :  vendors.count(),
         "approved"  : vendors.filter(vendor_status="approved").count(),
-        "unapproved"  : vendors.filter(vendor_status="unapproved").count(),
-        "blocked"  : vendors.filter(vendor_status="blocked").count(),
+        "applied"  : vendors.filter(vendor_status="applied").count(),
+        "blocked"  :  vendors.filter(vendor_status="blocked").count(),
         
         
     }

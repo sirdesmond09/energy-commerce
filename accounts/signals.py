@@ -170,7 +170,7 @@ def comfirmaion_email(user, request, *args,**kwargs):
         
 
 @receiver(post_save, sender=User)
-def send_vendor_details(sender, instance, created, **kwargs):
+def send_approved_mail(sender, instance, created, **kwargs):
     if (instance.role =="vendor" and instance.vendor_status=="approved") and instance.sent_vendor_email is False:
         # print(instance.password)
         subject = "You can now sell on imperium"
@@ -198,8 +198,8 @@ def send_vendor_details(sender, instance, created, **kwargs):
     
     
 @receiver(post_save, sender=User)
-def send_vendor_details(sender, instance, created, **kwargs):
-    if (instance.role =="vendor" and (instance.vendor_status=="unapproved"  or instance.vendor_status=="blocked") )and instance.sent_vendor_email is False:
+def send_blocked_mail(sender, instance, created, **kwargs):
+    if (instance.role =="vendor" and instance.vendor_status=="blocked") and instance.sent_vendor_email is False:
         # print(instance.password)
         subject = "Oops! Something went wrong with your account"
             
