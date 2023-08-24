@@ -1219,7 +1219,7 @@ class OrderDetail(RetrieveAPIView):
 
 class PaidOrdersView(ListAPIView):
     
-    queryset = Order.objects.filter(is_deleted=False).order_by("-date_added")
+    queryset = Order.objects.filter(is_deleted=False, is_paid_for=True).order_by("-date_added")
     
     serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication]
@@ -1232,7 +1232,7 @@ class PaidOrdersView(ListAPIView):
             
         
         if request.user.role == "user" or request.user.role == "vendor":
-            queryset = queryset.filter(user=request.user, is_paid_for=True)
+            queryset = queryset.filter(user=request.user)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
