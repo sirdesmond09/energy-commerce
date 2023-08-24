@@ -93,6 +93,10 @@ urlpatterns = [
     path("payments/splinter/eligibility/", views.splinter_request),
     path("videos/", views.VideoListCreateView.as_view()),
     path("videos/<int:id>/", views.VideoDetailView.as_view()),
+    path("banks/", views.banks_list),
+    path("banks/verify-account/", views.verify_account),
+    # path("videos/<int:id>/", views.VideoDetailView.as_view()),
+    
     path("check/", views.check),
     
     

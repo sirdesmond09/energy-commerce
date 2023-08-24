@@ -1,13 +1,17 @@
-from accounts.permissions import ReferralBonusTablePermissions
-from .models import ReferralBonus, ReferrerReward
-from .serializers import ReferralBonusSerializer
+from accounts.models import ActivityLog
+from accounts.permissions import ReferralBonusTablePermissions, UserBankAccountTablePermissions, WithdrawalTablePermissions
+from .models import ReferralBonus, ReferrerReward, UserBankAccount, Withdrawal
+from .serializers import ReferralBonusSerializer, UserBankAccountSerializer, WithdrawalSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from main.models import Order
+from main.models import Order, UserInbox
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError, NotFound
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 User=  get_user_model()
 
@@ -59,3 +63,129 @@ def check_first_order(request):
     
     
     
+class UserAccountView(generics.ListCreateAPIView):
+    serializer_class = UserBankAccountSerializer
+    queryset = UserBankAccount.objects.filter(is_deleted=False).order_by("-date_added")
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    
+    def post(self, request, *args, **kwargs):
+        
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        obj = serializer.save()
+        
+        obj.user = request.user
+        obj.save()
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"Added bank account"
+            )
+            
+        return Response({"message":"created"}, status=201)
+    
+    
+    
+    def list(self, request, *args, **kwargs):
+        
+
+        try:
+            bank = UserBankAccount.objects.get(user=request.user)
+            data = UserBankAccountSerializer(bank).data
+            return Response({"message":"created", "data":data}, status=201)
+        
+        except UserBankAccount.DoesNotExist:
+            return Response({}, status=200)
+
+
+
+
+
+
+
+class UserAccountUpdateView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserBankAccountSerializer
+    queryset = UserBankAccount.objects.filter(is_deleted=False).order_by("-date_added")
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [UserBankAccountTablePermissions]
+    lookup_field = "id"
+
+            
+
+class WithdrawalView(generics.ListCreateAPIView):
+    queryset = Withdrawal.objects.filter(is_deleted=False).order_by("-date_requested")
+    serializer_class = WithdrawalSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        if request.user.role != "admin":
+            queryset = queryset.filter(user=request.user)
+        
+        return super().list(request, queryset=queryset, *args, **kwargs)
+
+
+    def post(self, request, *args, **kwargs):
+        
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        
+        amount = serializer.validated_data.get("amount")
+
+        if request.user.referral_bonus < 10000:
+            raise ValidationError(detail={"error":"you can only withdraw when you have up to NGN10,000"})
+    
+        get_object_or_404(UserBankAccount, user=request.user)
+        
+        if amount > request.user.referral_bonus:
+            raise ValidationError(detail={"error":"insufficient funds"})
+        
+        if request.user.withdrawal_set.filter(is_deleted=False, status="pending").exists():
+            raise ValidationError(detail={"error":"You already have a pending withdrawal request"})
+        
+        
+        obj = serializer.save()
+        
+        obj.user = request.user
+        obj.save()
+        
+        ActivityLog.objects.create(
+            user=request.user,
+            action = f"Created withdrawal request"
+            )
+            
+        return Response(serializer.data, status=201)
+    
+
+@api_view(["PATCH"])
+@permission_classes([WithdrawalTablePermissions])
+@authentication_classes([JWTAuthentication])
+def confirm_withdrawal(request, token):
+    if request.method == "PATCH":
+        try:
+            instance = Withdrawal.objects.get(hash_id=token, is_deleted=False)
+        except Withdrawal.DoesNotExist:
+            raise NotFound(detail={"error":"withdrawal request not found"})
+        
+        if instance.status == "completed":
+            raise ValidationError({"detail": "this request has been approved before"})
+        
+        instance.status = "completed"
+        instance.date_fulfilled = timezone.now()
+        instance.save()
+        
+        instance.user.referral_bonus-=instance.amount
+        instance.user.save()
+        
+        UserInbox.objects.create(user=instance.user, heading="Withdrawal Approved", body=f"Your request to withdraw NGN{instance.amount} has been approved.")
+        
+        return Response({"message":"success"}, status=202)

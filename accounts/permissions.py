@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from accounts.models import StoreBankDetail, StoreProfile
 
 from main.models import CalculatorItem, Commission, Video, FrequentlyAskedQuestion, Order, OrderItem, PaymentDetail, Product, ProductCategory, Rating
-from referal.models import ReferralBonus
+from referal.models import ReferralBonus, UserBankAccount, Withdrawal
 
 
 
@@ -134,6 +134,17 @@ class VideoPermissions(CustomBasePermissions):
 class ReferralBonusTablePermissions(CustomBasePermissions):
     def __init__(self):
         self.model = ReferralBonus
+
+
+class WithdrawalTablePermissions(CustomBasePermissions):
+    def __init__(self):
+        self.model = Withdrawal
+
+
+
+class UserBankAccountTablePermissions(CustomBasePermissions):
+    def __init__(self):
+        self.model = UserBankAccount
     
 
 

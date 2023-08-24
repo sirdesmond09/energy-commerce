@@ -502,3 +502,8 @@ class SpectaSerializer(serializers.Serializer):
             except PaymentBalance.DoesNotExist:
                 raise serializers.ValidationError("Balance not found")
         return None
+
+
+class VerifyAccountSerializer(serializers.Serializer):
+    account_number = serializers.CharField(max_length=255)
+    bank_code = serializers.CharField(max_length=20)

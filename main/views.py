@@ -3,9 +3,10 @@ import os
 import random
 from accounts.models import ActivityLog
 from main.helpers.deletion import clear_order
+from main.helpers.flutter_funcs import get_banks, resolve_account
 from main.helpers.validator import payment_is_verified, calculate_start_date, refund, validate_pws
 from referal.helpers import record_reward, update_wallet
-from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, GetSpectaOTPSerializer, PaymentBalanceSerializer, SpectaSerializer, SplinterDataSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
+from .serializers import AddOrderSerializer, AddProductSerializer, AddressSerializer, CalculatorItemSerializer, CancelResponseSerializer, CancelSerializer, CartSerializer, CaseMinorCategorySerializer, CaseSubCategorySerializer, CaseTypeSerializer, CommissionSerializer, DocumentationSerializer, GetSpectaOTPSerializer, PaymentBalanceSerializer, SpectaSerializer, SplinterDataSerializer, VerifyAccountSerializer, VideoSerializer, EnergyCalculatorSerializer, FAQSerializer, GallerySerializer, LocationSerializer, MultipleProductSerializer, OrderItemSerializer, OrderSerializer, PayOutSerializer, PaymentSerializer, ProductComponentSerializer, ProductSerializer, CategorySerializer, RatingSerializer, StatusSerializer, SupportTicketSerializer, UpdateStatusSerializer, UserInboxSerializer
 from .models import Address, Bank, CalculatorItem, Cart, CaseMinorCategory, CaseSubCategory, CaseType, Commission, Documentation, PaymentBalance, Video, FrequentlyAskedQuestion, Location, Order, OrderItem, PayOuts, PaymentDetail, ProductCategory, Product, ProductComponent, ProductGallery, Rating, SupportTicket, UserInbox, ValidationOTP
 from rest_framework import status
 from rest_framework.response import Response
@@ -2426,4 +2427,32 @@ def check(request):
     logger.warning("This is a test")
     
     return Response({"message":"payment not successful"})
+
+
+
+@api_view(['GET'])
+def banks_list(request):
+
+    data = get_banks()
     
+    return Response(data, status=200)
+    
+    
+@swagger_auto_schema("post", request_body=VerifyAccountSerializer())
+@api_view(["POST"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def verify_account(request):
+    if request.method == "POST":
+        
+        serializer = VerifyAccountSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        account_number = serializer.validated_data.get('account_number')
+        bank_code = serializer.validated_data.get('bank_code')
+        
+        data = resolve_account(account_number,bank_code)
+        
+
+        return Response(data, status=status.HTTP_200_OK)
+       
