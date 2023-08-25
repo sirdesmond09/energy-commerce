@@ -186,7 +186,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         
         if self.role == "vendor":
             detail = model_to_dict(self.store.bank_detail, exclude=[ "is_deleted", "store" ])
-            detail["id"] = self.store.id
+            detail["id"] = self.store.bank_detail.id
             
             return detail    
         else:
