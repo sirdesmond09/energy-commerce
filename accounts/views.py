@@ -254,6 +254,7 @@ def user_login(request):
                         user_detail['email'] = user.email
                         user_detail['phone'] = user.phone
                         user_detail['role'] = user.role
+                        user_detail['last_login'] = now()
                         user_detail['is_admin'] = user.is_admin
                         user_detail['is_superuser'] = user.is_superuser
                         user_detail['access'] = str(refresh.access_token)

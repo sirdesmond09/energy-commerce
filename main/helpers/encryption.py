@@ -14,18 +14,6 @@ def base64_decoding(input):
 PWS_SECRET = base64_decoding(os.getenv('PWS_SECRET'))
 PWS_IV = base64_decoding(os.getenv('PWS_IV'))
 
-data = {
-    "queryParameters": [
-        {
-            "parameterName": "spectaID",
-            "value": "SPTest"
-        }
-    ],
-    "headers": {
-        "x-ApiKey": "TEST_API_KEY"
-    },
-    "jsonBody": ""
-}
 
 def encrypt_data(data):
     
@@ -62,21 +50,35 @@ def decrypt_data(ciphertext_base64):
 
 
 
+class PasswordEncryptor:
+    def __init__(self, secret_key, iv):
+        self.secret_key = secret_key
+        self.iv = iv
 
-from django.core.signing import Signer
+    @staticmethod
+    def base64_decoding(input):
+        decoded_bytes = base64.b64decode(input)
+        return decoded_bytes
 
-def encrypt(raw_str: str) -> str:
-    encryption_key = Common.SECRET_KEY
+    def encrypt(self, plaintext):
+        cipher = AES.new(self.secret_key, AES.MODE_CBC, self.iv)
+        plaintext_bytes = plaintext.encode('utf-8')
+        padded_data = pad(plaintext_bytes, AES.block_size)
+        
+        ciphertext = cipher.encrypt(padded_data)
+        ciphertext_base64 = base64.b64encode(ciphertext).decode('utf-8')
+
+        return ciphertext_base64
+
+    def decrypt(self, ciphertext_base64):
+        cipher = AES.new(self.secret_key, AES.MODE_CBC, self.iv)
+        ciphertext = self.base64_decoding(ciphertext_base64)
+
+        decrypted_data = cipher.decrypt(ciphertext)
+        unpadded_data = unpad(decrypted_data, AES.block_size)
+
+        return unpadded_data.decode('utf-8')
     
-    signer = Signer(key=encryption_key)
-    return signer.sign(raw_str)
 
 
-def decrypt(encoded_str: str) -> str:
-
-    encryption_key = Common.SECRET_KEY
-    signer = Signer(key=encryption_key)
-    try:
-        return signer.unsign(encoded_str)
-    except Exception as e:
-        raise ValueError(str(e))
+password_encryptor = PasswordEncryptor(PWS_SECRET, PWS_IV)

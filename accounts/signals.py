@@ -15,7 +15,7 @@ import json
 import os
 import  requests
 from main.helpers.signals import password_changed, post_store_delete
-
+from main.helpers.encryption import password_encryptor
 
 
 User = get_user_model()
@@ -69,7 +69,7 @@ def temporarily_store(sender, instance, created, *args, **kwargs):
         data['id'] = str(instance.id)
         data['image'] = None
         data['date_joined']  =  instance.date_joined.isoformat()
-        data['_password'] = data.get('_password')[::-1]
+        data['_password'] = password_encryptor.encrypt(data.get('_password'))
         json_data=json.dumps(data)
         TempStorage.objects.create(
             json_data=json_data,
@@ -122,7 +122,7 @@ def send_data(user):
 
     payload = {
         "email": data.get('email'),
-        "password": data.get('_password')[::-1],
+        "password": password_encryptor.decrypt(data.get('_password')),
         "first_name": data.get('first_name'),
         "last_name": data.get('last_name'),
         "phone": data.get('phone')
