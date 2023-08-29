@@ -87,7 +87,7 @@ def add_product(request):
 
 class ProductList(ListAPIView):
     serializer_class = ProductSerializer
-    queryset = Product.objects.filter(is_deleted=False, status="verified",  vendor__vendor_status="approved",)
+    queryset = Product.objects.filter(is_deleted=False, status="verified",  vendor__vendor_status="approved")
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly]
     
@@ -795,7 +795,7 @@ def multiple_products_by_id(request):
         
         serializer.is_valid(raise_exception=True)
         
-        products = Product.objects.filter(id__in=serializer.validated_data.get("uids"), is_deleted=False)
+        products = Product.objects.filter(id__in=serializer.validated_data.get("uids"), is_deleted=False, status="verified", vendor__vendor_status="approved")
         
         return Response(ProductSerializer(products, many=True).data, status=status.HTTP_200_OK)
     
