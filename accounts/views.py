@@ -170,8 +170,8 @@ class AdminListCreateView(ListCreateAPIView):
     
     queryset = User.objects.filter(is_deleted=False, is_active=True, role="admin").order_by('-date_joined')
     serializer_class =  CustomUserSerializer
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [CustomDjangoModelPermissions]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [CustomDjangoModelPermissions]
     
     
     @swagger_auto_schema(method="post", request_body= CustomUserSerializer())
@@ -198,8 +198,7 @@ class AdminListCreateView(ListCreateAPIView):
             serializer.validated_data['is_active'] = True
             serializer.validated_data['is_admin'] = True
             serializer.validated_data['role'] = "admin"
-            serializer.validated_data['referral_code'] = ""
-            instance = User.objects.create(**serializer.data)
+            instance = serializer.save()
             
             
             data = {
@@ -207,10 +206,10 @@ class AdminListCreateView(ListCreateAPIView):
                 'data' : serializer.data,
             }
             
-            ActivityLog.objects.create(
-            user=request.user,
-            action = f"Created admin with email {instance.email}"
-            )
+            # ActivityLog.objects.create(
+            # user=request.user,
+            # action = f"Created admin with email {instance.email}"
+            # )
 
             return Response(data, status = status.HTTP_201_CREATED)
 

@@ -8,7 +8,7 @@ def generate_password():
         a.append(random.choice(string.ascii_lowercase))
         a.append(random.choice(string.ascii_uppercase))
         a.append(random.choice(string.digits))
-        a.append(random.choice(["@","!","$","#","="]))
+        a.append(random.choice(["@","!","$","#"]))
     random.shuffle(a)
     return "".join(a)
 

@@ -31,6 +31,7 @@ def generate_otp(n):
 @receiver(post_save, sender=User)
 def send_details(sender, instance, created, **kwargs):
     if (created and instance.is_superuser!=True) and instance.is_admin==True:
+
         password = instance.password
         
         instance.set_password(password)
@@ -57,7 +58,6 @@ Regards,
         email_from = settings.Common.DEFAULT_FROM_EMAIL
         recipient_list = [instance.email]
         send_mail( subject, message, email_from, recipient_list)
-        
         
         return
     
