@@ -12,9 +12,10 @@ class GalleryAdmin(admin.TabularInline):
     
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ["name", "price","qty_available","is_deleted"]
+    list_display = ["name", "price","qty_available", "category","is_deleted"]
     list_editable = ["price", "qty_available","is_deleted"]
     inlines = [ComponentsAdmin,GalleryAdmin]
+    list_filter=["category"]
     save_as = True
     
     
