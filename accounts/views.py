@@ -206,10 +206,10 @@ class AdminListCreateView(ListCreateAPIView):
                 'data' : serializer.data,
             }
             
-            # ActivityLog.objects.create(
-            # user=request.user,
-            # action = f"Created admin with email {instance.email}"
-            # )
+            ActivityLog.objects.create(
+            user=request.user,
+            action = f"Created admin with email {instance.email}"
+            )
 
             return Response(data, status = status.HTTP_201_CREATED)
 
