@@ -193,12 +193,13 @@ class AdminListCreateView(ListCreateAPIView):
             
             else:
                 raise PermissionDenied(detail={"message": "you do not have permission to perform this action"})
-            
-            serializer.validated_data['password'] = generate_password()
+            password = generate_password()
+            serializer.validated_data['password'] = password
             serializer.validated_data['is_active'] = True
             serializer.validated_data['is_admin'] = True
             serializer.validated_data['role'] = "admin"
-            instance = serializer.save()
+            instance = User.objects.create(**serializer.data)
+            
             
             data = {
                 'message' : "success",
