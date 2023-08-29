@@ -198,6 +198,7 @@ class AdminListCreateView(ListCreateAPIView):
             serializer.validated_data['is_active'] = True
             serializer.validated_data['is_admin'] = True
             serializer.validated_data['role'] = "admin"
+            serializer.validated_data['referral_code'] = ""
             instance = User.objects.create(**serializer.data)
             
             
