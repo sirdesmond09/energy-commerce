@@ -43,6 +43,9 @@ You have just been on boarded on the {site_name} platform. Your login details ar
 E-mail: {instance.email} 
 password: {password}    
 
+
+Please login via: https://imperiumadmin-getmobile.sterlingapps.p.azurewebsites.net
+
 Regards,
 {site_name} Support Team   
 """   
