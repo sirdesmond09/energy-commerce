@@ -1487,7 +1487,7 @@ def vendor_update_item_status(request, id):
         
         if item.status == rules.get(status_):
             
-            if status_ == "in-transit" and user_role != "admin":
+            if status_ == "in-transit":
                 
                 update_wallet(item, item.order.user.referred_by)
                 

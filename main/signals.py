@@ -124,4 +124,29 @@ def send_invoice(sender, user, **kwargs):
     
             
     return 
+
+
+
+
+@receiver(post_save, sender=ValidationOTP)
+def send_delivery_code(sender, instance, **kwargs):
+    
+    subject = "Imperium Delivery Code"
+            
+    message = ""
+    
+    order = instance.order_item.order
+    msg_html = render_to_string('email/verification_otp.html', {
+                    'first_name': str(order.user.first_name).title(),
+                    'site_name':site_name,
+                    "MARKET_PLACE_URL":MARKET_PLACE_URL,
+                    "code":instance.code,
+                    "order_id":instance.order_item.unique_id})
+    
+    email_from = settings.Common.DEFAULT_FROM_EMAIL
+    recipient_list = [order.user.email]
+    send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+    
+            
+    return 
         
