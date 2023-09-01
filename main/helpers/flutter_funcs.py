@@ -22,4 +22,4 @@ def resolve_account(account_number,bank_code):
                              "account_bank": bank_code}
                        )
     
-    return res.json()
+    return res.json() 

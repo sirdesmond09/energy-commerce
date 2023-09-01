@@ -265,6 +265,7 @@ def user_login(request):
 
                         if user.role == 'admin':
                             user_detail["modules"] = user.module_access
+                            user_detail["roles"] = GroupSerializer(user.groups.all(), many=True).data
                             
                         data = {
     
