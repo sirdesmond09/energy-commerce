@@ -78,6 +78,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
         
         return 
     
+    def validate_phone(self, data):
+        if data:
+            if User.objects.filter(phone=data).exists():
+                raise ValidationError(detail={"phone":"user with this phone already exist"})
+        
+        return data
+    
+    
     def get_roles(self, admin):
         return GroupSerializer(admin.groups.all(), many=True).data
 
