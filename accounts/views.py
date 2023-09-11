@@ -60,9 +60,11 @@ class CustomUserViewSet(UserViewSet):
     
     def perform_create(self, serializer):
         referral = serializer.validated_data.pop("referral_code")
-        if User.objects.filter(phone=serializer.validated['phone']).exists():
+        
+        if User.objects.filter(phone=serializer.validated_data['phone']).exists():
             raise ValidationError(detail={"phone":"user with this phone already exist"})
         user = serializer.save()
+        
         if referral is not None:
             ref = User.objects.filter(referral_code=referral).first()
             user.referred_by = ref
@@ -182,7 +184,7 @@ class AdminListCreateView(ListCreateAPIView):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
             
-            if User.objects.filter(phone=serializer.validated['phone']).exists():
+            if User.objects.filter(phone=serializer.validated_data['phone']).exists():
                 raise ValidationError(detail={"phone":"user with this phone already exist"})
             
             if serializer.validated_data.get('is_superuser') == True and request.user.is_superuser == True:
