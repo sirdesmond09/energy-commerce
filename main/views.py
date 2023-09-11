@@ -24,7 +24,7 @@ import calendar
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.db.utils import ProgrammingError
-from .helpers.signals import payment_approved
+from .helpers.signals import payment_approved, payment_declined
 from .helpers import uploader
 import requests, json
 from .helpers.encryption import decrypt_data, encrypt_data
@@ -651,7 +651,7 @@ def validate_payment(request, payment_id):
             
             PayOuts.objects.bulk_create(payouts)
             
-
+            payment_approved.send(sender=order, user=order.user) #send payment signal for invoice
             
             UserInbox.objects.create(
                 user = order.user,
@@ -679,7 +679,7 @@ def validate_payment(request, payment_id):
                 order_item.item.qty_available += order_item.qty
                 order_item.item.save()
                 
-                
+            payment_declined.send(sender=order, user=order.user) #send payment signal for invoice
             UserInbox.objects.create(
                 user = order.user,
                 heading = f"Order {order.booking_id} update",

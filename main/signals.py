@@ -10,7 +10,7 @@ import json
 from firebase_admin import messaging
 import os
 import requests
-from .helpers.signals import payment_approved
+from .helpers.signals import payment_approved, payment_declined
 from django.template.loader import render_to_string
 
 
@@ -116,6 +116,27 @@ def send_invoice(sender, user, **kwargs):
                     'site_name':site_name,
                     "MARKET_PLACE_URL":MARKET_PLACE_URL,
                     "order_items":sender.items.filter(is_deleted=False),
+                    "order":sender})
+    
+    email_from = settings.Common.DEFAULT_FROM_EMAIL
+    recipient_list = [user.email]
+    send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+    
+            
+    return 
+
+
+
+@receiver(payment_declined)
+def send_invoice(sender, user, **kwargs):
+    
+    subject = "Your Loan Request was Declined"
+            
+    message = ""
+    msg_html = render_to_string('email/declined.html', {
+                    'first_name': str(user.first_name).title(),
+                    'site_name':site_name,
+                    "MARKET_PLACE_URL":MARKET_PLACE_URL,
                     "order":sender})
     
     email_from = settings.Common.DEFAULT_FROM_EMAIL
