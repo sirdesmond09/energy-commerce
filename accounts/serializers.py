@@ -77,15 +77,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             return 0
         
         return 
-    
-    def validate_phone(self, data):
-        if data:
-            if User.objects.filter(phone=data).exists():
-                raise ValidationError(detail={"phone":"user with this phone already exist"})
-        
-        return data
-    
-    
+
     def get_roles(self, admin):
         return GroupSerializer(admin.groups.all(), many=True).data
 
@@ -231,6 +223,8 @@ class AddVendorSerializer(serializers.Serializer):
             vendor_data.pop("role") 
         
         try:
+            if User.objects.filter(phone=serializers.validated['phone']).exists():
+                raise ValidationError(detail={"phone":"user with this phone already exist"})
             password = vendor_data.get("password")
             vendor = User.objects.create(**vendor_data, role="vendor", vendor_status="applied")
             vendor.set_password(password)

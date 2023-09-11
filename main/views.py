@@ -327,7 +327,7 @@ class AddressListCreateView(ListCreateAPIView):
     
     """Get and create a list of addresses. When getting, the most recent ones are returned on top"""
     
-    queryset = Address.objects.all().order_by('-is_default','-date_added')
+    queryset = Address.objects.filter(is_deleted=False).order_by('-is_default','-date_added')
     serializer_class =  AddressSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -368,7 +368,7 @@ class AddressesDetailView(RetrieveUpdateDestroyAPIView):
     
     """Edit, retrieve, and delete an address"""
 
-    queryset = Address.objects.all().order_by('-date_added')
+    queryset = Address.objects.filter(is_deleted=False).order_by('-date_added')
     serializer_class =  AddressSerializer
     lookup_field = "id"
     authentication_classes = [JWTAuthentication]
@@ -667,8 +667,7 @@ def validate_payment(request, payment_id):
             order.cancellation_response_reason = f"{action} was declined"
             order.cancel_responded_at = timezone.now()
             order.save()
-            
-            
+
             
             ##check if all other items are canceled, then mark order as canceled
             for order_item in order.items.filter(is_deleted=False):
