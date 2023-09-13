@@ -24,7 +24,7 @@ import calendar
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.db.utils import ProgrammingError
-from .helpers.signals import payment_approved, payment_declined
+from .helpers.signals import payment_approved, payment_declined, order_canceled
 from .helpers import uploader
 import requests, json
 from .helpers.encryption import decrypt_data, encrypt_data
@@ -980,8 +980,10 @@ def request_order_item_cancel(request, booking_id, item_id):
             UserInbox.objects.create(
                 user = order.user,
                 heading = f"Order {order_item.unique_id} canceled",
-                body = f"Your order has been disapproved by an administrator"
+                body = f"Your order has been disapproved by an administrator for this reason:\n{order_item.cancellation_response_reason}"
                 )
+            
+            order_canceled.send(sender=order, order_item=order_item)
                 
             
         else:
@@ -1142,7 +1144,7 @@ def permanently_delete_order(request, booking_id):
     
 class OrderList(ListAPIView):
     
-    queryset = OrderItem.objects.filter(is_deleted=False).order_by("-date_added")
+    queryset = OrderItem.objects.filter(is_deleted=False, order__is_paid_for=True).order_by("-date_added")
     
     serializer_class = OrderItemSerializer
     authentication_classes = [JWTAuthentication]
@@ -1868,7 +1870,7 @@ class UserInboxListView(ListAPIView):
     
     """get all inbox."""
     
-    queryset = UserInbox.objects.all().order_by('-date_added')
+    queryset = UserInbox.objects.all().order_by('is_read','-date_added')
     serializer_class =  UserInboxSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -1880,7 +1882,6 @@ class UserInboxListView(ListAPIView):
         queryset = self.filter_queryset(self.get_queryset()).filter(user=self.request.user)
         
 
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -1888,6 +1889,19 @@ class UserInboxListView(ListAPIView):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class UserInboxDetailView(UpdateAPIView):
+    
+    """update inbox as read"""
+    
+    queryset = UserInbox.objects.all().order_by('-date_added')
+    serializer_class =  UserInboxSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+    
+    
     
     
     

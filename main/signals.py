@@ -10,7 +10,7 @@ import json
 from firebase_admin import messaging
 import os
 import requests
-from .helpers.signals import payment_approved, payment_declined
+from .helpers.signals import payment_approved, payment_declined, order_canceled
 from django.template.loader import render_to_string
 
 
@@ -128,7 +128,7 @@ def send_invoice(sender, user, **kwargs):
 
 
 @receiver(payment_declined)
-def send_invoice(sender, user, **kwargs):
+def send_decline_notice(sender, user, **kwargs):
     
     subject = "Your Loan Request was Declined"
             
@@ -138,6 +138,29 @@ def send_invoice(sender, user, **kwargs):
                     'site_name':site_name,
                     "MARKET_PLACE_URL":MARKET_PLACE_URL,
                     "order":sender})
+    
+    email_from = settings.Common.DEFAULT_FROM_EMAIL
+    recipient_list = [user.email]
+    send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+    
+            
+    return 
+
+
+@receiver(order_canceled)
+def send_decline_notice(sender, order_item, **kwargs):
+    
+    subject = "Your Loan Request was Declined"
+            
+    message = ""
+    order = order_item.order
+    user = order.user
+    msg_html = render_to_string('email/canceled.html', {
+                    'first_name': str(user.first_name).title(),
+                    'site_name':site_name,
+                    "MARKET_PLACE_URL":MARKET_PLACE_URL,
+                    "reason":order_item.cancellation_response_reason,
+                    "order":order})
     
     email_from = settings.Common.DEFAULT_FROM_EMAIL
     recipient_list = [user.email]

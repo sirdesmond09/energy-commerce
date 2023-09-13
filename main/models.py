@@ -523,6 +523,7 @@ class UserInbox(models.Model):
     heading = models.CharField(max_length=255)
     body = models.TextField()
     image_url = models.URLField(null=True, blank=True)
+    is_read=models.BooleanField(default=False)
     date_added = models.DateTimeField(auto_now_add=True)
     
     
