@@ -105,7 +105,7 @@ def send_notification(sender, instance:SupportTicket, created, *args,**kwargs):
     
     
 
-@receiver(payment_approved, sender=Order)
+@receiver(payment_approved)
 def send_invoice(sender, user, **kwargs):
     
     subject = "Imperium Payment Invoice"
@@ -127,7 +127,7 @@ def send_invoice(sender, user, **kwargs):
 
 
 
-@receiver(payment_declined, sender=Order)
+@receiver(payment_declined)
 def send_invoice(sender, user, **kwargs):
     
     subject = "Your Loan Request was Declined"
