@@ -24,7 +24,7 @@ import calendar
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.db.utils import ProgrammingError
-from .helpers.signals import payment_approved, payment_declined, order_canceled
+from .helpers.signals import payment_approved, payment_declined, order_canceled, cancel_approved, cancel_rejected
 from .helpers import uploader
 import requests, json
 from .helpers.encryption import decrypt_data, encrypt_data
@@ -1041,29 +1041,9 @@ def respond_to_cancel_request(request, booking_id, item_id):
         obj.cancel_responded_at = timezone.now()
         obj.save()
         
-        # if isinstance(obj, Order):
+ 
             
-        #     products = []
-            
-        #     for order_item in obj.items.all():
-        #         order_item.item.qty_available += order_item.qty
-        #         order_item.prev_status = order_item.status
-        #         order_item.status = "canceled"
-        #         order_item.cancel_responded_at = timezone.now()
-        #         order_item.cancellation_response_reason = "order was canceled"
-        #         order_item.save()
-        #         products.append(order_item.item)
-                
-        #     Product.objects.bulk_update(products, ["qty_available"])
-            
-        #     ActivityLog.objects.create(
-        #         user=request.user,
-        #         action = f"Accepted to cancel order {booking_id}"
-        #         )
-        
-        # elif isinstance(obj, OrderItem):
-            
-            ### return the products and save
+        ### return the products and save
         obj.item.qty_available += obj.qty
         obj.item.save()
         
@@ -1074,6 +1054,10 @@ def respond_to_cancel_request(request, booking_id, item_id):
             order.cancellation_response_reason = "all items were cancelled"
             order.cancel_responded_at = timezone.now()
             order.save()
+            
+        cancel_approved.send(sender=order, order_item=obj)
+
+
             
         ActivityLog.objects.create(
         user=request.user,
@@ -1093,6 +1077,8 @@ def respond_to_cancel_request(request, booking_id, item_id):
             )
         
         
+        
+        
                 
     elif response == "rejected":  
                 
@@ -1100,6 +1086,9 @@ def respond_to_cancel_request(request, booking_id, item_id):
         obj.cancellation_response_reason = serializer.validated_data.get("reason")
         obj.cancel_responded_at = timezone.now()
         obj.save()    
+        
+        cancel_rejected.send(sender=order, order_item=obj)
+        
         ActivityLog.objects.create(
                 user=request.user,
                 action = f"Declined a cancel item request"

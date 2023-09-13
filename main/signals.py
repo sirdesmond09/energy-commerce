@@ -10,7 +10,7 @@ import json
 from firebase_admin import messaging
 import os
 import requests
-from .helpers.signals import payment_approved, payment_declined, order_canceled
+from .helpers.signals import payment_approved, payment_declined, order_canceled, cancel_approved, cancel_rejected
 from django.template.loader import render_to_string
 
 
@@ -148,9 +148,9 @@ def send_decline_notice(sender, user, **kwargs):
 
 
 @receiver(order_canceled)
-def send_decline_notice(sender, order_item, **kwargs):
+def send_canceled_notice(sender, order_item, **kwargs):
     
-    subject = "Your Loan Request was Declined"
+    subject = "Update on your Imperium Order"
             
     message = ""
     order = order_item.order
@@ -160,6 +160,55 @@ def send_decline_notice(sender, order_item, **kwargs):
                     'site_name':site_name,
                     "MARKET_PLACE_URL":MARKET_PLACE_URL,
                     "reason":order_item.cancellation_response_reason,
+                    "order_id":order_item.unique_id,
+                    "order":order})
+    
+    email_from = settings.Common.DEFAULT_FROM_EMAIL
+    recipient_list = [user.email]
+    send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+    
+            
+    return 
+
+
+@receiver(cancel_approved)
+def send_cancel_approved_notice(sender, order_item, **kwargs):
+    
+    subject = "Your Cancel Request was Approved"
+            
+    message = ""
+    order = order_item.order
+    user = order.user
+    msg_html = render_to_string('email/cancel_accepted.html', {
+                    'first_name': str(user.first_name).title(),
+                    'site_name':site_name,
+                    "MARKET_PLACE_URL":MARKET_PLACE_URL,
+                    "reason":order_item.cancellation_response_reason,
+                    "order_id":order_item.unique_id,
+                    "order":order})
+    
+    email_from = settings.Common.DEFAULT_FROM_EMAIL
+    recipient_list = [user.email]
+    send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+    
+            
+    return 
+
+
+@receiver(cancel_rejected)
+def send_cancel_rejected_notice(sender, order_item, **kwargs):
+    
+    subject = "Your Cancel Request was Declined"
+            
+    message = ""
+    order = order_item.order
+    user = order.user
+    msg_html = render_to_string('email/cancel_rejected.html', {
+                    'first_name': str(user.first_name).title(),
+                    'site_name':site_name,
+                    "MARKET_PLACE_URL":MARKET_PLACE_URL,
+                    "reason":order_item.cancellation_response_reason,
+                    "order_id":order_item.unique_id,
                     "order":order})
     
     email_from = settings.Common.DEFAULT_FROM_EMAIL
