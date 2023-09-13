@@ -31,6 +31,7 @@ from djoser.conf import settings
 from main.helpers.signals import password_changed
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.utils.timezone import now
+from main.helpers.signals import vendor_created
 
 
 
@@ -412,7 +413,12 @@ class AddVendorView(APIView):
                 user=instance,
                 action = f"Signed up as a vendor"
                 )
-            return Response({"message":"success"}, status=status.HTTP_201_CREATED)
+            
+            vendor_created.send(sender=instance, vendor=instance)
+            print("I think I worked")
+            
+            user = CustomUserSerializer(instance)
+            return Response({"message":"success", "data":user.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     

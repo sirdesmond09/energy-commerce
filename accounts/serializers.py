@@ -179,12 +179,13 @@ class StoreProfileSerializer(serializers.ModelSerializer):
     bank_data = serializers.ReadOnlyField()
     vendor_data = serializers.SerializerMethodField()
     cac_doc = PDFBase64File()
+    store_logo = Base64ImageField()
     
     class Meta:
         fields = '__all__'
         model = StoreProfile
         extra_kwargs = {
-            'logo': {'write_only': True},
+            'store_logo': {'write_only': True},
             'cac_doc': {'write_only': True}
         }
         
@@ -223,7 +224,7 @@ class AddVendorSerializer(serializers.Serializer):
             vendor_data.pop("role") 
         
         try:
-            if User.objects.filter(phone=serializers.validated['phone']).exists():
+            if User.objects.filter(phone=validated_data.get('phone')).exists():
                 raise ValidationError(detail={"phone":"user with this phone already exist"})
             password = vendor_data.get("password")
             vendor = User.objects.create(**vendor_data, role="vendor", vendor_status="applied")
@@ -235,8 +236,10 @@ class AddVendorSerializer(serializers.Serializer):
                 if "vendor" in store_profile.keys():
                     store_profile.pop("vendor")
                 cac_doc = store_profile.pop("cac_doc")
+                store_logo = store_profile.pop("store_logo")
                 store = StoreProfile.objects.create(**store_profile, vendor=vendor)
                 store.cac_doc=cac_doc
+                store.logo=store_logo
                 store.save()
                 
             except Exception as e:

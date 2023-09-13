@@ -14,7 +14,7 @@ from django.template.loader import render_to_string
 import json
 import os
 import  requests
-from main.helpers.signals import password_changed, post_store_delete
+from main.helpers.signals import password_changed, post_store_delete, vendor_created
 from main.helpers.encryption import password_encryptor
 
 
@@ -200,6 +200,29 @@ def send_approved_mail(sender, instance, created, **kwargs):
         instance.save()
                 
         return
+
+
+@receiver(vendor_created)
+def send_applied_mail(sender, vendor, **kwargs):
+        print("I am working")
+        subject = "Your Imperium Vendor Application Has Been Received"
+            
+        message = f"""Hi, {str(vendor.first_name).title()}.
+    Your vendor account application has been received!
+
+    Cheers,
+    {site_name} Team            
+    """   
+        msg_html = render_to_string('email/vendor.html', {
+                        'first_name': str(vendor.first_name).title(),
+                        'site_name':site_name,
+                        "MARKET_PLACE_URL":MARKET_PLACE_URL})
+        
+        email_from = settings.Common.DEFAULT_FROM_EMAIL
+        recipient_list = [vendor.email]
+        send_mail( subject, message, email_from, recipient_list, html_message=msg_html)
+                
+        return
     
     
     
@@ -253,7 +276,7 @@ def update_energy_analytics(sender, instance, created, **kwargs):
 
 
 
-@receiver(password_changed, sender=User)
+@receiver(password_changed)
 def update_energy_analytics(sender, user_data, **kwargs):
     print(user_data)
     if user_data.get("role")=="user":
@@ -277,7 +300,7 @@ def update_energy_analytics(sender, user_data, **kwargs):
                     
 
 
-@receiver(post_store_delete, sender=StoreProfile)
+@receiver(post_store_delete)
 def delete_products(sender, vendor, **kwargs):
     #when a store or vendor is deleted, get all the products belonging to that entity and flag as deleted
     

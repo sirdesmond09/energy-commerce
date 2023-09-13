@@ -253,78 +253,53 @@ class Common(Configuration):
     DEFAULT_FROM_EMAIL = "Ope from Imperium <noreply@getmobile.tech>" # TODO: Change to imperium email
     
 
-    # LOG_DIR = os.path.join(BASE_DIR, 'logs')
+        # Define the log directory
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
-    # # Ensure the logs directory exists
-    # if not os.path.exists(LOG_DIR):
-    #     os.makedirs(LOG_DIR)
+    # Ensure the logs directory exists
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
 
-    # # Logging configuration for errors
-    # LOG_FILE_ERROR = os.path.join(LOG_DIR, 'error.log')
-    # LOGGING = {
-    #     'version': 1,
-    #     'disable_existing_loggers': False,
-    #     'handlers': {
-    #         'error_file': {
-    #             'level': 'ERROR',
-    #             'class': 'logging.FileHandler',
-    #             'filename': LOG_FILE_ERROR,
-    #             'formatter': 'verbose',
-    #         },
-    #     },
-    #     'loggers': {
-    #         'django': {
-    #             'handlers': ['error_file'],
-    #             'level': 'ERROR',
-    #             'propagate': True,
-    #         },
-    #     },
-    # }
+    # Logging configuration for errors
+    LOG_FILE_ERROR = os.path.join(LOG_DIR, 'error.log')
 
-    # # Logging configuration for server prints
-    # LOG_FILE_SERVER = os.path.join(LOG_DIR, 'server.log')
-    # LOGGING['handlers']['server_file'] = {
-    #         'class': 'logtail.LogtailHandler',
-    #         'source_token': "RNPseagWrr2965HbV6uwAKvP",
-    #     },
-    # LOGGING['loggers']['django.server'] = {
-    #         "handlers": [
-    #             "logtail",
-    #         ],
-    #         "level": "INFO",
-    #     }
-    # # LOGGING['loggers']['django.server'] = {
-    # #     'handlers': ['server_file'],
-    # #     'level': 'INFO',
-    # #     'propagate': False,
-    # # }
-    
+    # Logging configuration for access logs
+    LOG_FILE_ACCESS = os.path.join(LOG_DIR, 'access.log')
+
     LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    'handlers': {
-        'logtail': {
-            'class': 'logtail.LogtailHandler',
-            'source_token': "RNPseagWrr2965HbV6uwAKvP",
-            'level': 'INFO',
-        },
-    },
-    "loggers": {
-        "django.server": {
-            "handlers": [
-                "logtail",
-            ],
-            "level": "INFO",
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '%(asctime)s [%(levelname)s] %(message)s',
+                'datefmt': '%Y-%m-%d %H:%M:%S',
             },
         },
-    }
-
-
-    # Logging formatter
-    LOGGING['formatters'] = {
-        'verbose': {
-            'format': '%(asctime)s [%(levelname)s] %(message)s',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        'handlers': {
+            'error_file': {
+                'level': 'ERROR',
+                'class': 'logging.FileHandler',
+                'filename': LOG_FILE_ERROR,
+                'formatter': 'verbose',
+            },
+            'access_file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': LOG_FILE_ACCESS,
+                'formatter': 'verbose',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['error_file'],
+                'level': 'ERROR',
+                'propagate': True,
+            },
+            'django.server': {
+                'handlers': ['access_file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
         },
     }
     
@@ -374,7 +349,7 @@ class Development(Common):
         os.getenv("DATABASE_URL")
     )
     
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = "Alex from Imperium <hello@imperium.io>"
 
 
