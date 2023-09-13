@@ -127,6 +127,9 @@ class CustomUserViewSet(UserViewSet):
     def set_password(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        if check_password(serializer.data["new_password"], request.user.password):
+            raise ValidationError(detail = {"password": "You cannot use the same password you used before. Please use another password"})
 
         self.request.user.set_password(serializer.data["new_password"])
         self.request.user.save()
@@ -152,6 +155,9 @@ class CustomUserViewSet(UserViewSet):
     def reset_password_confirm(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        if check_password(serializer.data["new_password"], serializer.user.password):
+            raise ValidationError(detail = {"password": "You cannot use the same password you used before. Please use another password"})
 
         serializer.user.set_password(serializer.data["new_password"])
         if hasattr(serializer.user, "last_login"):
