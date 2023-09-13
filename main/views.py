@@ -1132,6 +1132,7 @@ def permanently_delete_order(request, booking_id):
     
     
 class OrderList(ListAPIView):
+    """See a list of orders made by a user or vendor"""
     
     queryset = OrderItem.objects.filter(is_deleted=False, order__is_paid_for=True).order_by("-date_added")
     
@@ -1150,7 +1151,7 @@ class OrderList(ListAPIView):
         queryset = self.filter_queryset(self.get_queryset())
         
         if request.user.role == "user" or request.user.role == "vendor":
-            queryset = queryset.filter(order__user=request.user)
+            queryset = OrderItem.objects.filter(is_deleted=False, order__user=request.user).order_by("-date_added")
             
         if filterBy == "open":
             queryset = queryset.filter(status__in=["pending",  "confirmed","processing", "in-transit"])
