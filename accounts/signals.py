@@ -204,7 +204,7 @@ def send_approved_mail(sender, instance, created, **kwargs):
 
 @receiver(vendor_created)
 def send_applied_mail(sender, vendor, **kwargs):
-        print("I am working")
+
         subject = "Your Imperium Vendor Application Has Been Received"
             
         message = f"""Hi, {str(vendor.first_name).title()}.
@@ -278,7 +278,7 @@ def update_energy_analytics(sender, instance, created, **kwargs):
 
 @receiver(password_changed)
 def update_energy_analytics(sender, user_data, **kwargs):
-    print(user_data)
+
     if user_data.get("role")=="user":
         
 
@@ -294,7 +294,7 @@ def update_energy_analytics(sender, user_data, **kwargs):
         res = requests.patch(f"{energy_url}/auth/update-user",
                         data=payload,)
         
-        print(res.status_code)
+
 
         return payload
                     
@@ -303,7 +303,7 @@ def update_energy_analytics(sender, user_data, **kwargs):
 @receiver(post_store_delete)
 def delete_products(sender, vendor, **kwargs):
     #when a store or vendor is deleted, get all the products belonging to that entity and flag as deleted
-    
+        
     vendor.products.filter(is_deleted=False).update(is_deleted=True)
     
                     

@@ -421,10 +421,8 @@ class AddVendorView(APIView):
                 )
             
             vendor_created.send(sender=instance, vendor=instance)
-            print("I think I worked")
-            
-            user = CustomUserSerializer(instance)
-            return Response({"message":"success", "data":user.data}, status=status.HTTP_201_CREATED)
+
+            return Response({"message":"success"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     

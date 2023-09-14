@@ -96,7 +96,9 @@ class Product(models.Model):
     
     @property
     def primary_img_url(self):
-        return self.primary_img.url
+        if self.primary_img:
+            return self.primary_img.url
+        return ""
     
     @property
     def category_name(self):
