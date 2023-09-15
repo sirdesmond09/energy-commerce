@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django_hashids import HashidsField
-
+from django.forms import model_to_dict
 User=  get_user_model()
 # Create your models here.
 
@@ -30,6 +30,7 @@ class ReferrerReward(models.Model):
 class UserBankAccount(models.Model):
     account_name = models.CharField(max_length=255)
     account_num = models.CharField(max_length=255)
+    bank_name= models.CharField(max_length=255, null=True)
     bank_code = models.CharField(max_length=255)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -55,6 +56,8 @@ class Withdrawal(models.Model):
     date_requested = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
+    def bank_detail(self):
+        return model_to_dict(self.user.userbankaccount)
     
     def delete(self):
         self.is_deleted = True

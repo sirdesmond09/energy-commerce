@@ -11,6 +11,7 @@ class ReferralBonusSerializer(serializers.ModelSerializer):
         
 class UserBankAccountSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField()
+
     
     class Meta:
         model=UserBankAccount
@@ -23,6 +24,7 @@ class UserBankAccountSerializer(serializers.ModelSerializer):
 
 class WithdrawalSerializer(serializers.ModelSerializer):
     user_info = serializers.SerializerMethodField()
+    bank_detail = serializers.ReadOnlyField()
     
     class Meta:
         fields = "__all__"

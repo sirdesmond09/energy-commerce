@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError, NotFound
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from datetime import datetime
 
 User=  get_user_model()
 
@@ -126,8 +127,26 @@ class WithdrawalView(generics.ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         
+        
+        status = self.request.GET.get('status')
+        startDate = request.GET.get('start_date')
+        endDate = request.GET.get('end_date')
+        
+        
         if request.user.role != "admin":
             queryset = queryset.filter(user=request.user)
+            
+            
+        if status:
+            queryset = queryset.filter(status=status)
+            
+        
+        if startDate and endDate:
+            startDate = datetime.strptime(startDate, "%Y-%m-%d").date()
+            endDate = datetime.strptime(endDate, "%Y-%m-%d").date()
+            
+            queryset = queryset.filter(date_requested__range=[startDate, endDate])
+        
         
         return super().list(request, queryset=queryset, *args, **kwargs)
 
