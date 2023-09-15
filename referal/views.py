@@ -131,7 +131,7 @@ class WithdrawalView(generics.ListCreateAPIView):
         queryset = self.filter_queryset(self.get_queryset())
         
         
-        status = self.request.GET.get('status')
+        status = request.GET.get('status')
         startDate = request.GET.get('start_date')
         endDate = request.GET.get('end_date')
         
@@ -151,7 +151,13 @@ class WithdrawalView(generics.ListCreateAPIView):
             queryset = queryset.filter(date_requested__range=[startDate, endDate])
         
         
-        return super().list(request, queryset=queryset, *args, **kwargs)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
     def post(self, request, *args, **kwargs):
