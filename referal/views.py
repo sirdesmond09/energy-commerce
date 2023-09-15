@@ -73,7 +73,10 @@ class UserAccountView(generics.ListCreateAPIView):
     
     def post(self, request, *args, **kwargs):
         
-
+        if UserBankAccount.objects.filter(is_deleted=False, user=request.user).exists():
+            raise ValidationError(detail={"error":"bank already exists for this user"})
+        
+        
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
