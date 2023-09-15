@@ -100,10 +100,10 @@ class UserAccountView(generics.ListCreateAPIView):
         try:
             bank = UserBankAccount.objects.get(user=request.user)
             data = UserBankAccountSerializer(bank).data
-            return Response({"message":"created", "data":data}, status=201)
+            return Response({"message":"success", "data":data}, status=200)
         
         except UserBankAccount.DoesNotExist:
-            return Response({}, status=200)
+            return Response({"error":"no data found"}, status=404)
 
 
 
