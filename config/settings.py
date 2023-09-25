@@ -65,11 +65,14 @@ class Common(Configuration):
         'corsheaders',
         'rest_framework_simplejwt.token_blacklist',
         'storages',
+        'csp',
 
     ]
 
     MIDDLEWARE = [
         'django.middleware.security.SecurityMiddleware',
+        'csp.middleware.CSPMiddleware',
+        "config.middleware.SecurityMiddleware",
         'whitenoise.middleware.WhiteNoiseMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'corsheaders.middleware.CorsMiddleware',
@@ -358,29 +361,50 @@ class Staging(Common):
     The in-staging settings.
     """
     
-    # Security
-    SESSION_COOKIE_SECURE = values.BooleanValue(False)
+
+    DATABASES = values.DatabaseURLValue(
+        os.getenv("DATABASE_URL")
+    )
+    
+    
+    # settings.py
+
+    SESSION_COOKIE_SECURE = values.BooleanValue(True)
     SECURE_BROWSER_XSS_FILTER = values.BooleanValue(True)
     SECURE_CONTENT_TYPE_NOSNIFF = values.BooleanValue(True)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = values.BooleanValue(True)
     SECURE_HSTS_SECONDS = values.IntegerValue(31536000)
     SECURE_REDIRECT_EXEMPT = values.ListValue([])
     SECURE_SSL_HOST = values.Value(None)
-    SECURE_SSL_REDIRECT = values.BooleanValue(False)
+    SECURE_SSL_REDIRECT = values.BooleanValue(True)
     SECURE_PROXY_SSL_HEADER = values.TupleValue(
         ('HTTP_X_FORWARDED_PROTO', 'https')
     )
-    
+
     DEBUG = False
-    DATABASES = values.DatabaseURLValue(
-        os.getenv("DATABASE_URL")
-    )
-    
 
     ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
     CSRF_TRUSTED_ORIGINS = os.getenv("TRUSTED_ORIGINS").split(',')
+
+    # Additional Security Headers
+
+    # Content Security Policy (CSP)
+    SECURE_CONTENT_SECURITY_POLICY = "default-src 'self'; script-src 'self' 'unsafe-inline';"
+
+    # Referrer-Policy
+    SECURE_REFERRER_POLICY = 'same-origin'
+
+    # X-Content-Type-Options
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    # X-Frame-Options
+    X_FRAME_OPTIONS = 'DENY'
+
+    # Feature-Policy
+    SECURE_FEATURE_POLICY = "geolocation 'none'; microphone 'none'; camera 'none';"
+
     
-    
+    CSP_DEFAULT_SRC = ("'self'",)
 
 
 class Production(Staging):

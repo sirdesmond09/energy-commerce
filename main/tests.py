@@ -147,9 +147,9 @@ data1 = {
 
 # get eligibility
 payload1 = {
-  "totalPurchaseAmount": 200000,
+  "totalPurchaseAmount": 20000,
   "description": "Payment for items in cart",
-  "reference": "c61eadd8-qpw3-4ak7-b9a5-bf07251bf55d",
+  "reference": "c61eadd8-3ef5-4aw7-b9a5-bf07251bf55d",
   "spectaId": "SP528175288",
   "equityContribution": 0,
   "loanTenorInMonths": 7,
@@ -202,7 +202,7 @@ def decrypt_data(ciphertext_base64):
 
 # print(encrypt_data(data2)) 
 # print(data2)
-print(json.loads(decrypt_data("ESELUmtAztG92Nme/jyPjUAPafjeqIjDnT0LEgYw0b9MWnxE4c1Nnudp4k8niZt75proNXcuuBcGteGaz6YMyqJb+K9vxtiZM4etwDcNMVM8j/kDLxSBx/1WMUpih2IKrjHwRXSGNI17vR8yclVsyMBluVjIVUGEx+bnNU67YKXvH9JXuwNz3Nzc2qZQ8ruYpozYTtyZM66cNsYu0rm45nwE/sqF8lU+dQqz7JzxOCIj+yjzjYKa5PEkZqjFWhZlBpH2ctQlBPLCQH2NDS/EnjmjsmrD02xvudR4JHrCI1W5j5Bhq8JLZUYtLKzZuI7rAirGKXsBUCk00dlqnmU1OB195m77x+Msvy1+IlJBItAcBR7ibn4mSxvHy0D5oQUa")))
+print(json.loads(decrypt_data("8fEeMc2WglBMVoFz/uLEQOWJp5drEAvRsS0Sucb+pRHQQKx5O2H1mvJR8SOBwulzJnG3tpemjth/4OnRzyv/iMgfapRYA5W101jY/7DsiaSsDtf2YSxf2xeSE9QtDrZJVqKL4yw+VhS5hvnIoTgtq3KKol1p3C7EMt2QW2UFlMN9jnUokRN9IxDwClyILscE0RHvNq7KPqMTMGaGfHVM0g==")))
 
 # {'queryParameters': [], 'headers': {'x-ApiKey': '9a538cfcb6ad43c8939ac7b55e786bf7'}, 'jsonBody': '{"totalPurchaseAmount": 622618, "description": "Payment for items in cart", "reference": "c61eadd8-aq3e-4ab7-b9a5-bf07251bf55d", "spectaId": "SP528175288", "equityContribution": 0, "loanTenorInMonths": 7, "otp": "122333", "merchantId": "60170"}'}
 
