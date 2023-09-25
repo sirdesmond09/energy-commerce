@@ -81,6 +81,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
     def get_roles(self, admin):
         return GroupSerializer(admin.groups.all(), many=True).data
 
+class EncryptionSerializer(serializers.Serializer):
+    payload = serializers.CharField(max_length=5000)
+    
+    
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(max_length=300)

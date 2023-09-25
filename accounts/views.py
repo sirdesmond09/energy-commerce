@@ -1,6 +1,7 @@
+import json
 from accounts.permissions import CustomDjangoModelPermissions, DashboardPermission, IsUserOrVendor, IsVendor, StoreBankDetailTablePermissions, StoreProfileTablePermissions, UserTablePermissions, VendorPermissions
 from main.serializers import ProductSerializer
-from .serializers import AddVendorSerializer, AssignRoleSerializer, FirebaseSerializer, GroupSerializer, ImageUploadSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
+from .serializers import AddVendorSerializer, AssignRoleSerializer, EncryptionSerializer, FirebaseSerializer, GroupSerializer, ImageUploadSerializer, LoginSerializer, LogoutSerializer, ModuleAccessSerializer, NewOtpSerializer, OTPVerifySerializer, CustomUserSerializer, PermissionSerializer, StoreProfileSerializer, BankDetailSerializer, VendorStatusSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -32,6 +33,7 @@ from main.helpers.signals import password_changed
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.utils.timezone import now
 from main.helpers.signals import vendor_created
+from main.helpers.encryption import data_encryptor
 
 
 
@@ -239,14 +241,18 @@ class AdminListCreateView(ListCreateAPIView):
 
 
 
-@swagger_auto_schema(method='post', request_body=LoginSerializer())
+@swagger_auto_schema(method='post', request_body=EncryptionSerializer())
 @api_view([ 'POST'])
 def user_login(request):
     
     """Allows users to log in to the platform. Sends the jwt refresh and access tokens. Check settings for token life time."""
     
     if request.method == "POST":
-        serializer = LoginSerializer(data=request.data)
+        encryption = EncryptionSerializer(data=request.data)
+        encryption.is_valid(raise_exception=True)
+        data = json.loads(data_encryptor.decrypt(encryption.validated_data.get("payload")))
+        
+        serializer = LoginSerializer(data=data)
         if serializer.is_valid():
             data = serializer.validated_data
             user = authenticate(request, email = data['email'], password = data['password'], is_deleted=False)

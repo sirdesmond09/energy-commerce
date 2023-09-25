@@ -108,14 +108,17 @@ import json
 key_base64 = "72hu8A8GlK0wCkdQfac83AuPMOqmtKYmFXbNTD9SH1Y="
 iv_base64 = "7EhddMLWwvlqPrMyCYf+VQ=="
 
+ENCRYPTION_SECRET="oeItmUd59IhAsQDXGQP33OCG1Y8FT5bfgB2JEDoYRWI="
+ENCRYPTION_IV = "JXXotrfxOI9kWWPpVPzNCg=="
+
 def base64_decoding(input):
     decoded_bytes = base64.b64decode(input)
     return decoded_bytes
 
 
 def encrypt_data(data):
-    key = base64_decoding(key_base64)
-    iv = base64_decoding(iv_base64)
+    key = base64_decoding(ENCRYPTION_SECRET)
+    iv = base64_decoding(ENCRYPTION_IV)
 
     data_json = json.dumps(data).encode('utf-8')
 
@@ -183,8 +186,8 @@ data3 = {
 
 
 def decrypt_data(ciphertext_base64):
-    key = base64_decoding(key_base64)
-    iv = base64_decoding(iv_base64)
+    key = base64_decoding(ENCRYPTION_SECRET)
+    iv = base64_decoding(ENCRYPTION_IV)
 
     cipher = AES.new(key, AES.MODE_CBC, iv)
 
@@ -200,12 +203,32 @@ def decrypt_data(ciphertext_base64):
 
 
 
-# print(encrypt_data(data2)) 
+# print(encrypt_data({"email":"test@gmail.com", "password":"testpass123"})) 
 # print(data2)
-print(json.loads(decrypt_data("8fEeMc2WglBMVoFz/uLEQOWJp5drEAvRsS0Sucb+pRHQQKx5O2H1mvJR8SOBwulzJnG3tpemjth/4OnRzyv/iMgfapRYA5W101jY/7DsiaSsDtf2YSxf2xeSE9QtDrZJVqKL4yw+VhS5hvnIoTgtq3KKol1p3C7EMt2QW2UFlMN9jnUokRN9IxDwClyILscE0RHvNq7KPqMTMGaGfHVM0g==")))
+print(json.loads(decrypt_data("ZvUZYnqzvNZeAo4G1j2tlE9RsrxBzRdOF91FTquK3BeoJst/Xv0F24yEU5qbOcd2IB/oYjK/IBz6atfG7trYfQ==")))
 
 # {'queryParameters': [], 'headers': {'x-ApiKey': '9a538cfcb6ad43c8939ac7b55e786bf7'}, 'jsonBody': '{"totalPurchaseAmount": 622618, "description": "Payment for items in cart", "reference": "c61eadd8-aq3e-4ab7-b9a5-bf07251bf55d", "spectaId": "SP528175288", "equityContribution": 0, "loanTenorInMonths": 7, "otp": "122333", "merchantId": "60170"}'}
 
 
 
 # {'result': None, 'targetUrl': None, 'success': False, 'error': {'code': 400, 'message': 'Insufficient Balance', 'details': 'NGN 687535.50.', 'validationErrors': None}, 'unAuthorizedRequest': False, '__abp': True}
+
+
+
+#GENERATE SECRET AND IV
+
+# import secrets
+# import base64
+
+# # Generate a 256-bit (32-byte) AES key
+# key = secrets.token_bytes(32)
+
+# # Generate a 128-bit (16-byte) IV
+# iv = secrets.token_bytes(16)
+
+# # Convert the key and IV to base64-encoded strings
+# key_base64 = base64.b64encode(key).decode('utf-8')
+# iv_base64 = base64.b64encode(iv).decode('utf-8')
+
+# print("AES Key (base64):", key_base64)
+# print("IV (base64):", iv_base64)
