@@ -2183,43 +2183,52 @@ def pws_get_otp(request):
         serializer.is_valid(raise_exception=True)
         
         
-        pre_encoded_data = {
-            "queryParameters": [
-                {
-                    "parameterName": "spectaID",
-                    "value": serializer.validated_data.get("specta_id")
-                }
-            ],
-            "headers": {
-                "x-ApiKey": os.getenv("SPECTA_API_KEY")
-            },
-            "jsonBody": ""
-        }
+        # pre_encoded_data = {
+        #     "queryParameters": [
+        #         {
+        #             "parameterName": "spectaID",
+        #             "value": serializer.validated_data.get("specta_id")
+        #         }
+        #     ],
+        #     "headers": {
+        #         "x-ApiKey": os.getenv("SPECTA_API_KEY")
+        #     },
+        #     "jsonBody": ""
+        # }
         
         
-        encoded_str = encrypt_data(pre_encoded_data)
+        # encoded_str = encrypt_data(pre_encoded_data)
         
-        data = { 
-            "encryptedPayLoad": encoded_str,
-                "applicationEndpoint": "/api/Purchase/PayOnlineWithoutRedirect", 
-                "httpMethod": 2
-        }
+        # data = { 
+        #     "encryptedPayLoad": encoded_str,
+        #         "applicationEndpoint": "/api/Purchase/PayOnlineWithoutRedirect", 
+        #         "httpMethod": 2
+        # }
         
-        res = requests.post(url=os.getenv("SPECTA_URL"),
+        # res = requests.post(url=os.getenv("SPECTA_URL"),
+        #               json=data,
+        #               headers={"Authorization": f"Bearer {os.getenv('SPECTA_API_TOKEN')}",
+        #                        "content-type":'application/json'})
+        data = {}
+        specta = serializer.validated_data.get("specta_id")
+        res = requests.post(url=f"https://paywithspectabackend-dev-api.sterlingapps.p.azurewebsites.net/api/Purchase/PayOnlineWithoutRedirect?spectaID={specta}",
                       json=data,
                       headers={"Authorization": f"Bearer {os.getenv('SPECTA_API_TOKEN')}",
+                               "x-ApiKey" : os.getenv("SPECTA_API_KEY"),
                                "content-type":'application/json'})
         
         
         if res.status_code==200:
-            response = res.json().get('content')
-            data = decrypt_data(response)
+            # response = res.json().get('content')
+            # data = decrypt_data(response)
             
-            return Response(json.loads(data), status=status.HTTP_202_ACCEPTED)
+            # return Response(json.loads(data), status=status.HTTP_202_ACCEPTED)
+            return Response(res.json(), status=status.HTTP_202_ACCEPTED)
 
-        response = res.json().get('content')
-        data = decrypt_data(response)
-        return  Response(json.loads(data), status=status.HTTP_400_BAD_REQUEST)
+        # response = res.json().get('content')
+        # data = decrypt_data(response)
+        # return  Response(json.loads(data), status=status.HTTP_400_BAD_REQUEST)
+        return  Response(res.json(), status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -2244,51 +2253,63 @@ def pay_with_specta(request, booking_id):
         serializer.is_valid(raise_exception=True)
         
         balance = serializer.validated_data.pop("balance", None)
-        # if balance:
-        #     serializer.validated_data['totalPurchaseAmount'] =  balance.total_amount - balance.paid_amount
+       
         
         payload = serializer.validated_data
         
         payload['merchantId'] = os.getenv('MERCHANT_ID')
         
         
-        pre_encoded_data = {
-            "queryParameters": [],
-            "headers": {
-                "x-ApiKey": os.getenv("SPECTA_API_KEY")
-            },
-            "jsonBody": json.dumps(dict(payload))
-        }
+        # pre_encoded_data = {
+        #     "queryParameters": [],
+        #     "headers": {
+        #         "x-ApiKey": os.getenv("SPECTA_API_KEY")
+        #     },
+        #     "jsonBody": json.dumps(dict(payload))
+        # }
         
-        encoded_str = encrypt_data(pre_encoded_data)
+        # encoded_str = encrypt_data(pre_encoded_data)
         
-        data = { 
-            "encryptedPayLoad": encoded_str,
-            "applicationEndpoint": "/api/Purchase/CompleteOnlinePurchaseWithSummary", 
-            "httpMethod": 2
-        }
+        # data = { 
+        #     "encryptedPayLoad": encoded_str,
+        #     "applicationEndpoint": "/api/Purchase/CompleteOnlinePurchaseWithSummary", 
+        #     "httpMethod": 2
+        # }
         
-        res = requests.post(url=os.getenv("SPECTA_URL"),
-                      json=data,
+        # res = requests.post(url=os.getenv("SPECTA_URL"),
+        #               json=data,
+        #               headers={"Authorization": f"Bearer {os.getenv('SPECTA_API_TOKEN')}",
+        #                        "content-type":'application/json'})
+        
+        res = requests.post(url="https://paywithspectabackend-dev-api.sterlingapps.p.azurewebsites.net/api/Purchase/CompleteOnlinePurchaseWithSummary",
+                      json=payload,
                       headers={"Authorization": f"Bearer {os.getenv('SPECTA_API_TOKEN')}",
-                               "content-type":'application/json'})
+                               "content-type":'application/json',
+                               "x-ApiKey": os.getenv("SPECTA_API_KEY")})
         
-        response = res.json().get('content')
-        data = json.loads(decrypt_data(response))
+        # response = res.json().get('content')
+        # data = json.loads(decrypt_data(response))
+        data = res.json()
         pws_is_valid = False
         ref = ""
-        logger.warning(f"PWS Data: {pws_is_valid}")
+        # logger.warning(f"PWS Data: {pws_is_valid}")
+        
+        
+        # if data.get('result'):
+        #     ref = data.get('result').get('data').get('purchaseId')
+        
+        #     pws_is_valid = validate_pws(ref)
+        #     logger.warning(f"PWS IS VALID: {pws_is_valid}")
+        # elif data.get('detail'):
+        #     ref = data.get('detail')
+        #     pws_is_valid = validate_pws(ref)
+
+        #     logger.warning(f"PWS IS VALID: {pws_is_valid}")
+        
         if data.get('result'):
+            pws_is_valid = (data.get("result").get("status") == 200 and data.get("result").get("data").get("isSuccessful", False)==True)
             ref = data.get('result').get('data').get('purchaseId')
         
-            pws_is_valid = validate_pws(ref)
-            logger.warning(f"PWS IS VALID: {pws_is_valid}")
-        elif data.get('detail'):
-            ref = data.get('detail')
-            pws_is_valid = validate_pws(ref)
-
-            logger.warning(f"PWS IS VALID: {pws_is_valid}")
-
         try:
             if pws_is_valid:
 

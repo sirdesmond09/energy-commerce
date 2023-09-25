@@ -108,8 +108,8 @@ import json
 key_base64 = "72hu8A8GlK0wCkdQfac83AuPMOqmtKYmFXbNTD9SH1Y="
 iv_base64 = "7EhddMLWwvlqPrMyCYf+VQ=="
 
-ENCRYPTION_SECRET="oeItmUd59IhAsQDXGQP33OCG1Y8FT5bfgB2JEDoYRWI="
-ENCRYPTION_IV = "JXXotrfxOI9kWWPpVPzNCg=="
+# ENCRYPTION_SECRET="oeItmUd59IhAsQDXGQP33OCG1Y8FT5bfgB2JEDoYRWI="
+# ENCRYPTION_IV = "JXXotrfxOI9kWWPpVPzNCg=="
 
 def base64_decoding(input):
     decoded_bytes = base64.b64decode(input)
@@ -117,8 +117,8 @@ def base64_decoding(input):
 
 
 def encrypt_data(data):
-    key = base64_decoding(ENCRYPTION_SECRET)
-    iv = base64_decoding(ENCRYPTION_IV)
+    key = base64_decoding(key_base64)
+    iv = base64_decoding(iv_base64)
 
     data_json = json.dumps(data).encode('utf-8')
 
@@ -152,7 +152,7 @@ data1 = {
 payload1 = {
   "totalPurchaseAmount": 20000,
   "description": "Payment for items in cart",
-  "reference": "c61eadd8-3ef5-4aw7-b9a5-bf07251bf55d",
+  "reference": "c61eadd8-3ef5-io4d-b9p5-bf07251bf55d",
   "spectaId": "SP528175288",
   "equityContribution": 0,
   "loanTenorInMonths": 7,
@@ -186,8 +186,8 @@ data3 = {
 
 
 def decrypt_data(ciphertext_base64):
-    key = base64_decoding(ENCRYPTION_SECRET)
-    iv = base64_decoding(ENCRYPTION_IV)
+    key = base64_decoding(key_base64)
+    iv = base64_decoding(iv_base64)
 
     cipher = AES.new(key, AES.MODE_CBC, iv)
 
@@ -203,9 +203,11 @@ def decrypt_data(ciphertext_base64):
 
 
 
-# print(encrypt_data({"email":"test@gmail.com", "password":"testpass123"})) 
-# print(data2)
-print(json.loads(decrypt_data("ZvUZYnqzvNZeAo4G1j2tlE9RsrxBzRdOF91FTquK3BeoJst/Xv0F24yEU5qbOcd2IB/oYjK/IBz6atfG7trYfQ==")))
+# print(encrypt_data(data2)) 
+# print(json.dumps(data1))
+print()
+print(json.dumps(data2))
+# print(json.loads(decrypt_data("GYdZxBN120RG8AD7SOPd32jnsdLsRNDmtVCKO8WWIldYIasP9C+tBilFKfsNpNus/qCHuRt+zjKH1vxn0La7U540AdgB9oABzk6HuGFCOPIZQ0pWIy1z+qm1WbXR+fkJZDjM/RTSTclpfaoPa9tvNUaK0m986pCtuwSLT3u48vbaQjj3htKmPNS8CfDB3hq7I8fEsp0InNuMGfccGBSN4qzglUfK6NH/uJgBNQd/NLsdTcSE0kv/EKOjHizHc7rMdGsavMkoos3srSvghnrl3Ysfl5eg8UksR5rYzSNT5UI2BH59SxSd2yt64PeG2wx37yiyA+Y9krD13ZenujV7KL1BsmfKUpMSO4HMvWEAFNIwaS5DJMil/OewhR6hYOA+0D9132k5pz+SuWOgbLnUJYqPbHJeTvuqCGXukyG+bh/JVyVHxjNjBKluyMEIWyUvFxPKidg8VGmfgc/ys3nZz8ug0QFzYxKQgKdBhyfDBGgePPxy/S+daMkqVK4GnZ2jVyMagFkPsTvJaSZkvq1WQO5E/IQ8KoHjgPkMP3ZwukLZtOR32mPcqqum1DGylLGT")))
 
 # {'queryParameters': [], 'headers': {'x-ApiKey': '9a538cfcb6ad43c8939ac7b55e786bf7'}, 'jsonBody': '{"totalPurchaseAmount": 622618, "description": "Payment for items in cart", "reference": "c61eadd8-aq3e-4ab7-b9a5-bf07251bf55d", "spectaId": "SP528175288", "equityContribution": 0, "loanTenorInMonths": 7, "otp": "122333", "merchantId": "60170"}'}
 
