@@ -2232,6 +2232,59 @@ def pws_get_otp(request):
 
 
 
+       
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsUserOrVendor])
+def get_insurance_companies(request):
+    
+    # pre_encoded_data = {
+    #     "queryParameters": [
+    #         {
+    #             "parameterName": "spectaID",
+    #             "value": serializer.validated_data.get("specta_id")
+    #         }
+    #     ],
+    #     "headers": {
+    #         "x-ApiKey": os.getenv("SPECTA_API_KEY")
+    #     },
+    #     "jsonBody": ""
+    # }
+    
+    
+    # encoded_str = encrypt_data(pre_encoded_data)
+    
+    # data = { 
+    #     "encryptedPayLoad": encoded_str,
+    #         "applicationEndpoint": "/api/Purchase/PayOnlineWithoutRedirect", 
+    #         "httpMethod": 2
+    # }
+    
+    # res = requests.post(url=os.getenv("SPECTA_URL"),
+    #               json=data,
+    #               headers={"Authorization": f"Bearer {os.getenv('SPECTA_API_TOKEN')}",
+    #                        "content-type":'application/json'})
+   
+    res = requests.get(url=f"https://paywithspectabackend-dev-api.sterlingapps.p.azurewebsites.net/api/services/app/Purchase/GetAllInsuranceCompanies",
+                    headers={"Authorization": f"Bearer {os.getenv('SPECTA_API_TOKEN')}",
+                            # "x-ApiKey" : os.getenv("SPECTA_API_KEY"),
+                            "content-type":'application/json'})
+    
+    
+    if res.status_code==200:
+        # response = res.json().get('content')
+        # data = decrypt_data(response)
+        
+        # return Response(json.loads(data), status=status.HTTP_202_ACCEPTED)
+        return Response(res.json(), status=200)
+
+    # response = res.json().get('content')
+    # data = decrypt_data(response)
+    # return  Response(json.loads(data), status=status.HTTP_400_BAD_REQUEST)
+    return  Response(res.json(), status=status.HTTP_400_BAD_REQUEST)
+
+
+
 @swagger_auto_schema(method='post', request_body=SpectaSerializer())       
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])

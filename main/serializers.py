@@ -490,6 +490,7 @@ class SpectaSerializer(serializers.Serializer):
     description = serializers.CharField()
     totalPurchaseAmount = serializers.FloatField()
     otp = serializers.CharField()
+    insuranceCompanyId = serializers.IntegerField()
     balance = serializers.CharField(required=False)
     
     
